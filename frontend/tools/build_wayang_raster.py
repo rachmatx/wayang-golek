@@ -31,30 +31,36 @@ RIGS = {
         "output": "wayang-gatotkaca.svg",
         "title": "Wayang Gatotkaca",
         "pivots": {
-            "lengan-atas-kiri": (174, 172),
-            "lengan-bawah-kiri": (157, 215),
-            "lengan-atas-kanan": (265, 176),
-            "lengan-bawah-kanan": (283, 212),
+            "lengan-atas-kiri": (103, 141),
+            "lengan-bawah-kiri": (74, 244),
+            "lengan-atas-kanan": (240, 160),
+            "lengan-bawah-kanan": (303, 219),
         },
         "polygons": {
             "lengan-atas-kiri": [
-                (154, 146), (163, 150), (172, 159), (181, 177),
-                (178, 189), (174, 206), (172, 224), (134, 224),
-                (134, 175), (147, 166),
+                (95, 120), (112, 124), (112, 148), (106, 168),
+                (102, 190), (98, 210), (97, 230), (95, 250),
+                (58, 250), (56, 230), (58, 205), (52, 190),
+                (52, 172), (60, 160), (72, 150), (84, 136),
             ],
             "lengan-bawah-kiri": [
-                (131, 207), (174, 207), (172, 267), (165, 306),
-                (158, 338), (158, 500), (129, 500), (129, 267),
+                (66, 228), (92, 228), (90, 255), (88, 280),
+                (88, 310), (88, 340), (88, 365), (84, 392),
+                (50, 398), (44, 370), (44, 340), (48, 315),
+                (50, 290), (56, 262), (60, 240),
             ],
             "lengan-atas-kanan": [
-                (253, 184), (255, 173), (258, 164), (265, 155),
-                (272, 150), (278, 159), (280, 172), (279, 181),
-                (285, 195), (292, 211), (292, 222), (267, 222),
-                (260, 206), (255, 193),
+                (222, 136), (248, 150), (262, 140), (286, 148),
+                (300, 164), (304, 186), (322, 210), (320, 234),
+                (296, 240), (272, 222), (250, 204), (234, 186),
+                (224, 160),
             ],
             "lengan-bawah-kanan": [
-                (269, 206), (321, 206), (321, 322), (278, 322),
-                (278, 267), (269, 267),
+                (286, 212), (296, 236), (320, 232), (334, 208),
+                (344, 184), (352, 166), (364, 152), (380, 142),
+                (396, 130), (400, 120), (388, 113), (366, 116),
+                (348, 124), (336, 136), (326, 142), (314, 152),
+                (300, 174), (290, 194),
             ],
         },
         # Lingkaran penutup sendi: bahu disimpan juga di badan supaya tidak
@@ -62,10 +68,27 @@ RIGS = {
         # "socket" bahu: kaki lengan yang ikut terpotong dicat ulang warna
         # kulit dan ditaruh di badan, supaya saat lengan diangkat yang
         # terlihat sendi biru, bukan potongan pauldron yang diam.
-        "shoulder_sockets": {
-            "badan": [(174, 172, 15, "lengan-atas-kiri"),
-                      (265, 176, 15, "lengan-atas-kanan")],
+        "shoulder_sockets": {"badan": []},
+        # Potong pangkal lengan dengan lingkaran berpusat di pivot, lalu simpan
+        # potongan itu di badan. Batas potongan ikut berputar bersama lengan,
+        # jadi sendi selalu rapat tanpa lubang latar.
+        "shoulder_cut": {
+            "lengan-atas-kiri": 20,
+            "lengan-atas-kanan": 20,
         },
+        # Tongkat gapit lurus di sisi kiri layar dan tertutup gelangan serta
+        # telapak tangan kiri. Saat lengan diputar, batang aslinya hilang
+        # bersama layer lengan; isi ulang dengan batang statis di belakangnya.
+        "rod_hidden": {
+            "x": 57, "y": 165, "w": 12, "h": 235,
+            "sample": (57, 420, 10, 60),
+        },
+        # Di rentang ini tongkat menempel di tepi lengan kiri: jangan sampai
+        # pixel batangnya terserap ke layer lengan dan ikut berputar.
+        "rod_clear": (56, 71, 150, 405),
+        # Batang gapit nyaris hitam (median 38) sementara merah tuanya gelangan
+        # ada di 65-90, jadi ambangnya diturunkan supaya ornamennya tidak bolong.
+        "rod_max_gray": 55,
     },
     "arjuna": {
         "source": ROOT / "vibe_images" / "arjuna_normalized.png",
@@ -236,7 +259,10 @@ def build_masks(alpha, rig, image=None):
         gray = cv2.cvtColor(image[:, :, :3], cv2.COLOR_BGR2GRAY)
         area = np.zeros(shape, np.uint8)
         area[y0:y1, x0:x1] = 1
-        dark = ((gray < 115) & (area > 0)).astype(np.uint8) * 255
+        # Ornamen lengan ada yang segelap batang, jadi ambangnya bisa diperketat
+        # per karakter supaya hanya pixel tongkat yang dibuang.
+        ceiling = rig.get("rod_max_gray", 115)
+        dark = ((gray < ceiling) & (area > 0)).astype(np.uint8) * 255
         for mask in arms.values():
             mask[dark > 0] = 0
 
