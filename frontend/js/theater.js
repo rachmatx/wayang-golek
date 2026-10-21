@@ -18,6 +18,8 @@
   let soundOn = true;
   let dialogOn = true;
   let volume = 0.8;
+  let kameraOn = true;
+  let onKamera = null;
   let core = null;
   let loopTimer = null;
   let hiddenAt = 0;
@@ -43,6 +45,7 @@
     if (!root) return;
     els.root = root;
     initialized = true;
+    onKamera = (options && options.onKamera) || null;
 
     els.kelir = $("kelir");
     els.lampu = $("lampu");
@@ -54,6 +57,7 @@
     els.pembukaCatatan = $("pembuka-catatan");
     els.tombolBuka = $("tombol-buka");
     els.tombolSuara = $("tombol-suara");
+    els.tombolKamera = $("tombol-kamera");
     els.kontrolVolume = $("kontrol-volume");
     els.kontrolVolumeNilai = $("kontrol-volume-nilai");
     els.kontrolDialog = $("kontrol-dialog");
@@ -81,6 +85,7 @@
     bindChrome();
     createDust();
     syncSoundButton();
+    syncKameraButton();
     syncVolumeOutput();
     terapkanDialog();
     listenAudioUnlock();
@@ -158,6 +163,10 @@
     if (els.tombolSuara) {
       els.tombolSuara.addEventListener("click", function () { setSound(!soundOn); });
     }
+    const tombolKamera = els.tombolKamera;
+    if (tombolKamera) {
+      tombolKamera.addEventListener("click", function () { mintaKamera(!kameraOn); });
+    }
     if (els.kontrolVolume) {
       els.kontrolVolume.value = String(volume);
       els.kontrolVolume.addEventListener("input", function () {
@@ -192,6 +201,13 @@
         if (target && target.closest && target.closest("input, textarea, select")) return;
         event.preventDefault();
         setDialog(!dialogOn);
+        return;
+      }
+      if (event.key === "k" || event.key === "K") {
+        const target = event.target;
+        if (target && target.closest && target.closest("input, textarea, select")) return;
+        event.preventDefault();
+        mintaKamera(!kameraOn);
         return;
       }
       if (event.key === "Tab") tahanTab(event);
@@ -375,6 +391,30 @@
     }
     terapkanDialog();
     syncAmbient();
+  }
+
+  /* Kamera dipegang backend: tombol ini cuma mengajukan niat, state akhirnya
+   * ditulis lewat setCamera supaya tombol tidak bohong kalau kamera gagal buka. */
+  function mintaKamera(hidup) {
+    if (onKamera) {
+      onKamera(hidup);
+      return;
+    }
+    setCamera(hidup);
+  }
+
+  function setCamera(hidup) {
+    kameraOn = Boolean(hidup);
+    syncKameraButton();
+  }
+
+  function syncKameraButton() {
+    if (!els.tombolKamera) return;
+    els.tombolKamera.dataset.on = kameraOn ? "true" : "false";
+    els.tombolKamera.setAttribute("aria-pressed", kameraOn ? "true" : "false");
+    const label = kameraOn ? "Matikan kamera" : "Nyalakan kamera";
+    els.tombolKamera.setAttribute("aria-label", label);
+    els.tombolKamera.title = label;
   }
 
   function setVolume(nilai) {
@@ -768,6 +808,7 @@
       run(core.setCharacter(key, performance.now()));
     },
     setSound: setSound,
+    setCamera: setCamera,
     fail: fail,
     onWrist: onWrist,
   };

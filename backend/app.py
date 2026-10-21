@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
+import cameras  # noqa: E402
 import config  # noqa: E402
 import pipeline as pipeline_mod  # noqa: E402
 import protocol  # noqa: E402
@@ -122,6 +123,17 @@ async def video_feed():
     )
 
 
+@app.get("/api/cameras")
+async def daftar_kamera(refresh: bool = False):
+    """Sumber kamera untuk dropdown. Pemindaian 0,4-2,5 detik per index,
+    jadi dijalankan di thread terpisah dan hasilnya di-cache sampai ?refresh=1."""
+    if _pipeline is None:
+        return JSONResponse({"kameras": [], "aktif": None})
+    info = _pipeline.camera.info()
+    isi = await asyncio.to_thread(cameras.ambil, _pipeline.camera.cv, info, refresh)
+    return JSONResponse({"kameras": isi, "aktif": info})
+
+
 # --- WebSocket ------------------------------------------------------------
 async def _send(ws: WebSocket, lock: asyncio.Lock, payload: dict) -> None:
     async with lock:
@@ -147,6 +159,24 @@ async def handle_command(raw: str, ws: WebSocket, lock: asyncio.Lock) -> None:
             _pipeline.reset_smoothers()
         await _send(ws, lock, {"type": "ack", "command": "set_model",
                                "model": name, "ok": ok})
+        return
+
+    if command == "set_camera":
+        hidup = bool(message.get("on", True))
+        ada = bool(_pipeline.nyalakan_kamera(hidup)) if _pipeline else False
+        await _send(ws, lock, {"type": "ack", "command": "set_camera",
+                               "on": hidup, "ok": ada})
+        return
+
+    if command == "set_camera_index":
+        try:
+            index = int(message.get("index"))
+        except (TypeError, ValueError):
+            return
+        ok = bool(_pipeline.ganti_kamera(index)) if _pipeline else False
+        terpakai = _pipeline.camera.index if _pipeline else index
+        await _send(ws, lock, {"type": "ack", "command": "set_camera_index",
+                               "index": index, "ok": ok, "terpakai": terpakai})
         return
 
     if command == "set_threshold":

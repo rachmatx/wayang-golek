@@ -92,6 +92,10 @@
 #tombol-suara[data-on="false"] .ikon-nyala { display: none; }
 #tombol-suara[data-on="false"] .ikon-mati { display: block; color: var(--muted); }
 
+#tombol-kamera .ikon-mati { display: none; }
+#tombol-kamera[data-on="false"] .ikon-nyala { display: none; }
+#tombol-kamera[data-on="false"] .ikon-mati { display: block; color: var(--muted); }
+
 .tombol-kecil {
   padding: 8px 14px;
   font-size: 12px;

@@ -47,6 +47,9 @@
     ws: null,
     healthTimer: null,
     cameraStreaming: false,
+    kameraAktif: true,
+    kameraIndex: null,
+    kameraMuat: false,
     characterLoading: false,
     threshold: 0.6,
     slots: null,
@@ -86,7 +89,7 @@
 
     Dummy.init({ onGesture: onDummyGesture, onToggle: onDummyToggle });
     Dummy.setJumlah(app.jumlah);
-    if (window.Teater) Teater.init({ root: $("panggung") });
+    if (window.Teater) Teater.init({ root: $("panggung"), onKamera: mintaKamera });
 
     bindPanduan();
     bindKontrol();
@@ -226,7 +229,14 @@
   }
 
   function onSocketMessage(message) {
-    if (!message || message.type === "ack" || message.type === "pong") return;
+    if (!message) return;
+    if (message.type === "ack") {
+      if (message.command === "set_camera" || message.command === "set_camera_index") {
+        ackKamera(message);
+      }
+      return;
+    }
+    if (message.type === "pong") return;
     if (app.source === "dummy") return;
     handlePrediction(message);
   }
@@ -592,12 +602,103 @@
   /* ---------- kesehatan backend + gambar kamera ---------- */
   function bindKamera() {
     const img = $("video-feed");
-    if (!img) return;
-    img.addEventListener("error", function () {
-      // Siaran MJPEG berhenti / kamera mati: tampilkan gambar pengganti.
-      app.cameraStreaming = false;
-      img.src = "assets/kamera-off.svg";
-    });
+    if (img) {
+      img.addEventListener("error", function () {
+        // Siaran MJPEG berhenti / kamera mati: tampilkan gambar pengganti.
+        app.cameraStreaming = false;
+        img.src = "assets/kamera-off.svg";
+      });
+    }
+
+    const pilih = $("kontrol-kamera");
+    if (pilih) {
+      pilih.addEventListener("change", function () {
+        const index = Number.parseInt(pilih.value, 10);
+        if (Number.isNaN(index)) return;
+        kirim({ command: "set_camera_index", index: index });
+        // Memilih sumber = niat memakainya: kamera yang tadi dimatikan ikut
+        // dinyalakan lagi lewat perintah kedua.
+        if (!app.kameraAktif) kirim({ command: "set_camera", on: true });
+      });
+    }
+    const segar = $("kontrol-kamera-segar");
+    if (segar) segar.addEventListener("click", function () { muatKamera(true); });
+
+    muatKamera(false);
+  }
+
+  function kirim(payload) {
+    const terkirim = app.ws ? app.ws.send(payload) : false;
+    if (!terkirim) Panel.setHint("dalang terputus — perintah tidak sampai ke backend");
+    return terkirim;
+  }
+
+  /* Daftar kamera diisi dari /api/cameras. Pemindaian pertama bisa beberapa
+   * detik, jadi kontrol dikunci selama permintaan berjalan. */
+  async function muatKamera(paksa) {
+    const pilih = $("kontrol-kamera");
+    const segar = $("kontrol-kamera-segar");
+    if (!pilih || app.kameraMuat) return;
+    app.kameraMuat = true;
+    pilih.disabled = true;
+    if (segar) segar.disabled = true;
+    try {
+      const response = await fetch("/api/cameras" + (paksa ? "?refresh=1" : ""), { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const data = await response.json();
+      isiKamera(data.kameras || [], data.aktif && data.aktif.index);
+    } catch (error) {
+      pilih.innerHTML = '<option value="">daftar kamera tidak tersedia</option>';
+    } finally {
+      app.kameraMuat = false;
+      if (segar) segar.disabled = false;
+    }
+  }
+
+  function isiKamera(daftar, indexAktif) {
+    const pilih = $("kontrol-kamera");
+    if (!pilih) return;
+    const aktif = indexAktif === undefined || indexAktif === null ? app.kameraIndex : indexAktif;
+    if (aktif !== undefined && aktif !== null) app.kameraIndex = Number(aktif);
+    if (!daftar.length) {
+      pilih.innerHTML = '<option value="">tidak ada kamera terdeteksi</option>';
+      pilih.disabled = true;
+      return;
+    }
+    pilih.innerHTML = daftar.map(function (item) {
+      const jadi = Number(item.index) === Number(aktif);
+      return '<option value="' + item.index + '"' + (item.tersedia ? "" : " disabled") +
+        (jadi ? " selected" : "") + ">" + escapeHtml(item.label) + "</option>";
+    }).join("");
+    pilih.disabled = false;
+    pilih.title = "Ganti sumber kamera tanpa menjalankan ulang backend";
+  }
+
+  function mintaKamera(hidup) {
+    const terkirim = kirim({ command: "set_camera", on: hidup });
+    /* Kalau tidak ada koneksi, jangan biarkan tombol menempel di state lama.
+     * Terhubung lagi, health poll (4 detik) menulis ulang state yang benar. */
+    if (!terkirim && window.Teater) Teater.setCamera(hidup);
+  }
+
+  function ackKamera(message) {
+    if (message.command === "set_camera") {
+      const hidup = Boolean(message.on);
+      if (window.Teater) Teater.setCamera(hidup);
+      app.kameraAktif = hidup;
+      if (!hidup) Panel.setHint("kamera dimatikan — perangkat bebas dipakai aplikasi lain");
+      else if (message.ok === false) Panel.setHint("kamera tidak bisa dibuka — coba sumber lain di Info demo");
+      else Panel.setHint("kamera dinyalakan");
+      muatKamera(false);
+      return;
+    }
+    if (message.ok === false) {
+      Panel.setHint("kamera " + message.index + " tidak bisa dipakai — tetap di kamera " + message.terpakai);
+    } else {
+      Panel.setHint("sumber kamera diganti ke " + message.index);
+    }
+    app.kameraIndex = Number(message.terpakai);
+    muatKamera(true);
   }
 
   async function pollHealth() {
@@ -617,6 +718,19 @@
     Panel.setCamera(data.camera);
     const img = $("video-feed");
     if (!img) return;
+
+    /* camera_aktif = niat user (tombol), camera = kenyataan (device kebuka).
+     * Tombol ikut niat supaya gagal buka tidak membalik state tombol. */
+    const niat = data.camera_aktif !== false;
+    if (niat !== app.kameraAktif) {
+      app.kameraAktif = niat;
+      if (window.Teater) Teater.setCamera(niat);
+    }
+    const index = Number(data.camera_index);
+    if (Number.isFinite(index) && index !== app.kameraIndex) {
+      app.kameraIndex = index;
+      muatKamera(false);
+    }
 
     if (data.camera === true && !app.cameraStreaming) {
       app.cameraStreaming = true;

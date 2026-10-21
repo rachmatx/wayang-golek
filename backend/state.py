@@ -43,6 +43,8 @@ class StateStore:
             "model": config.DEFAULT_MODEL,
             "model_loaded": False,
             "camera": False,
+            "camera_index": config.CAMERA_INDEX,
+            "camera_aktif": True,
             "fps": 0.0,
         }
         self._updated_at = 0.0
@@ -88,6 +90,8 @@ class StateStore:
             return {
                 "status": "ok",
                 "camera": bool(data["camera"]),
+                "camera_index": int(data["camera_index"]),
+                "camera_aktif": bool(data["camera_aktif"]),
                 "model": data["model"],
                 "model_loaded": bool(data["model_loaded"]),
                 "fps": round(float(data["fps"]), 1),

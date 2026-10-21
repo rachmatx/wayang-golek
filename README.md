@@ -135,7 +135,13 @@ tangan digambar di canvas frontend dari `landmarks` pada pesan WebSocket.
 Panggung hidup tidak menambah saluran baru — ia membaca pesan yang sama lewat
 event `wayang:gesture`, `wayang:nohand`, `wayang:hand`, dan `wayang:connection`.
 
-Endpoint lain: `GET /`, `GET /api/health`, `GET /api/gesture-map`.
+Endpoint lain: `GET /`, `GET /api/health`, `GET /api/gesture-map`,
+`GET /api/cameras`. Yang terakhir menjawab `{"kameras": [...], "aktif": {...}}`
+untuk dropdown sumber kamera di laci: tiap item berisi `index`, `tersedia`,
+`aktif`, `lebar`, `tinggi`, `alasan`, dan `label` siap pakai. Pemindaian mahal
+(±0,4–2,5 detik per index di Windows) dan device yang sedang dipegang tidak akan
+pernah lolos probe, jadi index aktif tidak diulang dipindai dan hasilnya
+di-cache sampai `?refresh=1` diminta.
 
 ### Kontrak pesan `/ws/predict`
 
@@ -221,7 +227,14 @@ Narasi, sorotan, dan suara hanya mengikuti **pemain 1** (`index === 0`): gerakny
 boleh dobel, ceritanya tetap satu (`app.js`, `emitWrist()` + `app.focus`).
 Kartu "Hasil Bacaan" mengikuti pemain yang terakhir beraksi.
 
-Perintah dari frontend: `set_model`, `set_threshold`, `ping`.
+Perintah dari frontend: `set_model`, `set_threshold`, `ping`,
+`set_camera` (`{"on": true|false}` — melepas atau merebut lagi device kamera),
+dan `set_camera_index` (`{"index": n}` — pindah sumber tanpa restart; kalau
+index itu gagal dibuka, kamera lama dipulihkan dan ack membawa `terpakai`).
+Keduanya dijawab `{"type": "ack", ...}`. **Kontrak `hands[]` tidak berubah**:
+niat user (`camera_aktif`) dan index yang terpakai (`camera_index`) hanya ada di
+`/api/health`; pesan prediksi tetap membawa `camera` boolean seperti sebelumnya,
+sehingga Programmer 2 tidak perlu mengubah pembacaan gestur.
 
 ---
 
@@ -231,7 +244,8 @@ Perintah dari frontend: `set_model`, `set_threshold`, `ping`.
 backend/
   app.py            FastAPI: endpoint + WebSocket. Tipis, hanya merakit.
   config.py         semua angka setelan (Bab 2.4)
-  camera.py         buka webcam, baca frame, mirror
+  camera.py         buka webcam, baca frame, mirror, nyalakan/mati, ganti index
+  cameras.py        daftar sumber kamera: probe index 0..n + label + cache
   hand_processor.py MediaPipe 21 landmark
   features.py       21 landmark -> 63 angka. SALINAN normalization.py P2.
   model_service.py  muat model_mlp/model_rf + labels.json, prediksi top-3
@@ -244,6 +258,7 @@ backend/
   tools/
     ws_check.py            uji WebSocket tanpa browser
     test_logika.py         uji fitur + smoother + gesture_map
+    test_kamera.py         uji daftar kamera + guard sinyal dengan OpenCV tiruan
     test_model_service.py  uji muat model & top-3 dengan model tiruan
     test_p2_model.py       uji model P2 lewat features.py (sampel landmarks.csv)
     download_hand_model.py unduh ulang hand_landmarker.task
@@ -292,6 +307,8 @@ dan `tools/ws_check.py` (alat uji). Nama lain sama dengan rancangan.
 | Model belum ada | backend hidup, `model_loaded: false`, WS `state: unknown`, skeleton tetap tampil |
 | OpenCV/MediaPipe belum terpasang | server tetap hidup, health melaporkan komponen `false` |
 | Kamera tidak terbuka | `/video_feed` mengirim SVG "kamera tidak tersedia", health `camera: false` |
+| Kamera terbuka tapi gambarnya beku/hitam | `cek_sinyal()` (camera.py) menutup device dalam ≤30 frame tanpa mengubah niat user; health tetap `camera_aktif: true` supaya tombol tidak berbohong |
+| Kamera dimatikan lewat tombol | device dilepas agar aplikasi lain bisa memakainya; inset menampilkan SVG pengganti, badge jadi "kamera mati" |
 | Model melempar error | ditangkap per frame, state `unknown`, pipeline lanjut |
 | Frontend putus | WS sambung ulang tiap 2 detik, wayang diam di pose terakhir; pita "dalang terputus" muncul di panggung |
 | Modul teater gagal dimuat | panggung tetap tampil; `theater.js` hanya memberi warning dan pose wayang tetap jalan |
@@ -328,8 +345,10 @@ Kontrol:
 | Ikon suara | nyala/mati; pilihan diingat di `localStorage` (`wayang-suara`) |
 | Volume (laci) | menggeser bus master 0–1; diingat di `wayang-volume`, default 0,80 |
 | `V` / **Wayang bersuara** | nyalakan/matikan ucapan dialog wayang; diingat di `wayang-dialog` |
+| Ikon kamera / `K` | lepas/rebut device kamera. State akhir ditulis dari ack + health, bukan dari tebakan tombol, jadi kamera yang gagal dibuka tidak membuat tombolnya berbohong |
+| **Sumber kamera** (laci) | dropdown hasil `GET /api/cameras`; **Pindai ulang** memaksa pemindaian device baru. Memilih sumber otomatis menyalakan kamera lagi — tanpa restart backend |
 | Ikon layar penuh | panggung memenuhi layar |
-| **Info demo** | laci kanan: hasil bacaan, top-3, model, ambang, tombol dummy |
+| **Info demo** | laci kanan: hasil bacaan, top-3, sumber kamera, model, ambang, tombol dummy |
 | Pemain (bawah panggung) | ganti karakter Klasik/Arjuna/Gatotkaca/Cepot; wayang keluar 900 ms lalu masuk dari sisi seberang |
 
 Panel dummy berguna saat kamera/model bermasalah di tempat demo. Tombol

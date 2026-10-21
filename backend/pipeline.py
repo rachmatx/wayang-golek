@@ -18,7 +18,7 @@ import time
 
 import config
 import stream
-from camera import Camera
+from camera import Camera, cek_sinyal
 from features import normalize_landmarks
 from hand_processor import HandProcessor
 from hand_tracker import HandTracker
@@ -47,6 +47,8 @@ class Pipeline(threading.Thread):
         self._read_failures = 0
         self._next_camera_retry = 0.0
         self._last_tick = 0.0
+        self._frame_lama = None
+        self._sinyal_buruk = 0
 
     # --- siklus hidup -----------------------------------------------------
     def stop(self) -> None:
@@ -65,6 +67,32 @@ class Pipeline(threading.Thread):
 
     def reset_smoothers(self) -> None:
         self._smoothers.clear()
+
+    # --- kendali kamera ----------------------------------------------------
+    def _lapor_kamera(self) -> None:
+        """Segera kabari health soal kamera; jangan tunggu frame berikutnya."""
+        self._next_camera_retry = 0.0
+        store.update([], camera=bool(self.camera.available),
+                     camera_index=int(self.camera.index),
+                     camera_aktif=bool(self.camera.aktif))
+
+    def nyalakan_kamera(self, hidup: bool) -> bool:
+        """Hidupkan/matikan kamera atas permintaan user. Balas keadaan akhirnya."""
+        self.camera.nyalakan(hidup)
+        self._lupakan_sinyal()
+        self.tracker.reset()
+        self.reset_smoothers()
+        self._lapor_kamera()
+        return bool(self.camera.available) if hidup else False
+
+    def ganti_kamera(self, index: int) -> bool:
+        """Pindah sumber kamera. False bila index itu tidak bisa dipakai."""
+        hasil = self.camera.ganti_index(index)
+        self._lupakan_sinyal()
+        self.tracker.reset()
+        self.reset_smoothers()
+        self._lapor_kamera()
+        return bool(hasil)
 
     def _smoother_for(self, hand_id: int) -> Smoother:
         smoother = self._smoothers.get(hand_id)
@@ -110,18 +138,33 @@ class Pipeline(threading.Thread):
         log.info("pipeline berhenti")
 
     # --- satu putaran -----------------------------------------------------
+    def _lupakan_sinyal(self) -> None:
+        """Frame terakhir tidak lagi jadi acuan: vonis mulai dari nol."""
+        self._frame_lama = None
+        self._sinyal_buruk = 0
+
     def _tick(self) -> None:
         common = {
             "fps": round(self._fps, 1),
             "model": self.models.active,
             "model_loaded": self.models.is_loaded,
+            "camera_index": int(getattr(self.camera, "index", 0)),
+            "camera_aktif": bool(getattr(self.camera, "aktif", True)),
         }
+
+        # Niat user mengalahkan auto-retry: kamera yang dimatikan lewat tombol
+        # harus benar-benar dilepas, bukan dibuka lagi lima detik kemudian.
+        if not getattr(self.camera, "aktif", True):
+            self._lupakan_sinyal()
+            store.update([], camera=False, **common)
+            return
 
         if not self.camera.available:
             now = time.monotonic()
             if now >= self._next_camera_retry:
                 self._next_camera_retry = now + config.CAMERA_RETRY_SECONDS
                 self.camera.open()
+            self._lupakan_sinyal()
             store.update([], camera=self.camera.available, **common)
             return
 
@@ -131,14 +174,36 @@ class Pipeline(threading.Thread):
             if self._read_failures >= config.MAX_READ_FAILURES:
                 log.warning("kamera berhenti mengirim frame — coba buka ulang nanti")
                 self.camera.close()
-                store.set_camera(False)
                 self._read_failures = 0
-                self.reset_smoothers()
+                self._lupakan_sinyal()
                 self.tracker.reset()
+                self.reset_smoothers()
             return
         self._read_failures = 0
 
-        detected = self.processor.process(frame)
+        # "Kamera terbuka" belum berarti "gambar bermakna": kamera virtual dan
+        # webcam yang macet mengirim frame yang sah secara teknis tapi tidak
+        # bisa dibaca MediaPipe. Di bawah batas, tangan tidak dilaporkan; di
+        # atasnya, device dilepas supaya health dan inset ikut jujur.
+        bagus, alasan = cek_sinyal(frame, self._frame_lama)
+        self._frame_lama = frame
+        if bagus:
+            self._sinyal_buruk = 0
+            detected = self.processor.process(frame)
+        else:
+            self._sinyal_buruk += 1
+            if self._sinyal_buruk >= config.SINYAL_BATAS_FRAME:
+                log.warning("kamera tidak mengirim gambar bermakna: %s", alasan)
+                self.camera.last_error = alasan
+                self.camera.close()
+                self._lupakan_sinyal()
+                self.tracker.reset()
+                self.reset_smoothers()
+                store.update([], camera=False, **common)
+                return
+            store.update([], camera=True, **common)
+            return
+
         stream.frames.push_frame(frame)
 
         ids = self.tracker.update([(hand[0][0], hand[0][1]) for hand in detected])

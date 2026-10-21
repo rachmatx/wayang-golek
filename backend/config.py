@@ -26,6 +26,18 @@ FRAME_HEIGHT = 480
 MIRROR = True
 CAMERA_RETRY_SECONDS = 5.0
 MAX_READ_FAILURES = 10
+# Pemindaian daftar kamera: index 0..SCAN_MAKS, berhenti lebih cepat kalau
+# SCAN_HENTI_GAGAL index beruntun tidak memberi gambar. Probe Windows butuh
+# 0,4-2,5 detik per index, jadi batas ini yang menahan /api/cameras tidak layu.
+CAMERA_SCAN_MAKS = 6
+CAMERA_SCAN_HENTI_GAGAL = 2
+# Guard sinyal: camera:true hanya berarti "berhasil dibuka". Frame tanpa
+# gambar bermakna (hitam/beku, atau noise yang melompat tiap frame) ketahuan
+# dari standar deviasi dan selisih antar frame pada gambar yang di-subsample.
+SINYAL_MIN_STD = 2.0
+SINYAL_MAX_SELISIH = 18.0
+SINYAL_CONTOH = 8
+SINYAL_BATAS_FRAME = 30
 
 # --- MediaPipe ------------------------------------------------------------
 MEDIAPIPE_COMPLEXITY = 0

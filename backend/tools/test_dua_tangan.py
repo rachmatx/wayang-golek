@@ -23,7 +23,9 @@ import config  # noqa: E402
 import pipeline as pipeline_mod  # noqa: E402
 import state as state_mod  # noqa: E402
 
-FRAME = np.zeros((480, 640, 3), dtype=np.uint8)
+# Bukan frame hitam: guard sinyal (cek_sinyal) menolak gambar tanpa kontras,
+# jadi stub harus mengirim gambar yang kelihatan seperti hasil kamera sungguhan.
+FRAME = np.tile(np.linspace(20, 200, 640, dtype=np.uint8), (480, 3))
 GAGAL = 0
 
 

@@ -51,6 +51,20 @@
           <span class="ikon-caption" aria-hidden="true">suara</span>
         </span>
         <span class="ikon-satuan">
+          <button type="button" class="ikon-tombol" id="tombol-kamera" title="Matikan kamera" aria-label="Matikan kamera" aria-pressed="true" data-on="true">
+            <svg class="ikon-nyala" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="6.5" width="12.5" height="11" rx="2.5" />
+              <path d="m15 10.8 6-3.3v9l-6-3.3" />
+            </svg>
+            <svg class="ikon-mati" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="6.5" width="12.5" height="11" rx="2.5" />
+              <path d="m15 10.8 6-3.3v9l-6-3.3" />
+              <path d="M3 3.6 21 21.4" />
+            </svg>
+          </button>
+          <span class="ikon-caption" aria-hidden="true">kamera</span>
+        </span>
+        <span class="ikon-satuan">
           <button type="button" class="ikon-tombol" id="tombol-fullscreen" title="Layar penuh" aria-label="Layar penuh">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
@@ -196,6 +210,15 @@
 
       <section class="kartu kartu-kontrol">
         <div class="kontrol">
+          <div class="kontrol-baris">
+            <label class="kontrol-label" for="kontrol-kamera">Sumber kamera</label>
+            <div class="kontrol-kamera">
+              <select id="kontrol-kamera" disabled>
+                <option value="">memindai kamera…</option>
+              </select>
+              <button type="button" class="tombol" id="kontrol-kamera-segar" title="Pindai ulang device kamera">Pindai ulang</button>
+            </div>
+          </div>
           <div class="kontrol-baris">
             <span class="kontrol-label">Model</span>
             <div class="segmen" id="kontrol-model">
