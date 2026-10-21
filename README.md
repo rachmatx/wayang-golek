@@ -41,37 +41,81 @@ webcam mesin ini mengirim derau, bukan karena aplikasi.
 
 ## 1. Menjalankan
 
-Sekali saja (butuh Python 3.10–3.12, jaringan untuk unduh paket):
+Prasyarat di semua sistem: **Python 3.10–3.12** (MediaPipe tidak punya wheel di
+luar rentang itu) dan jaringan untuk unduh paket. Backend yang memegang kamera,
+browser hanya menampilkan — jadi backend harus hidup.
 
-```bat
-setup.bat
-```
+### Windows
 
-Setiap kali mau demo:
+Dua skrip siap pakai: `setup.bat` (sekali saja: bikin `.venv`, pasang
+`requirements.txt`, pastikan model pelacak tangan ada) lalu `run.bat` (setiap
+kali mau demo).
 
-```bat
-run.bat
-```
+| Shell | Setup sekali | Setiap kali demo |
+| --- | --- | --- |
+| Explorer | double-click `setup.bat` | double-click `run.bat` |
+| **CMD** (`cmd.exe`) | `setup.bat` | `run.bat` |
+| **PowerShell** | `.\setup.bat` | `.\run.bat` |
+| **Windows Terminal** | ikut shell yang aktif di tab (lihat dua baris di atas) | sama |
 
-Lalu buka <http://127.0.0.1:8000>. Model P2 (`models/model_mlp.pkl`) dan rig
-wayang (`frontend/assets/wayang.svg`) sudah ikut di repo, jadi tidak ada
-unduhan model gestur tambahan.
+> PowerShell **sengaja** tidak menjalankan berkas dari folder saat ini tanpa
+> path, jadi `run.bat` polos melempar
+> *"The term 'run.bat' is not recognized"*. Pakai `.\run.bat`, atau
+> `cmd /c run.bat` kalau tidak mau menambah `.\`. Ini bukan error aplikasi.
 
-Manual tanpa `.bat`:
+Tanpa skrip (CMD maupun PowerShell, dari folder proyek):
 
 ```bat
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python backend\tools\download_hand_model.py
 python -m backend.app
+```
+
+### Linux & macOS
+
+`setup.bat` / `run.bat` tidak jalan di luar Windows. Ketik setaraannya dari
+folder proyek (di `bash` atau `zsh`):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate          # macOS/Linux
+pip install -r requirements.txt
+python backend/tools/download_hand_model.py
+python -m backend.app
+```
+
+Perlu dicatat jujur untuk non-Windows: jalur kamera di mesin ini diuji dengan
+webcam laptop Windows, jadi dua hal berikut belum terverifikasi di sistem lain.
+
+- **Linux:** OpenCV membaca webcam lewat V4L2. Kalau `/video_feed` kosong atau
+  `camera: false` di `/api/health`, cek hak akses `/dev/video0`
+  (`sudo usermod -aG video $USER`, lalu login ulang) dan pastikan webcam tidak
+  dipakai aplikasi lain.
+- **macOS:** Python perlu izin kamera (System Settings → Privacy & Security →
+  Camera). Izin ini diminta per aplikasi, jadi beri izin ke Terminal/iTerm
+  tempat `python -m backend.app` dijalankan, bukan ke browser.
+
+### Semua sistem
+
+Buka <http://127.0.0.1:8000> setelah backend hidup. Model P2
+(`models/model_mlp.pkl`) dan rig wayang (`frontend/assets/wayang.svg`) sudah
+ikut di repo, jadi tidak ada unduhan model gestur tambahan. Host/port bisa
+diubah lewat `WAYANG_HOST` / `WAYANG_PORT` (dibaca `backend/config.py`):
+
+```bat
+set WAYANG_PORT=8010       &  python -m backend.app        :: CMD
+$env:WAYANG_PORT=8010; python -m backend.app              :: PowerShell
+WAYANG_PORT=8010 python -m backend.app                    :: bash / zsh
 ```
 
 > Sejak MediaPipe 1.x, API `mp.solutions.hands` dihapus dan diganti
 > `mediapipe.tasks`. Backend mendukung keduanya otomatis. Untuk MediaPipe 1.x
 > dibutuhkan berkas `backend/assets/hand_landmarker.task` (7,8 MB) — sudah
-> disertakan, dan `setup.bat` mengunduhnya ulang bila hilang.
-> `/api/health` menampilkan `components.mediapipe_mode` = `solutions` atau `tasks`.
+> disertakan, dan `setup.bat` / `download_hand_model.py` mengunduhnya ulang
+> bila hilang. `/api/health` menampilkan `components.mediapipe_mode` =
+> `solutions` atau `tasks`.
 
 > Jangan buka `frontend/index.html` langsung lewat file:// — SVG dan
 > `gesture_map.json` diambil dengan `fetch`, jadi harus lewat backend.
@@ -247,8 +291,10 @@ voice Indonesia ucapannya jatuh ke voice default.
 
 **Backend saja**
 
+Jalankan backend (Bab 1 — `run.bat` di CMD, `.\run.bat` di PowerShell,
+`python -m backend.app` di shell lain), lalu dari terminal kedua:
+
 ```bat
-run.bat
 python backend/tools/ws_check.py
 ```
 
@@ -283,12 +329,17 @@ dengan AudioContext / speechSynthesis tiruan.
 
 **Logika tanpa kamera/model**
 
+Windows (CMD/PowerShell, dari folder proyek):
+
 ```bat
 .venv\Scripts\python backend\tools\test_logika.py
 .venv\Scripts\python backend\tools\test_model_service.py
 .venv\Scripts\python backend\tools\test_p2_model.py
 .venv\Scripts\python handoff_p2\test_handoff.py
 ```
+
+Linux/macOS: ganti `.venv\Scripts\python` dengan `.venv/bin/python` dan `\`
+dengan `/`, misalnya `.venv/bin/python backend/tools/test_logika.py`.
 
 `test_logika.py` memeriksa 63 angka fitur (termasuk koreksi aspect ratio dan
 z = 0), majority vote, aturan tahan 3 frame, dan kecocokan `gesture_map.json`

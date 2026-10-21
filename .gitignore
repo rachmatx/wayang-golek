@@ -12,6 +12,10 @@ venv/
 # Arsip: isinya sama dengan folder handoff_p2/, 23 MB dobel.
 handoff_p2.zip
 
+# Duplikat persis backend/assets/hand_landmarker.task (SHA-256 sama).
+# Yang dipakai runtime hanya yang di backend/assets/.
+handoff_p2/hand_landmarker.task
+
 # Keluaran alat, bukan sumber
 vibe_images/layers-debug/
 .design-qa/
