@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "description": "Pemetaan gestur -> animasi. Dipakai backend (/api/gesture-map) dan frontend (animation.js). Urutan array = urutan tombol 1-6 dan panduan gestur.",
+  "neutral": {
+    "id": "netral",
+    "label": "Netral",
+    "pose": "netral"
+  },
+  "gestures": [
+    {
+      "id": "telapak_terbuka",
+      "label": "Telapak Terbuka",
+      "pose": "telapak_terbuka",
+      "key": "1",
+      "hint": "kedua tangan terbuka — wayang mengangkat kedua lengan"
+    },
+    {
+      "id": "kepalan",
+      "label": "Kepalan",
+      "pose": "kepalan",
+      "key": "2",
+      "hint": "tangan mengepal — perintah eksplisit kembali diam"
+    },
+    {
+      "id": "telunjuk",
+      "label": "Telunjuk",
+      "pose": "telunjuk",
+      "key": "3",
+      "hint": "satu jari menunjuk — wayang bergeser mengikuti posisi tangan"
+    },
+    {
+      "id": "dua_jari",
+      "label": "Dua Jari",
+      "pose": "dua_jari",
+      "key": "4",
+      "hint": "dua jari terangkat — lengan bawah dan cepala terangkat"
+    },
+    {
+      "id": "jempol",
+      "label": "Jempol",
+      "pose": "jempol",
+      "key": "5",
+      "hint": "jempol terangkat — wayang membungkuk, lalu kembali sendiri"
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "pose": "ok",
+      "key": "6",
+      "hint": "jari membentuk lingkaran — wayang berbalik arah"
+    }
+  ]
+}

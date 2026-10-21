@@ -1,0 +1,147 @@
+{
+  "paket": "P2 -> P1 - Wayang Digital Gestur Tangan",
+  "dibuat": "2026-10-20",
+  "kontrak": "SDD v0.2",
+  "model_utama": {
+    "file": "model.pkl",
+    "jenis": "Pipeline(StandardScaler + MLPClassifier 128-64)",
+    "input": 63,
+    "output": 6,
+    "akurasi_test": 0.9974,
+    "f1_macro_test": 0.9974,
+    "labels": [
+      "telapak_terbuka",
+      "kepalan",
+      "telunjuk",
+      "dua_jari",
+      "jempol",
+      "ok"
+    ]
+  },
+  "pembanding": {
+    "file": "evaluation.json (model_rf.pkl tidak dikirim)",
+    "akurasi_test": 0.9964,
+    "f1_macro_test": 0.9964
+  },
+  "dataset": {
+    "file": "landmarks.csv",
+    "baris": 64429,
+    "sumber": "HaGRID v2 annotations_with_landmarks"
+  },
+  "lingkungan": {
+    "scikit-learn": "1.8.0",
+    "numpy": "2.4.6",
+    "joblib": "1.5.3",
+    "mediapipe": "0.10.35",
+    "opencv-contrib-python": "4.11.0.86"
+  },
+  "python": "3.11",
+  "files": [
+    {
+      "path": "DEVIATION.md",
+      "bytes": 6156,
+      "sha256": "99e20244382b759c0e6cab6c798d30be7993d723fcd7ac37b05c9244e29b4c3d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7528,
+      "sha256": "72b86f94d6a8efc03f46672bee0b6a85cb189d51f5768a655b50fdac02d02aa1"
+    },
+    {
+      "path": "docs/DATASET.md",
+      "bytes": 5211,
+      "sha256": "428c89856c5a6c43e4f11e3a6e9843112fb0e9f21a8c0c2ca2a4f816bd6cb4e0"
+    },
+    {
+      "path": "docs/MODEL.md",
+      "bytes": 4537,
+      "sha256": "471069a1d9ef44a19c23c54293120d7f32316497f1377a659b78bbc183857cb9"
+    },
+    {
+      "path": "docs/confusion_mlp.png",
+      "bytes": 55059,
+      "sha256": "c3588d76a1f5a682fce592cf4d400e6a3a1c6b5fbcc0b72942658afb9b5e3097"
+    },
+    {
+      "path": "docs/confusion_rf.png",
+      "bytes": 57734,
+      "sha256": "f58d5cd957fc627fb6e959b504a46d29e83fdadda9cb7231433291e462323537"
+    },
+    {
+      "path": "docs/dataset_meta.json",
+      "bytes": 2746,
+      "sha256": "2e066a408db187576df659a8b3944986f42dab863f9bdba01a3ef11a55ddbfde"
+    },
+    {
+      "path": "docs/model_comparison.png",
+      "bytes": 81890,
+      "sha256": "bb1d9e3960a2c5f47486d338b61b9538cdf0f30432d20360d6a901c86627d1f9"
+    },
+    {
+      "path": "evaluation.json",
+      "bytes": 11917,
+      "sha256": "4072f8e88ba6d17191d3c7cd4de39bfb8399e01af52937abc5323b22c53c303d"
+    },
+    {
+      "path": "hand_landmarker.task",
+      "bytes": 7819105,
+      "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1"
+    },
+    {
+      "path": "inference.py",
+      "bytes": 2664,
+      "sha256": "050214772b411a0a42e350a72c8984c0c94a7a35dc90ecf8ead0077b1cda5769"
+    },
+    {
+      "path": "labels.json",
+      "bytes": 967,
+      "sha256": "b39e3c63155f28b9d74dc96482bc7e93e220bbd46273bb9fe9249e93e71a909d"
+    },
+    {
+      "path": "landmarks.csv",
+      "bytes": 45777257,
+      "sha256": "cea06b6cb3d753ec3df2de628abd4ccce183dc1807ab4d99ca2c532c2bef22db"
+    },
+    {
+      "path": "model.pkl",
+      "bytes": 415385,
+      "sha256": "f8054c564186981f21609940d08c33df870831a9da0b6811a5661e4f519b356f"
+    },
+    {
+      "path": "normalization.py",
+      "bytes": 3300,
+      "sha256": "a0bfaf45d41f0689cc1b0774803620cfd3551fbcb2df7d4cf59feb495b77545b"
+    },
+    {
+      "path": "pivots.json",
+      "bytes": 3131,
+      "sha256": "02cc8b4c365edf67fc2a981917770d88bfcef135d9b1aee53260ecaac68cbe07"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 223,
+      "sha256": "7057d3f25c41accabab2cb80d025dd43e25014b76d6e594c9c72fc7878be9fd7"
+    },
+    {
+      "path": "test_handoff.py",
+      "bytes": 2455,
+      "sha256": "42babcb7d8be135105898ae2e7f9160a358e035c521d72d3ee764d677c2881f3"
+    },
+    {
+      "path": "wayang.svg",
+      "bytes": 615043,
+      "sha256": "4db74ba8b9d53e5c666181e8b403d733148be6c5d60a2008d37e0cd54511c6b1"
+    },
+    {
+      "path": "wayang_kanan.svg",
+      "bytes": 317401,
+      "sha256": "4dcabd243f196e4134b99ddb0a4b62156631b3c40ae42033870d9076f0fca8d4"
+    },
+    {
+      "path": "wayang_kiri.svg",
+      "bytes": 297967,
+      "sha256": "54c08aaddfeee6cf0bc05832114f5df6089299251cc85bec94f5f7f52db0a424"
+    }
+  ],
+  "total_bytes": 55487676
+}

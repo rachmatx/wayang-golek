@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Kamera tidak tersedia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161009"/>
+      <stop offset="1" stop-color="#0a0705"/>
+    </linearGradient>
+    <radialGradient id="spot" cx=".5" cy=".42" r=".6">
+      <stop offset="0" stop-color="#d9b573" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#d9b573" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#spot)"/>
+  <g fill="none" stroke="#8c7b63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+    <rect x="336" y="228" width="128" height="96" rx="14"/>
+    <path d="M336 300 L376 262 L410 292 L440 266 L464 292"/>
+    <path d="M312 216 L488 336"/>
+  </g>
+  <text x="400" y="392" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="26" fill="#e9d6b6" letter-spacing="1">
+    kamera tidak tersedia
+  </text>
+  <text x="400" y="426" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="16" fill="#9b8a72">
+    backend tetap hidup — mode dummy masih bisa dipakai
+  </text>
+</svg>

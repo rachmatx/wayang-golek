@@ -1,0 +1,12 @@
+# Model & inferensi (P2 -> P1)
+# Python 3.11
+numpy>=2.0,<3
+scikit-learn==1.8.0
+joblib>=1.4
+mediapipe==0.10.35
+opencv-contrib-python>=4.10
+
+# Backend P1 (tambahkan jika belum ada):
+# fastapi
+# uvicorn[standard]
+# websockets

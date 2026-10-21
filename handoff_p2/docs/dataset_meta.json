@@ -1,0 +1,108 @@
+{
+  "sumber": "HaGRID v2 — annotations_with_landmarks",
+  "url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/hagrid_v2/annotations_with_landmarks/annotations.zip",
+  "mapping": {
+    "telapak_terbuka": "palm",
+    "kepalan": "fist",
+    "telunjuk": "one",
+    "dua_jari": "two_up",
+    "jempol": "like",
+    "ok": "ok"
+  },
+  "label_order": [
+    "telapak_terbuka",
+    "kepalan",
+    "telunjuk",
+    "dua_jari",
+    "jempol",
+    "ok"
+  ],
+  "split_haGRID": [
+    "train",
+    "val",
+    "test"
+  ],
+  "image_size": [
+    1920,
+    1080
+  ],
+  "normalisasi": "x,y dikonversi ke piksel; kurangi titik 0; bagi jarak 2D 0->9; z=0",
+  "filter": {
+    "min_dist_px": 40.0,
+    "max_radius": 5.0,
+    "coord_range": [
+      -0.1,
+      1.1
+    ],
+    "cap_per_class_per_split": 4000
+  },
+  "jumlah_baris": 64429,
+  "jumlah_per_label_split": {
+    "dua_jari/test": 4000,
+    "dua_jari/train": 4000,
+    "dua_jari/val": 2793,
+    "jempol/test": 4000,
+    "jempol/train": 4000,
+    "jempol/val": 2900,
+    "kepalan/test": 4000,
+    "kepalan/train": 4000,
+    "kepalan/val": 2625,
+    "ok/test": 4000,
+    "ok/train": 4000,
+    "ok/val": 2749,
+    "telapak_terbuka/test": 4000,
+    "telapak_terbuka/train": 4000,
+    "telapak_terbuka/val": 2745,
+    "telunjuk/test": 4000,
+    "telunjuk/train": 4000,
+    "telunjuk/val": 2617
+  },
+  "jumlah_per_label": {
+    "telapak_terbuka": 10745,
+    "kepalan": 10625,
+    "telunjuk": 10617,
+    "dua_jari": 10793,
+    "jempol": 10900,
+    "ok": 10749
+  },
+  "kandidat_sebelum_filter": {
+    "dua_jari/test": 4229,
+    "dua_jari/train": 4360,
+    "dua_jari/val": 3000,
+    "jempol/test": 4097,
+    "jempol/train": 4115,
+    "jempol/val": 3000,
+    "kepalan/test": 4399,
+    "kepalan/train": 4527,
+    "kepalan/val": 3000,
+    "ok/test": 4214,
+    "ok/train": 4375,
+    "ok/val": 3000,
+    "telapak_terbuka/test": 4260,
+    "telapak_terbuka/train": 4390,
+    "telapak_terbuka/val": 3000,
+    "telunjuk/test": 4431,
+    "telunjuk/train": 4661,
+    "telunjuk/val": 3000
+  },
+  "dilewati": {
+    "tangan_terlalu_kecil": 4785,
+    "landmark_tidak_valid": 837,
+    "bentuk_tidak_wajar": 7
+  },
+  "dist_0_9_px": {
+    "min": 40.0,
+    "p05": 47.4,
+    "median": 91.1,
+    "p95": 198.1,
+    "max": 806.6
+  },
+  "radius_ternormalisasi": {
+    "median": 2.0,
+    "p95": 2.69,
+    "p99": 3.2,
+    "max": 4.85
+  },
+  "catatan": "z=0 (Opsi B) — HaGRID hanya menyediakan landmark 2D",
+  "catatan_mapping": "telunjuk memakai kelas HaGRID one, bukan point. point = menunjuk ke kamera; di 2D hanya 7.4% sampel yang benar-benar satu jari, 48.6% tampak seperti kepalan. one = 96.4% satu jari terentang."
+}

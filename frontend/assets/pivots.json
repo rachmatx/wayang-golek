@@ -1,0 +1,161 @@
+{
+  "wayang.svg": {
+    "viewBox": [
+      0,
+      0,
+      875,
+      638
+    ],
+    "puppets": {
+      "kiri": {
+        "group": "grup-wayang",
+        "offset": [
+          0,
+          0
+        ],
+        "size": [
+          444,
+          562
+        ],
+        "pivots": {
+          "lengan-atas-kiri": [
+            210,
+            164
+          ],
+          "lengan-bawah-kiri": [
+            22,
+            281
+          ],
+          "lengan-atas-kanan": [
+            310,
+            115
+          ],
+          "lengan-bawah-kanan": [
+            438,
+            175
+          ]
+        }
+      },
+      "kanan": {
+        "group": "grup-wayang-2",
+        "offset": [
+          484,
+          0
+        ],
+        "size": [
+          391,
+          638
+        ],
+        "pivots": {
+          "lengan-atas-kiri-2": [
+            581,
+            135
+          ],
+          "lengan-bawah-kiri-2": [
+            562,
+            272
+          ],
+          "lengan-atas-kanan-2": [
+            679,
+            180
+          ],
+          "lengan-bawah-kanan-2": [
+            784,
+            190
+          ]
+        }
+      }
+    }
+  },
+  "wayang_kiri.svg": {
+    "viewBox": [
+      0,
+      0,
+      444,
+      562
+    ],
+    "puppets": {
+      "kiri": {
+        "group": "grup-wayang",
+        "offset": [
+          0,
+          0
+        ],
+        "size": [
+          444,
+          562
+        ],
+        "pivots": {
+          "lengan-atas-kiri": [
+            210,
+            164
+          ],
+          "lengan-bawah-kiri": [
+            22,
+            281
+          ],
+          "lengan-atas-kanan": [
+            310,
+            115
+          ],
+          "lengan-bawah-kanan": [
+            438,
+            175
+          ]
+        }
+      }
+    }
+  },
+  "wayang_kanan.svg": {
+    "viewBox": [
+      0,
+      0,
+      391,
+      638
+    ],
+    "puppets": {
+      "kanan": {
+        "group": "grup-wayang",
+        "offset": [
+          0,
+          0
+        ],
+        "size": [
+          391,
+          638
+        ],
+        "pivots": {
+          "lengan-atas-kiri": [
+            97,
+            135
+          ],
+          "lengan-bawah-kiri": [
+            78,
+            272
+          ],
+          "lengan-atas-kanan": [
+            195,
+            180
+          ],
+          "lengan-bawah-kanan": [
+            300,
+            190
+          ]
+        }
+      }
+    }
+  },
+  "catatan": {
+    "satuan": "piksel, koordinat user-space SVG",
+    "konvensi_rotasi": "rotate(deg cx cy); deg positif = searah jarum jam",
+    "sumbu": "y ke bawah",
+    "urutan_disarankan": [
+      "lengan-atas-kiri",
+      "lengan-bawah-kiri",
+      "lengan-atas-kanan",
+      "lengan-bawah-kanan"
+    ],
+    "catatan_id": "wayang kanan pada wayang.svg memakai sufiks -2 (mis. lengan-atas-kiri-2); file wayang_kanan.svg memakai ID tanpa sufiks",
+    "nesting": "lengan-bawah-* berada di dalam lengan-atas-*, jadi siku ikut bergerak saat bahu diputar"
+  }
+}

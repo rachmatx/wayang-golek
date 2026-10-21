@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Model dari P2 sudah disertakan di repo (0,4 MB), jadi tidak diabaikan.
+# handoff_p2/landmarks.csv (44 MB) juga sengaja ikut: backend/tools/test_p2_model.py
+# membacanya sebagai sampel uji. Kalau repo perlu ringan, pindahkan CSV itu ke
+# luar repo lalu salin lagi sebelum menjalankan uji tersebut.
+
+# Arsip: isinya sama dengan folder handoff_p2/, 23 MB dobel.
+handoff_p2.zip
+
+# Keluaran alat, bukan sumber
+vibe_images/layers-debug/
+.design-qa/
+*.log
+
+# Alat uji browser
+.playwright-mcp/
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
