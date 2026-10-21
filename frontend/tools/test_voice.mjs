@@ -140,3 +140,63 @@ test("suara id-ID dipilih kalau browser punya", function () {
   alat.SuaraDialog.ucap("cepot", "Halo.");
   assert.equal(alat.terakhir().voice, indo, "voice Indonesia tidak dipilih");
 });
+
+/* --- Jalur berkas audio (dialog_audio.js) --- */
+
+function AudioPalsu() {
+  this.handlers = {};
+  this.src = "";
+  this.preload = "";
+  AudioPalsu.daftar.push(this);
+}
+AudioPalsu.daftar = [];
+AudioPalsu.prototype.addEventListener = function (nama, fn) { this.handlers[nama] = fn; };
+AudioPalsu.prototype.play = function () { return Promise.resolve(); };
+AudioPalsu.prototype.pause = function () {};
+AudioPalsu.prototype.removeAttribute = function () {};
+AudioPalsu.prototype.load = function () {};
+AudioPalsu.prototype.pemicu = function (nama) { if (this.handlers[nama]) this.handlers[nama](); };
+
+function muatBerkas() {
+  const alat = muat();
+  AudioPalsu.daftar = [];
+  alat.window.Audio = AudioPalsu;
+  alat.window.DialogAudio = {
+    klasik: { "Sudah cukup. Kita diam sejenak.": "dialog/klasik/gestur-kepalan-1.mp3" },
+  };
+  return alat;
+}
+
+test("berkas dialog diputar bila ada, TTS tidak dipakai", function () {
+  const alat = muatBerkas();
+  const log = alat.kunci();
+  const hasil = alat.SuaraDialog.ucap("klasik", "Sudah cukup. Kita diam sejenak.");
+  assert.equal(hasil, true);
+  assert.equal(alat.ucap.length, 0, "TTS tetap dipakai padahal ada berkas");
+  const el = AudioPalsu.daftar[0];
+  assert.equal(el.src, "assets/audio/dialog/klasik/gestur-kepalan-1.mp3");
+  assert.equal(alat.SuaraDialog.isBicara(), true);
+  el.pemicu("playing");
+  assert.deepEqual(log, [true], "ducking tidak aktif saat berkas mulai");
+  el.pemicu("ended");
+  assert.equal(alat.SuaraDialog.isBicara(), false);
+  assert.deepEqual(log, [true, false], "ducking tidak lepas saat berkas selesai");
+});
+
+test("berkas rusak jatuh ke TTS browser", function () {
+  const alat = muatBerkas();
+  assert.equal(alat.SuaraDialog.ucap("klasik", "Sudah cukup. Kita diam sejenak."), true);
+  AudioPalsu.daftar[0].pemicu("error");
+  assert.equal(alat.ucap.length, 1, "tidak jatuh ke TTS setelah berkas error");
+  assert.equal(alat.terakhir().text, "Sudah cukup. Kita diam sejenak.");
+  assert.equal(alat.SuaraDialog.isBicara(), true);
+  alat.selesai();
+  assert.equal(alat.SuaraDialog.isBicara(), false);
+});
+
+test("baris tanpa berkas tetap pakai TTS", function () {
+  const alat = muatBerkas();
+  assert.equal(alat.SuaraDialog.ucap("klasik", "Baris yang belum ada berkasnya."), true);
+  assert.equal(alat.ucap.length, 1);
+  assert.equal(AudioPalsu.daftar.length, 0, "Audio dibuat untuk baris tanpa berkas");
+});

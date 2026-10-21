@@ -1,8 +1,22 @@
-/* audio.js — gamelan sintetis lewat WebAudio. Tidak ada berkas audio.
+/* audio.js — suara panggung dari berkas rekaman asli (assets/audio/).
  *
- * Semua sumber masuk lewat bus (sfx / musik / vokal) lalu satu master, jadi
- * volume bisa diatur seragam dan musik bisa dikecilkan saat wayang bicara.
- * AudioContext baru dibuat setelah interaksi pengguna nyata (klik/tombol).
+ * Dulu halaman ini mensintesis gamelan sendiri lewat osilator WebAudio.
+ * Sekarang semua bunyi adalah rekaman gamelan sungguhan yang dimuat sebagai
+ * AudioBuffer lalu diputar lewat graf yang sama: semua sumber masuk bus
+ * (sfx / musik / vokal) lalu satu master, jadi volume seragam dan musik
+ * bisa dikecilkan (ducking) saat wayang bicara.
+ *
+ * Pemetaan bunyi mengikuti suasana cerita:
+ *   buka     -> gong ageng + bonang: sambutan pembuka panggung
+ *   telapak  -> saron + peking: wayang terangkat, nada cerah naik
+ *   kepalan  -> kendang + gong lirih: hentakan turun, wayang diam
+ *   telunjuk -> bonang: ketukan tegas penunjuk arah
+ *   dua_jari -> peking + saron: tongkat terangkat, nada tinggi ringan
+ *   jempol   -> kacapi: petikan lembut untuk hormat
+ *   ok       -> whoosh + saron: wayang berbalik arah
+ *   tidur    -> keprak dalang, lalu ambien jangkrik malam mengisi panggung
+ *   musik latar live  -> gamelan kraton (latar-panggung.ogg, loop mulus)
+ *   musik latar jeda  -> gender wayang (latar-jeda.ogg, loop mulus, tenang)
  */
 (function () {
   "use strict";
@@ -12,29 +26,58 @@
   const VOL_MUSIK = 0.5;
   const VOL_VOKAL = 1.0;
   const MUSIK_DUCK = 0.18;
+  const PUDAR_MUSIK = 1.5;
 
-  const TEMPOT = 60;
-  const KETUK = 60 / TEMPOT;
-  const BAR_PANJANG = KETUK * 4;
-  const LIHAT = 1.5;
-  const JEDA_TIC = 200;
-  const SLENDRO = [280, 325, 370, 440, 500];
-  const MOTIF = [
-    [0, 2, 1, 3], [2, 1, 0, 1], [1, 3, 2, 0], [3, 2, 1, 2],
-    [0, 1, 2, 3], [2, 3, 2, 1], [1, 0, 2, 1], [3, 2, 1, 0],
-  ];
+  /* Berkas audio relatif terhadap folder assets/. */
+  const BERKAS = {
+    "gong": "sfx/pukulan-gong-ageng.wav",
+    "bonang": "sfx/pukulan-bonang.wav",
+    "peking": "sfx/pukulan-peking.wav",
+    "saron": "sfx/pukulan-saron.wav",
+    "kendang": "sfx/pukulan-kendang.wav",
+    "kacapi": "sfx/kacapi-hormat.ogg",
+    "whoosh": "sfx/whoosh-tirai.wav",
+    "keprak": "sfx/ketuk-kayu-keprak.wav",
+    "malam": "ambien/suasana-malam.wav",
+    "musik-panggung": "musik/latar-panggung.ogg",
+    "musik-jeda": "musik/latar-jeda.ogg",
+  };
+
+  /* Cue gestur: daftar [berkas, gain, tunda detik]. */
+  const CUE = {
+    "buka": [["gong", 1.0, 0], ["bonang", 0.55, 0.5], ["saron", 0.4, 0.7]],
+    "telapak": [["saron", 0.85, 0], ["peking", 0.4, 0.14]],
+    "kepalan": [["kendang", 1.0, 0], ["gong", 0.3, 0.02]],
+    "telunjuk": [["bonang", 0.8, 0]],
+    "dua_jari": [["peking", 0.8, 0], ["saron", 0.45, 0.16]],
+    "jempol": [["kacapi", 0.9, 0]],
+    "ok": [["whoosh", 0.7, 0], ["saron", 0.5, 0.12]],
+    "saron": [["saron", 0.5, 0]],
+    "ambient-nada": [["peking", 0.35, 0]],
+  };
+
+  function dasarAudio() {
+    try {
+      const skrip = document.currentScript;
+      if (skrip && skrip.src) return skrip.src.replace(/js\/audio\.js.*$/, "") + "assets/audio/";
+    } catch (error) { /* bukan browser */ }
+    return "assets/audio/";
+  }
+  const DASAR = dasarAudio();
 
   let ctx = null;
   let enabled = true;
   let unlocked = false;
   let musikDiminta = false;
   let musikJalan = false;
+  let suasanaMusik = "panggung";
   let duck = false;
   let levelMaster = VOL_MASTER;
   let bus = null;
-  let tic = null;
-  let bar = 0;
-  let waktuBar = null;
+  const buffers = {};
+  const janjiMuat = {};
+  let musikAktif = null; /* { kunci, src, gain } */
+  let malamAktif = null; /* { src, gain } */
 
   function ensureContext() {
     if (ctx) return ctx;
@@ -64,184 +107,148 @@
     return (bus && bus[nama]) || (ctx && ctx.destination) || null;
   }
 
-  function pasang(node, nama) {
-    const tujuan = jalur(nama);
-    if (tujuan) node.connect(tujuan);
+  /* ---------- pemuatan berkas ---------- */
+  function muatBerkas(kunci) {
+    if (buffers[kunci]) return Promise.resolve(buffers[kunci]);
+    if (janjiMuat[kunci]) return janjiMuat[kunci];
+    if (!ctx || typeof fetch !== "function") return Promise.resolve(null);
+    janjiMuat[kunci] = fetch(DASAR + BERKAS[kunci])
+      .then(function (res) { return res.arrayBuffer(); })
+      .then(function (data) {
+        const hasil = ctx.decodeAudioData(data);
+        if (hasil && typeof hasil.then === "function") return hasil;
+        return null;
+      })
+      .then(function (buffer) {
+        if (buffer) buffers[kunci] = buffer;
+        return buffer || null;
+      })
+      .catch(function (error) {
+        console.warn("[wayang] berkas audio gagal dimuat:", kunci, error);
+        return null;
+      });
+    return janjiMuat[kunci];
   }
 
-  function note(freq, at, duration, volume, type, nama) {
-    if (!ctx) return null;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type || "sine";
-    osc.frequency.setValueAtTime(freq, at);
-    gain.gain.setValueAtTime(0.0001, at);
-    gain.gain.exponentialRampToValueAtTime(Math.max(volume, 0.0002), at + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
-    osc.connect(gain);
-    pasang(gain, nama || "sfx");
-    osc.start(at);
-    osc.stop(at + duration + 0.05);
-    osc.onended = function () {
-      try { osc.disconnect(); gain.disconnect(); } catch (error) { /* sudah lepas */ }
-    };
-    return osc;
+  function pramuat() {
+    Object.keys(BERKAS).forEach(function (kunci) { muatBerkas(kunci); });
   }
 
-  function glide(from, to, at, duration, volume) {
+  /* ---------- pemutaran ---------- */
+  /* Putar satu berkas. Mengembalikan pegangan { src, gain } atau null bila
+   * berkas belum siap (pemuatan dipicu; bunyi dilewatkan kali ini). */
+  function putar(kunci, opsi) {
     if (!ctx) return null;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(from, at);
-    osc.frequency.exponentialRampToValueAtTime(to, at + duration);
-    gain.gain.setValueAtTime(0.0001, at);
-    gain.gain.exponentialRampToValueAtTime(volume, at + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
-    osc.connect(gain);
-    pasang(gain, "sfx");
-    osc.start(at);
-    osc.stop(at + duration + 0.05);
-    osc.onended = function () {
-      try { osc.disconnect(); gain.disconnect(); } catch (error) { /* sudah lepas */ }
-    };
-    return osc;
-  }
-
-  function noise(at, duration, volume, cutoff, nama) {
-    if (!ctx) return null;
-    const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
-    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let index = 0; index < length; index += 1) {
-      const decay = 1 - index / length;
-      data[index] = (Math.random() * 2 - 1) * decay;
+    const buffer = buffers[kunci];
+    if (!buffer) { muatBerkas(kunci); return null; }
+    const o = opsi || {};
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = Boolean(o.loop);
+    const gain = buatkanGain(0.0001);
+    src.connect(gain);
+    const tujuan = jalur(o.bus || "sfx");
+    if (tujuan) gain.connect(tujuan);
+    const at = ctx.currentTime + (o.tunda || 0);
+    const target = Math.max(o.gain || 0, 0.0002);
+    try {
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(target, at + (o.pudarMasuk || 0.03));
+    } catch (error) {
+      gain.gain.value = target;
     }
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = cutoff || 1200;
-    const gain = ctx.createGain();
-    gain.gain.value = volume;
-    source.connect(filter);
-    filter.connect(gain);
-    pasang(gain, nama || "sfx");
-    source.start(at);
-    source.stop(at + duration);
-    source.onended = function () {
-      try { source.disconnect(); filter.disconnect(); gain.disconnect(); } catch (error) { /* sudah lepas */ }
+    src.start(at);
+    const pegangan = { kunci: kunci, src: src, gain: gain };
+    src.onended = function () {
+      try { src.disconnect(); gain.disconnect(); } catch (error) { /* sudah lepas */ }
     };
-    return { source: source, filter: filter, gain: gain };
+    return pegangan;
   }
 
-  function gong(at, duration, volume, nama) {
-    note(70, at, duration, volume, "sine", nama);
-    note(70.4, at, duration * 0.9, volume * 0.45, "sine", nama);
-    note(140, at, duration * 0.55, volume * 0.18, "sine", nama);
+  function pudarkanBerhenti(pegangan, detik) {
+    if (!pegangan || !ctx) return;
+    const at = ctx.currentTime;
+    try {
+      pegangan.gain.gain.cancelScheduledValues(at);
+      pegangan.gain.gain.setValueAtTime(Math.max(pegangan.gain.gain.value, 0.0002), at);
+      pegangan.gain.gain.exponentialRampToValueAtTime(0.0001, at + detik);
+      pegangan.src.stop(at + detik + 0.05);
+    } catch (error) {
+      try { pegangan.src.stop(); } catch (lain) { /* sudah berhenti */ }
+    }
   }
 
-  function kenong(at, volume) {
-    note(124, at, 0.5, volume, "sine");
-    note(248, at, 0.3, volume * 0.22, "triangle");
+  /* ---------- ambien malam (babak tidur) ---------- */
+  function mulaiMalam() {
+    if (malamAktif) return;
+    malamAktif = putar("malam", { bus: "musik", gain: 0.55, loop: true, pudarMasuk: 2.0 });
+    if (!malamAktif) {
+      muatBerkas("malam").then(function () {
+        if (buffers["malam"] && !malamAktif && enabled && unlocked) mulaiMalam();
+      });
+    }
   }
 
-  function saron(at, indices, step, volume) {
-    indices.forEach(function (index, hit) {
-      const freq = SLENDRO[index % SLENDRO.length];
-      note(freq, at + hit * step, step + 0.35, volume, "triangle");
-      note(freq * 2, at + hit * step, step + 0.18, volume * 0.22, "sine");
+  function hentikanMalam() {
+    if (!malamAktif) return;
+    pudarkanBerhenti(malamAktif, 0.8);
+    malamAktif = null;
+  }
+
+  /* ---------- cue ---------- */
+  function play(cue) {
+    if (!enabled || !unlocked || !ctx) return;
+    if (cue === "tidur") {
+      putar("keprak", { bus: "sfx", gain: 0.7 });
+      mulaiMalam();
+      return;
+    }
+    /* Gestur apa pun berarti wayang bangun: ambien malam selesai. */
+    hentikanMalam();
+    const daftar = CUE[cue];
+    if (!daftar) return;
+    daftar.forEach(function (item) {
+      putar(item[0], { bus: "sfx", gain: item[1], tunda: item[2] });
     });
   }
 
-  function saronNote(at, volume) {
-    const freq = SLENDRO[Math.floor(Math.random() * SLENDRO.length)];
-    note(freq, at, 0.7, volume, "triangle");
-    note(freq * 2, at, 0.4, volume * 0.2, "sine");
+  /* ---------- musik latar ---------- */
+  function kunciMusik() {
+    return suasanaMusik === "jeda" ? "musik-jeda" : "musik-panggung";
   }
 
-  function play(cue) {
-    if (!enabled || !unlocked || !ctx) return;
-    const at = ctx.currentTime + 0.01;
-    switch (cue) {
-      case "buka":
-        gong(at, 2.6, 0.55);
-        saron(at + 0.5, [0, 2, 4], 0.2, 0.2);
-        break;
-      case "telapak":
-        saron(at, [0, 2, 4], 0.18, 0.3);
-        break;
-      case "kepalan":
-        noise(at, 0.3, 0.34, 450);
-        gong(at, 0.9, 0.14);
-        break;
-      case "telunjuk":
-        kenong(at, 0.26);
-        break;
-      case "dua_jari":
-        saron(at, [1, 4], 0.2, 0.3);
-        break;
-      case "jempol":
-        gong(at, 1.2, 0.28);
-        noise(at, 0.18, 0.12, 1400);
-        break;
-      case "ok":
-        saron(at, [4, 2, 0], 0.16, 0.3);
-        noise(at, 0.5, 0.1, 2200);
-        break;
-      case "tidur":
-        glide(98, 65, at, 2, 0.34);
-        break;
-      case "saron":
-        saronNote(at, 0.16);
-        break;
-      case "ambient-nada":
-        saronNote(at, 0.1);
-        break;
-      default:
-        break;
+  function mulaiMusik(kunci) {
+    if (!buffers[kunci]) {
+      muatBerkas(kunci).then(function () {
+        if (buffers[kunci] && musikJalan && kunciMusik() === kunci && !musikAktif) mulaiMusik(kunci);
+      });
+      return;
     }
+    const lama = musikAktif;
+    musikAktif = putar(kunci, { bus: "musik", gain: 0.95, loop: true, pudarMasuk: PUDAR_MUSIK });
+    if (lama) pudarkanBerhenti(lama, PUDAR_MUSIK);
   }
 
-  /* ---------- gamelan ---------- */
-  function tabuhBar(mulai) {
-    const pola = MOTIF[bar % MOTIF.length];
-    for (let hit = 0; hit < pola.length; hit += 1) {
-      const at = mulai + hit * KETUK;
-      const freq = SLENDRO[pola[hit] % SLENDRO.length];
-      note(freq, at, 0.55, 0.16, "triangle", "musik");
-      note(freq * 2, at, 0.3, 0.04, "sine", "musik");
-      if (bar % 2 === 0 && hit === 2) note(124, at, 1.1, 0.12, "sine", "musik");
-    }
-    if (bar % 4 === 3) note(90, mulai, 2.2, 0.2, "sine", "musik");
-    if (bar % 8 === 7) gong(mulai, 3.4, 0.3, "musik");
-    bar += 1;
-  }
-
-  function jalanTic() {
-    if (!ctx || !musikJalan) return;
-    if (waktuBar === null) waktuBar = ctx.currentTime + 0.05;
-    while (waktuBar < ctx.currentTime + LIHAT) {
-      tabuhBar(waktuBar);
-      waktuBar += BAR_PANJANG;
-    }
-    tic = setTimeout(jalanTic, JEDA_TIC);
+  function hentikanMusik() {
+    if (!musikAktif) return;
+    pudarkanBerhenti(musikAktif, 0.6);
+    musikAktif = null;
   }
 
   function terapMusik() {
     const jalan = musikDiminta && enabled && unlocked;
-    clearTimeout(tic);
-    tic = null;
-    waktuBar = null;
     musikJalan = jalan;
-    if (!jalan) return;
+    if (!jalan) { hentikanMusik(); return; }
     if (!ensureContext()) { musikJalan = false; return; }
-    bar = 0;
-    jalanTic();
+    const kunci = kunciMusik();
+    if (musikAktif && musikAktif.kunci === kunci) return;
+    mulaiMusik(kunci);
   }
 
-  function musik(on) {
+  function musik(on, suasana) {
+    if (suasana === "jeda" || suasana === "panggung") suasanaMusik = suasana;
     musikDiminta = Boolean(on);
+    if (musikDiminta) hentikanMalam();
     terapMusik();
   }
 
@@ -273,6 +280,8 @@
       if (!ensureContext()) return;
       if (ctx.state === "suspended" && ctx.resume) ctx.resume();
       unlocked = true;
+      pramuat();
+      terapMusik();
     } catch (error) {
       console.warn("[wayang] audio tidak bisa dimulai:", error);
     }
@@ -280,6 +289,7 @@
 
   function setEnabled(on) {
     enabled = Boolean(on);
+    if (!enabled) hentikanMalam();
     terapMusik();
   }
 

@@ -1,11 +1,12 @@
-/* test_audio.mjs — kontrak audio.js: bus, level, gamelan.
+/* test_audio.mjs — kontrak audio.js: berkas rekaman, bus, level, musik.
  *
  * Dijalankan: node --test frontend/tools/test_audio.mjs
  *
- * Kenapa pakai AudioContext + jam palsu: audio.js 100% WebAudio. Satu-satunya
- * cara memastikan "tidak ada sumber yang menyalakan speaker langsung" dan
- * "gong ditabuh tiap 8 birama" adalah mengamati graf node dan waktu schedulenya.
- * Timer dipalsukan seumur proses supaya scheduler bisa diputar maju per birama.
+ * audio.js sekarang memutar berkas rekaman asli lewat WebAudio (dulu sintesis
+ * osilator). Tes memakai AudioContext + fetch palsu: fetch mencatat URL yang
+ * diminta dan decodeAudioData mengembalikan buffer bertanda URL asal, jadi
+ * tes bisa memastikan cue yang benar memutar berkas yang benar, lewat bus
+ * yang benar, dengan gain yang cukup untuk speaker laptop.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -17,20 +18,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const JALUR_AUDIO = join(here, "..", "js", "audio.js");
 
-const antrianTic = new Map();
-let idTic = 0;
-globalThis.setTimeout = function (fn) {
-  idTic += 1;
-  antrianTic.set(idTic, fn);
-  return idTic;
-};
-globalThis.clearTimeout = function (kunci) { antrianTic.delete(kunci); };
-
 class Param {
   constructor(nilai) {
     this._v = nilai;
-    /* puncak 0, bukan nilai awal: gain default WebAudio memang 1.0 tapi tidak
-     * pernah dialiri kalau kodenya membuat envelope sendiri. */
     this.puncak = 0;
   }
   get value() { return this._v; }
@@ -49,9 +39,10 @@ class Simpul {
     this.outs = [];
     this.gain = new Param(1);
     this.frequency = new Param(440);
-    this.detune = new Param(0);
-    this.Q = new Param(1);
     this.type = "sine";
+    this.buffer = null;
+    this.loop = false;
+    this.berhenti = false;
     ctx.simpul.push(this);
   }
   connect(tujuan) {
@@ -61,7 +52,7 @@ class Simpul {
   }
   disconnect() { this.outs.length = 0; }
   start(at) { this.mulai = at === undefined ? this.ctx.currentTime : at; this.ctx.tabuh.push(this); }
-  stop() { return this; }
+  stop() { this.berhenti = true; return this; }
 }
 
 function ctxPalsu() {
@@ -78,126 +69,131 @@ function ctxPalsu() {
   ctx.destination = new Simpul(ctx, "keluar");
   ctx.createGain = function () { return new Simpul(ctx, "gain"); };
   ctx.createOscillator = function () { return new Simpul(ctx, "osc"); };
-  ctx.createBiquadFilter = function () { return new Simpul(ctx, "filter"); };
   ctx.createBufferSource = function () { return new Simpul(ctx, "src"); };
-  ctx.createBuffer = function (kanal, panjang) {
-    return { length: panjang, getChannelData: function () { return new Float32Array(panjang); } };
+  ctx.decodeAudioData = function (data) {
+    return Promise.resolve({ url: data.__url, duration: 90 });
   };
   return ctx;
 }
 
 function muat() {
   const ctx = ctxPalsu();
-  const pangggung = { AudioContext: function () { return ctx; } };
-  globalThis.window = pangggung;
+  const diminta = [];
+  const panggung = { AudioContext: function () { return ctx; } };
+  globalThis.window = panggung;
+  globalThis.fetch = function (url) {
+    diminta.push(url);
+    return Promise.resolve({
+      arrayBuffer: function () { return Promise.resolve({ __url: url }); },
+    });
+  };
   delete require.cache[require.resolve(JALUR_AUDIO)];
   require(JALUR_AUDIO);
   return {
-    Suara: pangggung.Suara,
+    Suara: panggung.Suara,
     ctx: ctx,
-    /** Semua osilator yang benar-benar mulai ditabuh. */
-    nada: function () { return ctx.tabuh.filter(function (n) { return n.kelas === "osc"; }); },
-    /** osc -> gain sendiri -> bus (sfx / musik / vokal). */
+    diminta: diminta,
+    /** Semua sumber berkas yang benar-benar mulai diputar. */
+    sumber: function () { return ctx.tabuh.filter(function (n) { return n.kelas === "src"; }); },
+    /** src -> gain sendiri -> bus (sfx / musik / vokal). */
     bus: function (n) { return n.outs[0].outs[0]; },
     keLuarga: function () {
       return ctx.koneksi.filter(function (k) { return k[1] === ctx.destination; }).map(function (k) { return k[0]; });
     },
-    /** Putar jam `detik` ke depan lalu jalankan scheduler yang tertunda. */
-    maju: function (detik) {
-      const menunggu = Array.from(antrianTic.values());
-      antrianTic.clear();
-      ctx.currentTime = detik;
-      menunggu.forEach(function (fn) { fn(); });
-      return menunggu.length;
-    },
-    kosong: function () { ctx.simpul.length = 0; ctx.tabuh.length = 0; },
+    kosong: function () { ctx.tabuh.length = 0; },
   };
 }
 
-function hidupkan(alat) {
+/** Tunggu rantai fetch -> decode -> buffer siap. */
+function siap() {
+  return new Promise(function (r) { setImmediate(r); })
+    .then(function () { return new Promise(function (r) { setImmediate(r); }); });
+}
+
+async function hidupkan(alat) {
   alat.Suara.setEnabled(true);
   alat.Suara.unlock();
+  await siap();
   return alat;
 }
 
-const BIRAMA = 4;
-
-const LANTAI = {
-  buka: 0.5, telapak: 0.28, kepalan: 0.3, telunjuk: 0.24,
-  dua_jari: 0.28, jempol: 0.26, ok: 0.28, tidur: 0.32, saron: 0.15,
+/* Cue -> berkas yang wajib tertabuh + lantai gain sumbernya. */
+const PETA_CUE = {
+  buka: ["pukulan-gong-ageng.wav", 0.9],
+  telapak: ["pukulan-saron.wav", 0.8],
+  kepalan: ["pukulan-kendang.wav", 0.9],
+  telunjuk: ["pukulan-bonang.wav", 0.75],
+  dua_jari: ["pukulan-peking.wav", 0.75],
+  jempol: ["kacapi-hormat.ogg", 0.85],
+  ok: ["whoosh-tirai.wav", 0.65],
+  saron: ["pukulan-saron.wav", 0.45],
+  "ambient-nada": ["pukulan-peking.wav", 0.3],
 };
 
-/** Puncuk envelope yang benar-benar dialiri: osc->gain atau src->filter->gain. */
-function amplop(alat) {
-  const hasil = [];
-  alat.ctx.tabuh.forEach(function (n) {
-    if (n.kelas === "osc" && n.outs[0]) hasil.push(n.outs[0]);
-    if (n.kelas === "src" && n.outs[0] && n.outs[0].outs[0]) hasil.push(n.outs[0].outs[0]);
+function cariSumber(alat, akhiran) {
+  return alat.sumber().filter(function (n) {
+    return n.buffer && n.buffer.url.endsWith(akhiran);
   });
-  return hasil.filter(function (g) { return g.kelas === "gain"; });
 }
 
-function puncakSFX(alat) {
-  const nilai = amplop(alat).map(function (g) { return g.gain.puncak; });
-  return nilai.length ? Math.max.apply(null, nilai) : 0;
-}
-
-test("hanya satu node yang nyambung ke destination (semua lewat master)", function () {
-  const alat = hidupkan(muat());
+test("hanya satu node yang nyambung ke destination (semua lewat master)", async function () {
+  const alat = await hidupkan(muat());
   alat.Suara.play("telapak");
   alat.Suara.play("ok");
   assert.equal(alat.keLuarga().length, 1, "ada sumber audio yang menyalakan speaker langsung");
   assert.equal(alat.keLuarga()[0].kelas, "gain", "destination harus diterima master gain");
 });
 
-test("level SFX cukup keras buat speaker laptop", function () {
-  const alat = hidupkan(muat());
-  Object.keys(LANTAI).forEach(function (cue) {
+test("tidak ada osilator: semua bunyi dari berkas rekaman", async function () {
+  const alat = await hidupkan(muat());
+  Object.keys(PETA_CUE).forEach(function (cue) { alat.Suara.play(cue); });
+  alat.Suara.play("tidur");
+  alat.Suara.musik(true);
+  const osilator = alat.ctx.simpul.filter(function (n) { return n.kelas === "osc"; });
+  assert.equal(osilator.length, 0, "sintesis osilator lama masih dipakai");
+  assert.ok(alat.diminta.some(function (u) { return u.endsWith("pukulan-gong-ageng.wav"); }),
+    "berkas gong tidak pernah diminta");
+  assert.ok(alat.sumber().length > 0, "tidak ada berkas yang diputar sama sekali");
+});
+
+test("tiap cue memutar berkas yang sesuai suasana dengan level cukup", async function () {
+  const alat = await hidupkan(muat());
+  for (const cue of Object.keys(PETA_CUE)) {
+    const akhiran = PETA_CUE[cue][0];
+    const lantai = PETA_CUE[cue][1];
     alat.kosong();
     alat.Suara.play(cue);
-    const puncak = puncakSFX(alat);
-    assert.ok(puncak > 0, cue + " tidak menabuh apa pun");
-    assert.ok(puncak >= LANTAI[cue], cue + " puncak " + puncak.toFixed(3) + " < " + LANTAI[cue]);
-  });
+    const cocok = cariSumber(alat, akhiran);
+    assert.ok(cocok.length > 0, cue + " tidak memutar " + akhiran);
+    const puncak = Math.max.apply(null, cocok.map(function (n) { return n.outs[0].gain.puncak; }));
+    assert.ok(puncak >= lantai, cue + " gain " + puncak.toFixed(2) + " < " + lantai);
+  }
 });
 
-test("kepalan tidak lagi dikubur di bawah 400 Hz", function () {
-  const alat = hidupkan(muat());
-  alat.Suara.play("kepalan");
-  const saring = alat.ctx.simpul.filter(function (n) { return n.kelas === "filter"; });
-  assert.ok(saring.length > 0, "kepalan tidak memakai filter sama sekali");
-  const cutoff = Math.max.apply(null, saring.map(function (n) { return n.frequency.value; }));
-  assert.ok(cutoff >= 400, "cutoff " + cutoff + " Hz masih di luar rentang speaker laptop");
-});
-
-test("musik gamelan lewat bus sendiri, bukan bus SFX", function () {
-  const alat = hidupkan(muat());
+test("musik latar lewat bus musik sebagai loop, beda suasana beda berkas", async function () {
+  const alat = await hidupkan(muat());
   alat.Suara.play("telapak");
-  const busSfx = alat.bus(alat.nada()[0]);
-  assert.equal(alat.bus(alat.nada()[0]).outs[0], alat.keLuarga()[0], "bus SFX tidak mengalir ke master");
+  const busSfx = alat.bus(alat.sumber()[0]);
   alat.kosong();
   alat.Suara.musik(true);
-  assert.ok(alat.nada().length > 0, "musik aktif tapi tidak ada nada dijadwalkan");
-  assert.notEqual(alat.bus(alat.nada()[0]), busSfx, "gamelan dan SFX satu bus, ducking tidak mungkin");
+  const panggung = cariSumber(alat, "latar-panggung.ogg");
+  assert.ok(panggung.length > 0, "musik live tidak memutar latar-panggung.ogg");
+  assert.equal(panggung[0].loop, true, "musik latar harus loop");
+  assert.notEqual(alat.bus(panggung[0]), busSfx, "musik dan SFX satu bus, ducking tidak mungkin");
   assert.equal(alat.Suara.isMusik(), true);
+  alat.Suara.musik(true, "jeda");
+  const jeda = cariSumber(alat, "latar-jeda.ogg");
+  assert.ok(jeda.length > 0, "suasana jeda tidak memutar latar-jeda.ogg");
+  assert.ok(panggung[0].berhenti, "trek panggung lama tidak dihentikan saat ganti suasana");
 });
 
-test("gong ageng ditabuh satu kali tiap delapan birama", function () {
-  const alat = hidupkan(muat());
+test("ducking mengecilkan musik saja dan bisa kembali", async function () {
+  const alat = await hidupkan(muat());
   alat.Suara.musik(true);
-  for (let indeks = 1; indeks <= 9; indeks += 1) alat.maju(indeks * BIRAMA);
-  const gong = alat.nada().filter(function (n) { return n.frequency.value === 70; });
-  assert.equal(gong.length, 1, "ditemukan " + gong.length + " gong untuk 9 birama");
-  assert.ok(alat.nada().length >= 30, "pattern terlalu jarang: " + alat.nada().length + " nada untuk 9 birama");
-});
-
-test("ducking mengecilkan musik saja dan bisa kembali", function () {
-  const alat = hidupkan(muat());
-  alat.Suara.musik(true);
-  const busMusik = alat.bus(alat.nada()[0]);
+  const busMusik = alat.bus(cariSumber(alat, "latar-panggung.ogg")[0]);
   const semula = busMusik.gain.value;
   alat.Suara.play("telapak");
-  const busSfx = alat.bus(alat.nada()[alat.nada().length - 1]);
+  const busSfx = alat.bus(alat.sumber()[alat.sumber().length - 1]);
   alat.Suara.ducking(true);
   assert.ok(busMusik.gain.value < semula, "gain musik tidak turun saat ducking");
   assert.equal(busSfx.gain.value, 0.9, "bus SFX ikut berubah saat ducking");
@@ -205,8 +201,8 @@ test("ducking mengecilkan musik saja dan bisa kembali", function () {
   assert.equal(busMusik.gain.value, semula, "musik tidak kembali ke level semula");
 });
 
-test("slider volume mengubah master tanpa menggeser bus", function () {
-  const alat = hidupkan(muat());
+test("slider volume mengubah master tanpa menggeser bus", async function () {
+  const alat = await hidupkan(muat());
   const master = alat.keLuarga()[0];
   const semula = master.gain.value;
   alat.Suara.setVolume(0.2);
@@ -215,36 +211,37 @@ test("slider volume mengubah master tanpa menggeser bus", function () {
   assert.ok(semula > 0.2, "level master awal harus di atas 0,2 supaya slider ada gunanya");
 });
 
-test("musik berhenti total saat dimatikan", function () {
-  const alat = hidupkan(muat());
+test("musik berhenti total saat dimatikan", async function () {
+  const alat = await hidupkan(muat());
   alat.Suara.musik(true);
-  alat.maju(BIRAMA);
-  const sebelum = alat.nada().length;
+  const aktif = cariSumber(alat, "latar-panggung.ogg")[0];
   alat.Suara.musik(false);
   assert.equal(alat.Suara.isMusik(), false);
-  alat.maju(BIRAMA * 2);
-  assert.equal(alat.nada().length, sebelum, "masih ada nada dijadwalkan setelah musik mati");
+  assert.ok(aktif.berhenti, "sumber musik tidak di-stop saat musik dimatikan");
+  const sebelum = alat.sumber().length;
+  alat.Suara.musik(false);
+  assert.equal(alat.sumber().length, sebelum, "ada sumber baru padahal musik mati");
 });
 
-test("SUARA off membungkam gamelan, SUARA on mengembalikannya", function () {
-  const alat = hidupkan(muat());
+test("SUARA off membungkam semua, SUARA on mengembalikan musik", async function () {
+  const alat = await hidupkan(muat());
   alat.Suara.musik(true);
   alat.Suara.setEnabled(false);
   assert.equal(alat.Suara.isMusik(), false);
-  const banyak = alat.nada().length;
-  alat.maju(BIRAMA);
-  assert.equal(alat.nada().length, banyak, "masih menabuh padahal SUARA dimatikan");
+  const banyak = alat.sumber().length;
   alat.Suara.play("telapak");
-  assert.equal(alat.nada().length, banyak, "SFX masih bunyi padahal SUARA dimatikan");
+  assert.equal(alat.sumber().length, banyak, "SFX masih bunyi padahal SUARA dimatikan");
   alat.Suara.setEnabled(true);
-  alat.maju(BIRAMA * 2);
-  assert.ok(alat.nada().length > banyak, "gamelan tidak pulih setelah SUARA dinyalakan lagi");
+  assert.ok(alat.sumber().length > banyak, "musik tidak pulih setelah SUARA dinyalakan lagi");
 });
 
-test("dengung ambien 55 Hz sudah diganti gamelan", function () {
-  const alat = hidupkan(muat());
-  alat.Suara.musik(true);
-  for (let indeks = 1; indeks <= 4; indeks += 1) alat.maju(indeks * BIRAMA);
-  const dengung = alat.nada().filter(function (n) { return n.frequency.value <= 60; });
-  assert.equal(dengung.length, 0, "dengung ambien lama masih ada");
+test("tidur: keprak lalu ambien jangkrik, gestur membangunkannya", async function () {
+  const alat = await hidupkan(muat());
+  alat.Suara.play("tidur");
+  assert.ok(cariSumber(alat, "ketuk-kayu-keprak.wav").length > 0, "keprak dalang tidak tertabuh");
+  const malam = cariSumber(alat, "suasana-malam.wav");
+  assert.ok(malam.length > 0, "ambien jangkrik tidak mulai");
+  assert.equal(malam[0].loop, true, "ambien malam harus loop");
+  alat.Suara.play("telapak");
+  assert.ok(malam[0].berhenti, "ambien malam tidak berhenti saat wayang bangun");
 });

@@ -477,7 +477,7 @@
     const connected = core ? core.snapshot().connected : true;
     const on = soundOn && audioUnlocked && !document.hidden && connected
       && (act === "live" || act === "jeda");
-    window.Suara.musik(on);
+    window.Suara.musik(on, act === "jeda" ? "jeda" : "panggung");
   }
 
   /* ---------- debu ---------- */
