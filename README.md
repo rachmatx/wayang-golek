@@ -137,26 +137,89 @@ event `wayang:gesture`, `wayang:nohand`, `wayang:hand`, dan `wayang:connection`.
 
 Endpoint lain: `GET /`, `GET /api/health`, `GET /api/gesture-map`.
 
-Kontrak pesan prediksi (empat field pertama persis SDD):
+### Kontrak pesan `/ws/predict`
+
+Bentuk pesan dibuat di `backend/protocol.py`, bukan di `app.py`, supaya bisa
+diuji tanpa menarik FastAPI, MediaPipe, dan kamera
+(`backend/tools/test_logika.py`). Sejak fitur dua tangan, satu pesan memuat
+**daftar** tangan: field kontrak SDD (`gesture`, `confidence`, `wrist_x`,
+`wrist_y`, `state`) tidak lagi di level atas tapi ada di dalam tiap item
+`hands[]`.
 
 ```json
 {
   "type": "prediction",
-  "gesture": "dua_jari",
-  "confidence": 0.92,
-  "wrist_x": 0.54,
-  "wrist_y": 0.41,
-  "state": "ok",
-  "top3": [["dua_jari", 0.92], ["telapak_terbuka", 0.05], ["ok", 0.02]],
-  "landmarks": [[0.51, 0.44], "... 21 titik"],
-  "model": "mlp",
+  "hands": [
+    {
+      "id": 0,
+      "gesture": "dua_jari",
+      "confidence": 0.92,
+      "wrist_x": 0.54,
+      "wrist_y": 0.41,
+      "state": "ok",
+      "top3": [["dua_jari", 0.92], ["telapak_terbuka", 0.05], ["ok", 0.02]],
+      "landmarks": [[0.51, 0.44], "... 21 titik"]
+    }
+  ],
   "fps": 18,
+  "model": "mlp",
   "model_loaded": true,
   "camera": true
 }
 ```
 
-`model_loaded` dan `camera` adalah tambahan untuk panel; tidak mengubah kontrak.
+`model_loaded` dan `camera` adalah tambahan untuk panel; tidak mengubah kontrak
+gestur.
+
+| Field per tangan | Tipe | Isi |
+| --- | --- | --- |
+| `id` | int | id tangan dari `hand_tracker.py`, stabil dari frame ke frame. Ini kunci untuk mengikat satu tangan ke satu wayang |
+| `gesture` | string \| null | id gestur dari `shared/gesture_map.json`: `telapak_terbuka`, `kepalan`, `telunjuk`, `dua_jari`, `jempol`, `ok`. Selalu `null` saat `state: "unknown"` |
+| `confidence` | float | rata-rata confidence frame-frame yang memilih gestur pemenang, dibulatkan 4 desimal. Saat `unknown` yang terkirim confidence frame terakhir |
+| `wrist_x`, `wrist_y` | float | posisi pergelangan dalam 0..1 pada gambar yang **sudah di-mirror** (`camera.py`), dibulatkan 4 desimal |
+| `state` | string | `"ok"` atau `"unknown"` |
+| `top3` | array | maksimal 3 pasangan `[label, probabilitas]` keluaran model mentah, sebelum smoother — dipakai panel "Keyakinan" |
+| `landmarks` | array | 21 pasangan `[x, y]` hasil normalisasi; dipakai untuk menggambar skeleton tangan di canvas panel |
+
+**Aturan `state`.** Satu tangan baru `"ok"` setelah label yang sama menang
+majority-vote di jendela 5 frame, bertahan 3 frame berturut-turut, dan
+confidence di atas ambang 0,60 (`smoother.py` + `config.py`; ambang bisa diubah
+lewat perintah `set_threshold`). Sebelum itu `state: "unknown"` dan
+`gesture: null` — jangan gerakkan wayang, tampilkan hint "ragu" saja.
+
+**Kapan pesan dikirim.** Pipeline menulis daftar tangan ke `state.py` (satu
+lock, dua thread). WebSocket mengirim ulang hanya bila ada yang berubah —
+yang dibandingkan adalah `id`, `state`, `gesture`, dan posisi wrist yang
+dibulatkan 3 desimal — ditambah heartbeat tiap 0,25 detik supaya klien tahu
+sambungan masih hidup. Confidence sengaja tidak ikut dibandingkan karena
+angkanya bergerak tiap frame. Konsekuensinya: tangan yang diam sempurna tidak
+menghasilkan pesan baru, dan frontend tidak dijamin dapat satu pesan per frame
+kamera.
+
+**`hands` kosong.** Panggung tanpa tangan mengirim pesan biasa dengan
+`"hands": []`, bukan tipe pesan lain. Frontend merespons dengan event
+`wayang:nohand` untuk wayang yang tadinya dipegang, lalu kembali netral.
+
+### Dari tangan ke wayang
+
+Pembagian slot dilakukan di browser (`frontend/js/slots.js`), bukan di
+backend — backend tidak tahu ada berapa wayang di panggung.
+
+- `wrist_x < 0,5` → wayang kiri (slot 0), sisanya wayang kanan (slot 1).
+- Tangan yang sudah memegang satu wayang tidak ikut pindah hanya karena
+  melewati garis tengah. Pindah terjadi setelah tangan itu bertahan **8 frame**
+  di seberang garis, dengan toleransi **0,06** di sekitar garis (histeresis).
+- Dua tangan di sisi yang sama: yang sudah memegang tetap memegang, yang baru
+  mengambil slot kosong terdekat.
+- Mode satu wayang: tangan yang datang lebih dulu memegang wayang; tangan
+  keduanya tetap terkirim ke browser untuk strip status, tetapi tidak
+  menggerakkan wayang.
+- Maksimum 2 tangan (`config.MAX_NUM_HANDS = 2`). Track dibuang setelah 5 frame
+  tanpa pasangan, dan lompatan wrist lebih jauh dari 0,12 dianggap tangan baru.
+
+Narasi, sorotan, dan suara hanya mengikuti **pemain 1** (`index === 0`): geraknya
+boleh dobel, ceritanya tetap satu (`app.js`, `emitWrist()` + `app.focus`).
+Kartu "Hasil Bacaan" mengikuti pemain yang terakhir beraksi.
 
 Perintah dari frontend: `set_model`, `set_threshold`, `ping`.
 
