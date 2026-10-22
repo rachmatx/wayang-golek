@@ -463,7 +463,10 @@ Berkas runtime dari `handoff_p2/` sudah disalin ke tempatnya:
 
 `handoff_p2/` tetap disimpan sebagai arsip. Isinya yang tidak dipakai runtime:
 `landmarks.csv` (43,7 MB), `evaluation.json`, `docs/`, `manifest.json`.
-`model_rf.pkl` tidak ikut dikirim P2, jadi tombol RF otomatis nonaktif.
+`model_rf.pkl` menyusul diterima (22 Okt 2026) dan sudah terpasang di
+`models/`: Pipeline StandardScaler + Random Forest 300 pohon, terverifikasi
+119/120 (99,2%) pada 120 sampel uji yang sama dengan MLP lewat jalur asli
+backend (`ModelService`). Tombol RF di panel otomatis aktif.
 
 ### Deviasi yang dicatat untuk laporan
 
@@ -533,7 +536,7 @@ bukan gambar. Jalankan `run.bat` di mesin dengan webcam normal untuk uji akhir.
 | Port 8000 dipakai | jalankan `set WAYANG_PORT=8010` lalu buka port yang sama. |
 | Pose terbalik / aneh | sesuaikan tanda sudut di `POSES` (`frontend/js/animation.js`). Pivot sendi dibaca dari `data-pivot-x/y` SVG; cadangannya ada di `frontend/css/style.css`. |
 | `InconsistentVersionWarning` | versi scikit-learn beda dari training P2. Pasang ulang `requirements.txt` (pin 1.8.0). |
-| Tombol RF tidak bisa diklik | normal: `model_rf.pkl` tidak dikirim P2. Tombol aktif otomatis bila file itu ditaruh di `models/`. |
+| Tombol RF tidak bisa diklik | `model_rf.pkl` tidak ada di `models/` atau gagal dimuat (cek log backend). Tombol aktif otomatis bila file itu terpasang dan termuat. |
 | `model_loaded: false` | `models/model_mlp.pkl` atau `labels.json` tidak ada. Backend tetap hidup; pakai mode dummy untuk demo. |
 | Kamera menampilkan layar biru / ikon kamera | kamera dipakai aplikasi lain atau diblokir Windows (privacy). Tutup aplikasi lain dan izinkan akses kamera. |
 | WebSocket putus-nyambung terus | backend mati atau port beda. Status di kanan atas menunjukkan `terputus`, pita merah muncul di panggung. |
