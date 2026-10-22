@@ -64,6 +64,35 @@ function open(core) {
   return core;
 }
 
+test("dialog gestur memakai karakter wayang yang beraksi, bukan karakter panggung", function () {
+  const dialog = fixture();
+  dialog.karakter.klasik.gestur.kepalan = ["KLASIK-KEPAL"];
+  dialog.karakter.cepot.gestur.kepalan = ["CEPOT-KEPAL"];
+  let n = 0.11;
+  const buat = function () {
+    const core = TeaterCore.create({
+      dialog: dialog,
+      random: function () { n = (n + 0.17) % 1; return n; },
+    });
+    core.init({ character: "klasik" });
+    core.open("gesture", 1000);
+    return core;
+  };
+
+  const kanan = buat();
+  const dariKanan = kanan.gesture({ gesture: "kepalan", character: "cepot", player: 1 }, 5000);
+  const balonKanan = find(dariKanan, "bubble");
+  assert.equal(balonKanan.text, "CEPOT-KEPAL", "wayang kanan bicara dengan naskahnya sendiri");
+  assert.equal(balonKanan.char, "cepot", "efek balon membawa karakter pemilik suara");
+  assert.equal(balonKanan.player, 1, "efek balon membawa nomor pemain");
+
+  const kiri = buat();
+  const dariKiri = kiri.gesture({ gesture: "kepalan" }, 5000);
+  const balonKiri = find(dariKiri, "bubble");
+  assert.equal(balonKiri.text, "KLASIK-KEPAL", "tanpa karakter di payload, pakai karakter panggung");
+  assert.equal(balonKiri.char, undefined);
+});
+
 function find(result, type) {
   return result.effects.find(function (effect) { return effect.type === type; });
 }

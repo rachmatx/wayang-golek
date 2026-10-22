@@ -76,34 +76,35 @@
       return { state: s.act, effects: effects };
     }
 
-    function charDialog() {
+    function charDialog(charKey) {
       const all = dialog.karakter || {};
-      return all[s.character] || all.klasik || { gestur: {}, suasana: {} };
+      return all[charKey] || all[s.character] || all.klasik || { gestur: {}, suasana: {} };
     }
 
-    function pick(kind, key, lines) {
+    function pick(kind, key, lines, charKey) {
       if (!Array.isArray(lines) || !lines.length) return null;
       let index = Math.floor(random() * lines.length);
       if (index >= lines.length) index = 0;
-      const memoKey = s.character + ":" + kind + ":" + key;
+      const memoKey = (charKey || s.character) + ":" + kind + ":" + key;
       const last = s.lastVariant[memoKey];
       if (lines.length > 1 && index === last) index = (index + 1) % lines.length;
       s.lastVariant[memoKey] = index;
       return lines[index];
     }
 
-    function bubbleFor(kind, key, delay) {
-      const source = charDialog();
+    function bubbleFor(kind, key, delay, charKey) {
+      const source = charDialog(charKey);
       const lines = kind === "gestur"
         ? (source.gestur || {})[key]
         : (source.suasana || {})[key];
-      const text = pick(kind, key, lines);
+      const text = pick(kind, key, lines, charKey);
       if (!text) return null;
       const effect = {
         type: "bubble",
         text: text,
         ms: randBetween(TIMING.bubbleMin, TIMING.bubbleMax),
       };
+      if (charKey) effect.char = charKey;
       if (delay > 0) effect.delay = delay;
       return effect;
     }
@@ -207,7 +208,13 @@
 
       const delay = s.justWoke ? 900 : 0;
       s.justWoke = false;
-      const bubble = bubbleFor("gestur", name, delay);
+      /* Dialog gestur memakai karakter wayang yang sedang beraksi (payload
+       * dari app.js), bukan selalu karakter panggung: wayang kanan yang
+       * bergerak harus bicara dengan teks dan suaranya sendiri. Dialog
+       * suasana tetap milik karakter panggung (pemain 1). */
+      const charKey = payload && typeof payload.character === "string" ? payload.character : null;
+      const bubble = bubbleFor("gestur", name, delay, charKey);
+      if (bubble && payload && typeof payload.player === "number") bubble.player = payload.player;
       if (bubble) effects.push(bubble);
 
       const cooled = at - s.lastCueAt < TIMING.cooldown;

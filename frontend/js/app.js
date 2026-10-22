@@ -11,8 +11,9 @@
  *  - backend mengirim message.hands[] dengan id tangan yang stabil
  *  - slots.js memutuskan tangan mana pegang wayang ke berapa
  *  - tiap pemain punya wayang, pose, timer dan strip sendiri
- *  - teater (tirai, balon, suara, dialog dalang) tetap satu: dipicu pemain mana
- *    pun yang beraksi, warna lampu ikut pemain 1
+ *  - teater (tirai, lampu, babak panggung) tetap satu dan dipicu pemain mana
+ *    pun yang beraksi; dialog gestur mengikuti karakter wayang yang beraksi,
+ *    dialog suasana tetap milik pemain 1
  */
 (function () {
   "use strict";
@@ -350,7 +351,7 @@
       pemain.wayang.setWrist(0.5);
       if (index === 0) emitWrist(0.5);
       setStrip(index, { gesture: "netral", confidence: confidence });
-      emitGesture(gesture, from, confidence, index);
+      emitGesture(gesture, from, confidence, index, pemain.karakter);
       return;
     }
 
@@ -383,16 +384,17 @@
     pemain.gesture = gesture;
     setStrip(index, { gesture: gesture, confidence: confidence });
     if (index === app.focus) Panel.setGestureLabel(gesture);
-    emitGesture(gesture, from, confidence, index);
+    emitGesture(gesture, from, confidence, index, pemain.karakter);
   }
 
-  function emitGesture(gesture, source, confidence, player) {
+  function emitGesture(gesture, source, confidence, player, character) {
     document.dispatchEvent(new CustomEvent("wayang:gesture", {
       detail: {
         gesture: gesture,
         source: source || app.source,
         confidence: Number(confidence) || 0,
         player: player,
+        character: character || null,
       },
     }));
   }

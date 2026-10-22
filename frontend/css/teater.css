@@ -280,6 +280,32 @@ kbd {
   left: 14px;
 }
 
+/* Balon gestur menempel ke wayang yang bicara (data-sisi dari theater.js,
+   diisi nomor pemain pengirim gestur; balon suasana tidak memakainya). */
+#panggung .balon[data-sisi="kiri"] {
+  --masuk: -12px;
+  right: auto;
+  left: clamp(18px, 7%, 96px);
+  border-radius: 15px 15px 15px 4px;
+}
+
+#panggung .balon[data-sisi="kiri"]::after {
+  right: auto;
+  left: 14px;
+}
+
+#panggung .balon[data-sisi="kanan"] {
+  --masuk: 12px;
+  left: auto;
+  right: clamp(18px, 7%, 96px);
+  border-radius: 15px 15px 4px 15px;
+}
+
+#panggung .balon[data-sisi="kanan"]::after {
+  left: auto;
+  right: 14px;
+}
+
 /* ---------- pita koneksi ---------- */
 .pita-terputus {
   position: absolute;

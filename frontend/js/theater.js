@@ -658,13 +658,25 @@
 
   function paintBubble(effect) {
     if (!els.balon) return;
+    /* Sinkron teks-suara: selama ucapan sebelumnya masih jalan, balon baru
+     * tidak ditampilkan. voice.js memang menolak ucapan yang menumpuk, jadi
+     * balon yang tetap berganti cuma bikin teks dan suara beda kalimat. */
+    if (window.SuaraDialog && typeof window.SuaraDialog.isBicara === "function"
+      && window.SuaraDialog.isBicara()) return;
     clearTimeout(bubbleTimer);
+    /* Balon pindah ke sisi wayang yang bicara (efek gestur membawa nomor
+     * pemainnya); balon suasana kembali ke posisi bawaan panggung. */
+    if (typeof effect.player === "number") {
+      els.balon.dataset.sisi = effect.player === 0 ? "kiri" : "kanan";
+    } else {
+      delete els.balon.dataset.sisi;
+    }
     els.balon.textContent = effect.text;
     els.balon.hidden = false;
     els.balon.classList.remove("tampil");
     void els.balon.offsetWidth;
     els.balon.classList.add("tampil");
-    ucapkanBalon(effect.text);
+    ucapkanBalon(effect.text, effect.char);
     const duration = Number(effect.ms) || 3800;
     bubbleTimer = setTimeout(function () {
       els.balon.classList.remove("tampil");
@@ -672,11 +684,12 @@
     }, duration);
   }
 
-  /* Balon Player 1 yang diucapkan: narasi panggung tetap satu suara
-   * walaupun dua wayang bergerak. */
-  function ucapkanBalon(teks) {
+  /* Balon diucapkan dengan suara pemilik dialognya: efek gestur membawa
+   * karakter wayang yang beraksi (effect.char); efek suasana memakai
+   * karakter panggung (pemain 1). */
+  function ucapkanBalon(teks, charKey) {
     if (!window.SuaraDialog || !soundOn || !dialogOn || !audioUnlocked) return;
-    const kunci = (els.root && els.root.dataset.karakter) || "klasik";
+    const kunci = charKey || (els.root && els.root.dataset.karakter) || "klasik";
     window.SuaraDialog.ucap(kunci, teks);
   }
 
