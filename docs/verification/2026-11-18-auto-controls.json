@@ -1,0 +1,67 @@
+{
+  "version": "0.4.0",
+  "date": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Tahap 3–4: fakta otomatis dan penyempurnaan kendali",
+  "checks": {
+    "frontend_tests": {
+      "passed": 107,
+      "failed": 0
+    },
+    "browser": {
+      "method": "Managed preview + CUA; native actions, DOM readback and screenshots",
+      "fact_rotation": {
+        "interval_ms": 30000,
+        "observed_before": "jatim-011",
+        "observed_after": "jatim-009",
+        "automatic_aria_live": "off",
+        "history_back": "jatim-009 -> jatim-011",
+        "stable_fact_copy_height_desktop_px": 87,
+        "pause_persisted_after_reload": true
+      },
+      "controls": {
+        "practice_position_percent": 70,
+        "before_calibration_translate_x_px": 192.98,
+        "after_calibration_settling_translate_x_px": 1.78,
+        "sensitivity_persisted_after_reload": "responsif",
+        "neutral_point_persisted_after_reload": true,
+        "p2_calibrated_at_percent": 40,
+        "p1_unchanged_after_p2_calibration": true,
+        "reset_verified": true
+      },
+      "responsive": [
+        {
+          "viewport": [
+            320,
+            740
+          ],
+          "clientWidth": 305,
+          "scrollWidth": 305
+        },
+        {
+          "viewport": [
+            390,
+            844
+          ],
+          "clientWidth": 375,
+          "scrollWidth": 375
+        }
+      ],
+      "new_button_min_height_px": 44,
+      "page_errors_observed_in_responsive_tab": 0,
+      "screenshots": [
+        "docs/images/jatim-auto-controls-desktop.jpg",
+        "docs/images/jatim-auto-controls-mobile.jpg"
+      ]
+    },
+    "html_nesting_and_unique_ids": "passed",
+    "javascript_syntax": "passed",
+    "git_diff_check": "passed"
+  },
+  "limitations": [
+    "Live physical camera was not available; movement and calibration were exercised through practice sliders.",
+    "Mobile viewport checks use an iframe, not physical touch devices.",
+    "Backend landmark extraction, gesture classification and slot assignment were not changed."
+  ]
+}

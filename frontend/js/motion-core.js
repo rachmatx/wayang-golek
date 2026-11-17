@@ -6,11 +6,16 @@
     return { min: Math.min(0, margin + halfPuppet - centre),
       max: Math.max(0, stageWidth - margin - halfPuppet - centre) };
   }
-  function follow(wrist, range) {
-    // Most webcams are awkward near their edges. 20–80% reaches the full stage.
-    const value = clamp((wrist - 0.5) / 0.3, -1, 1);
-    const normalized = Math.abs(value) < 0.035 ? 0 : Math.sign(value) * (Math.abs(value) - 0.035) / 0.965;
-    return normalized < 0 ? -normalized * range.min : normalized * range.max;
+  function follow(wrist, range, settings) {
+    if (!Number.isFinite(wrist)) return 0;
+    const centre=settings&&Number.isFinite(settings.centre)?clamp(settings.centre,.1,.9):.5;
+    const span=settings&&Number.isFinite(settings.span)?clamp(settings.span,.15,.45):.3;
+    const delta=wrist-centre;
+    // Keep both stage edges reachable even when the neutral hand is off-centre.
+    const available=delta<0?centre-.03:.97-centre;
+    const value=clamp(delta/Math.min(span,available),-1,1);
+    const normalized=Math.abs(value)<.035?0:Math.sign(value)*(Math.abs(value)-.035)/.965;
+    return normalized<0?-normalized*range.min:normalized*range.max;
   }
   function spring(state, target, dt, frequency) {
     const offset = state.x - target;

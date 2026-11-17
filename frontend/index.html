@@ -176,6 +176,16 @@
 
           <p class="camera-tip">Posisikan tangan di dalam kamera.<br /> Cahaya yang cukup membantu pembacaan.</p>
           <button type="button" class="camera-action" data-camera-toggle aria-pressed="true"><span class="camera-action-dot" aria-hidden="true"></span><span data-camera-label>Matikan kamera</span><kbd>K</kbd></button>
+          <details class="control-tuning" id="control-tuning"><summary>Sesuaikan gerak <span aria-hidden="true">+</span></summary>
+            <p class="control-intro">Gunakan telunjuk, tahan tangan di posisi nyaman, lalu kalibrasi titik tengah.</p>
+            <label class="control-player" id="control-player-label" hidden>Pemain<select id="control-player"><option value="0">Pemain 1</option><option value="1">Pemain 2</option></select></label>
+            <span class="control-label">Kepekaan gerak</span><div class="control-presets" role="group" aria-label="Kepekaan gerak"><button type="button" data-sensitivity="halus" aria-pressed="false">Halus</button><button type="button" data-sensitivity="seimbang" aria-pressed="true">Seimbang</button><button type="button" data-sensitivity="responsif" aria-pressed="false">Responsif</button></div>
+            <p id="control-sensitivity-hint" class="control-hint">Gerakan tangan dan wayang seimbang.</p>
+            <p id="control-readiness" class="control-readiness">Tunjukkan telunjuk atau gunakan slider latihan.</p>
+            <button type="button" id="control-calibrate" class="control-calibrate" disabled>Kalibrasi titik tengah</button>
+            <div class="control-bottom"><span id="control-centre-state">Titik tengah standar</span><button type="button" id="control-reset">Reset kendali</button></div>
+            <p id="control-status" class="control-status" role="status"></p>
+          </details>
           </section>
           <details class="gesture-disclosure" id="studio-gesture-guide" open>
             <summary><span>Panduan gestur<small>Enam gerak untuk menghidupkan cerita.</small></span><span class="disclosure-symbol" aria-hidden="true">+</span></summary>
@@ -187,8 +197,8 @@
       </div>
       <section class="culture-strip" aria-labelledby="fact-label">
         <div class="fact-heading"><svg class="fact-flower" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 2v28M2 16h28M6 6l20 20M6 26 26 6" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="5" fill="#151310" stroke="currentColor"/></svg><span class="eyebrow" id="fact-label">TAHUKAH KAMU?</span><span class="fact-counter" id="fact-counter">01 / 12</span></div>
-        <div class="fact-copy" aria-live="polite" aria-atomic="true"><h2 id="fact-title">Budaya di balik panggung.</h2><p id="fact-text">Sedang menyiapkan cerita dari Jawa Timuran…</p></div>
-        <div class="fact-actions"><button type="button" class="text-button" id="fact-detail" disabled>Baca konteks <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button><button type="button" class="fact-next" id="fact-next" aria-label="Fakta berikutnya" disabled><svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button></div>
+        <div class="fact-body"><div class="fact-copy" aria-live="off" aria-atomic="true"><h2 id="fact-title">Budaya di balik panggung.</h2><p id="fact-text">Sedang menyiapkan cerita dari Jawa Timuran…</p></div><div class="fact-timer-line"><span id="fact-timing">Berganti setiap 30 detik</span><progress id="fact-progress" max="30" value="0" aria-label="Waktu menuju fakta berikutnya"></progress></div></div>
+        <div class="fact-actions"><button type="button" class="text-button" id="fact-detail" disabled>Baca konteks <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button><div class="fact-navigation" role="group" aria-label="Navigasi fakta budaya"><button type="button" class="fact-step" id="fact-previous" aria-label="Fakta sebelumnya" disabled><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 4-6 6 6 6"/></svg></button><button type="button" class="fact-toggle" id="fact-pause" aria-label="Jeda pergantian fakta" data-enabled="true" disabled><svg class="fact-icon-pause" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg><svg class="fact-icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="m6 3 10 7-10 7z"/></svg><span>Jeda</span></button><button type="button" class="fact-step" id="fact-next" aria-label="Fakta berikutnya" disabled><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m8 4 6 6-6 6"/></svg></button></div></div>
       </section>
       <div class="fullscreen-exit"><button type="button" class="tombol" id="keluar-fullscreen">Keluar layar penuh <kbd>Esc</kbd></button><button type="button" class="tombol" data-open-culture>Jelajah budaya ↗</button></div>
     </main>
@@ -308,6 +318,7 @@
     <details class="audio-credits"><summary>Tentang rekaman</summary><p>Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Lihat asal dan kredit audio</a>.</p></details>
   </section>
   <script src="js/ws_client.js"></script>
+  <script src="js/control-core.js"></script>
   <script src="js/motion-core.js"></script>
   <script src="js/animation.js"></script>
   <script src="js/slots.js"></script>
@@ -322,10 +333,12 @@
   <script src="js/audio-prefs.js"></script>
   <script src="js/theater.js"></script>
   <script src="js/culture-core.js"></script>
+  <script src="js/fact-timer.js"></script>
   <script src="js/culture.js"></script>
   <script src="js/app.js"></script>
   <script src="js/stage.js"></script>
   <script src="js/audio-controls.js"></script>
   <script src="js/studio.js"></script>
+  <script src="js/control-ui.js"></script>
 </body>
 </html>

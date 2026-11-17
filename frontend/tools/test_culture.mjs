@@ -61,3 +61,13 @@ test("sampling ekstrem tetap memilih entri yang valid", () => {
     assert.ok(Culture.create(data, () => value).next().id);
   }
 });
+
+test('previous and next replay reading history before drawing another fact',()=>{
+ const d=Culture.create(data,()=>0);const a=d.next(),b=d.next(),c=d.next();
+ assert.equal(d.previous(),b);assert.equal(d.previous(),a);assert.equal(d.previous(),a);assert.equal(d.canPrevious(),false);
+ assert.equal(d.next(),b);assert.equal(d.next(),c);assert.notEqual(d.next(),c);
+});
+test('browsing old facts does not break the no-repeat cycle',()=>{
+ const d=Culture.create(data,()=>0);const seen=[d.next().id,d.next().id];d.previous();assert.equal(d.next().id,seen[1]);
+ for(let i=0;i<10;i++)seen.push(d.next().id);assert.equal(new Set(seen).size,12);
+});

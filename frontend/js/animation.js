@@ -209,7 +209,7 @@
         if (!paused) {
           phase += dt;
           const pose = POSES[currentPose] || POSES.netral;
-          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds) : 0;
+          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds, window.Kendali ? Kendali.settings(nomor) : null) : 0;
           if (reduced.matches) { travel.x = target; travel.v = 0; }
           else Motion.spring(travel, target, dt, 15);
           // Clamp the rendered position too: a rapid reversal must never overshoot the stage.
@@ -352,6 +352,7 @@
       const pose = POSES[name] || POSES.netral;
       if (!force && name === currentPose) return pose;
       currentPose = name;
+      if (name !== "telunjuk" && window.Kendali) Kendali.clear(nomor);
 
       // Targets are blended every frame; interrupted poses keep their current velocity.
       return pose;
@@ -377,6 +378,7 @@
       const value = Number(wristX);
       if (!Number.isFinite(value)) return;
       wrist = Motion.clamp(value, 0, 1);
+      if (currentPose === "telunjuk" && window.Kendali) Kendali.record(nomor, wrist, document.body.dataset.source === "dummy" ? "practice" : "live");
     }
 
     function onFacingChange(handler) {

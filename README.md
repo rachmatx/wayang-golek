@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.3.2 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.4.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -136,4 +136,17 @@ Ruang dalang dibagi menjadi kartu kamera dan panduan gestur yang dapat dilipat. 
 
 Pada layar kecil, toolbar menggunakan dua baris, tokoh duet ditumpuk per pemain, dan kamera/panduan mengikuti pilihan tokoh. Angka keyakinan, FPS, serta model tetap tersedia di Pengaturan; strip panggung berfokus pada gestur pemain. Mode Perbesar menyembunyikan panel pendamping, pilihan tokoh/suasana, dan fakta sambil mempertahankan kontrol bermain serta Audio. Jika fullscreen ditolak browser, mode fokus pada halaman tetap tersedia.
 
-[Verifikasi tahap 2](docs/verification/2026-11-18-layout-stage2.json). Pergantian fakta otomatis dijadwalkan untuk tahap berikutnya.
+[Verifikasi tahap 2](docs/verification/2026-11-18-layout-stage2.json).
+
+
+## Tahap 3–4 — fakta otomatis dan kendali v0.4.0
+
+**Tahukah kamu?** berganti setiap 30 detik selama kartu terlihat. Gunakan tombol sebelumnya/berikutnya atau **Jeda / Putar**; pilihan jeda tersimpan di browser. Timer berhenti ketika kartu di luar layar, tab tidak aktif, panel modal terbuka, atau pointer/fokus keyboard sedang berada di kartu. Putar memulai waktu baca baru. Preferensi reduced motion memulai dalam mode manual kecuali pengguna sudah memilih otomatis.
+
+Tinggi teks disiapkan untuk seluruh fakta agar pergantian tidak menggeser layout. Riwayat navigasi mempertahankan bacaan sebelumnya; fakta baru mengikuti siklus tanpa pengulangan. Pergantian otomatis tidak mengumumkan ulang teks melalui live region pembaca layar, sedangkan navigasi manual memakai pengumuman sopan.
+
+Buka **Ruang dalang → Sesuaikan gerak**. Pilih kepekaan **Halus**, **Seimbang**, atau **Responsif**. Untuk kalibrasi, tunjukkan telunjuk di posisi tangan yang nyaman, lalu tekan **Kalibrasi titik tengah**. Dalam duet, pilih P1 atau P2 sebelum kalibrasi. Masing-masing pemain mempunyai titik tengah sendiri; kepekaan berlaku bersama. Pengaturan tersimpan lokal dan **Reset kendali** mengembalikan keduanya ke awal.
+
+Kalibrasi juga dapat dicoba tanpa kamera: aktifkan **Latihan**, pilih pemain, lalu geser slider. Input kamera yang tidak terbaca selama lebih dari 1,5 detik tidak dapat dipakai untuk kalibrasi. Area tengah mempunyai toleransi kecil terhadap gerakan ringan, dan batas gerak panggung tetap dijaga agar wayang tidak keluar layar.
+
+[Verifikasi tahap 3–4](docs/verification/2026-11-18-auto-controls.json). Kamera fisik dan kenyamanan gestur tetap perlu diuji pada perangkat presentasi.

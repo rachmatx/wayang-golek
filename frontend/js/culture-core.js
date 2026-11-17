@@ -37,7 +37,10 @@
     const rng = typeof random === "function" ? random : Math.random;
     const seen = new Set();
     let current = null;
+    const history = [];
+    let cursor = -1;
     function next(character) {
+      if (cursor < history.length - 1) { current = history[++cursor]; return current; }
       if (!content.facts.length) return null;
       let remaining = content.facts.filter(function (fact) { return !seen.has(fact.id); });
       if (!remaining.length) { seen.clear(); remaining = content.facts.slice(); }
@@ -48,12 +51,17 @@
       const position = Math.max(0, Math.min(candidates.length - 1, Math.floor(Number(rng()) * candidates.length) || 0));
       current = candidates[position];
       seen.add(current.id);
+      history.push(current);
+      if (history.length > 100) history.shift();
+      cursor = history.length - 1;
       return current;
     }
     return {
       facts: content.facts,
       sources: content.sources,
       next: next,
+      previous: function () { if (cursor > 0) current = history[--cursor]; return current; },
+      canPrevious: function () { return cursor > 0; },
       current: function () { return current; },
       filter: function (category) { return content.facts.filter(function (fact) { return !category || category === "all" || fact.category === category; }); },
     };
