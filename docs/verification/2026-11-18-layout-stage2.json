@@ -1,0 +1,92 @@
+{
+  "version": "0.3.2",
+  "date": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Tahap 2: hierarki studio dan layout responsif",
+  "checks": {
+    "frontend_tests": {
+      "passed": 93,
+      "failed": 0
+    },
+    "html_nesting": "passed",
+    "syntax": "frontend/js/studio.js passed",
+    "browser": {
+      "method": "managed preview + CUA; native UI actions and DOM readback",
+      "viewport_presets": [
+        [
+          320,
+          740
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          768,
+          1024
+        ],
+        [
+          844,
+          390
+        ],
+        [
+          1366,
+          768
+        ],
+        [
+          1440,
+          900
+        ]
+      ],
+      "client_scroll_width_pairs": [
+        [
+          305,
+          305
+        ],
+        [
+          375,
+          375
+        ],
+        [
+          753,
+          753
+        ],
+        [
+          829,
+          829
+        ],
+        [
+          1351,
+          1351
+        ],
+        [
+          1425,
+          1425
+        ]
+      ],
+      "duplicate_ids_in_duet": 0,
+      "tested": [
+        "Latihan toolbar opens the stage and training controls",
+        "training controls follow stage and precede customization/camera in DOM",
+        "Solo/Duet with two rendered SVGs",
+        "native fullscreen entry/exit and companion-panel hiding",
+        "phone guide initially collapsed and expands using native details/summary",
+        "camera quick control reuses the old backend action and updates pressed state",
+        "phone audio mixer stays within screen and music reports playing",
+        "P1/P2 gesture selection after layout changes"
+      ],
+      "page_console_errors_observed": 0,
+      "screenshots": [
+        "docs/images/jatim-layout-desktop.jpg",
+        "docs/images/jatim-layout-mobile.jpg"
+      ]
+    }
+  },
+  "limitations": [
+    "Mobile sizes use same-origin iframe viewports; this is not a physical-device camera test.",
+    "Backend still reads its own camera; phone-camera capture is not introduced here.",
+    "Fallback focus mode is retained; native fullscreen was the mode exercised in this pass."
+  ],
+  "next_stage": "Fakta otomatis 30 detik dengan kontrol jeda dan navigasi manual"
+}

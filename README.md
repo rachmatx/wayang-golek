@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.3.1 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.3.2 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -127,3 +127,13 @@ Volume master sekarang ikut mengatur rekaman dialog dan TTS browser. Pada bebera
 Musik tetap dapat didengar selama panel Audio terbuka. Panel bacaan budaya masih menjeda panggung/audio. Panel audio menunjukkan status musik dan pesan jika berkas gagal dimuat. Sumber audio lama tetap digunakan dengan keterangan lintas tradisi; tahap ini tidak menambahkan rekaman baru atau klaim iringan Jekdong autentik.
 
 [Verifikasi tahap 1](docs/verification/2026-11-18-audio-stage1.json)
+
+## Tahap 2 — hierarki studio v0.3.2
+
+Panggung kini mempunyai toolbar berisi **Solo/Duet**, **Audio**, **Latihan**, dan **Perbesar**. Latihan tampil langsung di bawah panggung, diikuti pilihan suasana dan tokoh. Tombol Latihan membuka panggung tanpa kamera dan menyinkronkan statusnya dengan pintasan `D` serta kontrol lain.
+
+Ruang dalang dibagi menjadi kartu kamera dan panduan gestur yang dapat dilipat. Tombol kamera pada kartu memakai aksi yang sama dengan tombol kamera lama dan mencerminkan status aktivasi dari backend. Panduan mulai tertutup pada ponsel/tablet agar panggung lebih dekat ke atas halaman.
+
+Pada layar kecil, toolbar menggunakan dua baris, tokoh duet ditumpuk per pemain, dan kamera/panduan mengikuti pilihan tokoh. Angka keyakinan, FPS, serta model tetap tersedia di Pengaturan; strip panggung berfokus pada gestur pemain. Mode Perbesar menyembunyikan panel pendamping, pilihan tokoh/suasana, dan fakta sambil mempertahankan kontrol bermain serta Audio. Jika fullscreen ditolak browser, mode fokus pada halaman tetap tersedia.
+
+[Verifikasi tahap 2](docs/verification/2026-11-18-layout-stage2.json). Pergantian fakta otomatis dijadwalkan untuk tahap berikutnya.
