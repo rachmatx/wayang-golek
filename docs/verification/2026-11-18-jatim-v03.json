@@ -1,0 +1,63 @@
+{
+  "version": "0.3.0",
+  "date": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "branch": "feat/wayang-kulit-jatim",
+  "checks": {
+    "frontend_tests": {
+      "passed": 81,
+      "failed": 0,
+      "command": "npm test",
+      "new_motion_tests": 5
+    },
+    "syntax_check": [
+      "frontend/js/animation.js",
+      "frontend/js/dummy.js",
+      "frontend/js/app.js"
+    ],
+    "browser": {
+      "method": "managed preview with CUA; manual UI input, DOM readbacks and screenshots",
+      "desktop_width": 1348,
+      "desktop_horizontal_overflow": false,
+      "duplicate_ids_in_duet": 0,
+      "mobile_iframe_size": [
+        390,
+        844
+      ],
+      "mobile_client_width": 375,
+      "mobile_scroll_width": 375,
+      "mobile_stage_height": 348,
+      "tested": [
+        "Pendopo/Rimba switch",
+        "solo/duet",
+        "Gatotkaca/Semar/Bagong display",
+        "telapak/dua_jari poses",
+        "telunjuk manual slider ends",
+        "OK facing change",
+        "jempol reset to neutral",
+        "guide desktop/mobile",
+        "character switch"
+      ],
+      "solo_travel_measured_px": [
+        -276.65,
+        276.66
+      ],
+      "measured_stage_width_px": 944,
+      "screenshots": [
+        "docs/images/jatim-v03-pendopo.jpg",
+        "docs/images/jatim-v03-rimba-duet.jpg",
+        "docs/images/jatim-v03-right.jpg",
+        "docs/images/jatim-v03-final.jpg"
+      ]
+    },
+    "backend": {
+      "changed": false,
+      "note": "Existing v0.2 backend verification retained separately. No new camera/model accuracy claim."
+    }
+  },
+  "limitations": [
+    "No physical webcam available; live tracking must be tried on the user camera.",
+    "Art is interpretative, not a practitioner-validated reconstruction.",
+    "Sixfold travel comparison applies to the measured desktop dimensions, not every viewport."
+  ]
+}

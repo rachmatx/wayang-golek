@@ -2,19 +2,22 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.2 berada di branch `feat/wayang-kulit-jatim`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.3 berada di branch `feat/wayang-kulit-jatim`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
-- Kelir krem hangat, pembuka bergunungan, pencahayaan dan bayangan yang mengikuti wayang.
+- Dua latar ilustratif: Pendopo Senja dan Rimba Malam, dengan bingkai kayu, kelir bercahaya, dan lanskap berlapis. Pilihan suasana tersimpan di perangkat.
+- Transisi pose berbasis spring yang konsisten terhadap frame rate; bahu, siku, dan badan bergerak berlapis, dengan ayunan susulan ketika berpindah.
+- Telunjuk menggerakkan wayang sepanjang area aman panggung: posisi tangan 20–80% sudah mencapai rentang penuh. Contoh panggung desktop 944 px: sekitar ±277 px, menyesuaikan ukuran layar dan karakter.
 - Tiga karakter berlapis: Gatotkaca, Semar, dan Bagong; satu atau dua pemain dengan pilihan tokoh masing-masing.
 - Enam gestur tangan melalui MediaPipe dan model MLP; sumber kamera dapat diganti dari Pengaturan.
-- Mode latihan dengan tombol atau keyboard untuk demo tanpa kamera.
+- Mode latihan dengan tombol, keyboard, dan slider posisi tangan untuk demo tanpa kamera.
+- Panduan enam gestur dengan ikon duotone besar, keterangan aksi, dan indikator gestur aktif.
 - Dua belas fakta budaya dengan kategori, konteks daerah, dan sumber penelitian. Konten tersedia lokal.
 - Panel budaya menahan cue suara dan pintasan gestur saat dibaca; Escape menutup panel dan mengembalikan fokus.
 - Font dan aset lokal, tata letak ponsel, reduced motion, layar penuh, pengaturan suara, dan musik latar opsional.
 
-![Panggung duet](docs/images/jatim-duet.jpg)
+![Panggung duet](docs/images/jatim-v03-rimba-duet.jpg)
 
 ## Menjalankan di Windows
 
@@ -51,6 +54,8 @@ Di Windows, aktivasi manual menggunakan `.venv\Scripts\activate`. Internet diper
 | Jempol | `5` | Membungkuk lalu kembali |
 | OK | `6` | Berbalik arah |
 | Netral | `0` | Kembali netral |
+
+Gunakan pilihan **Pendopo Senja / Rimba Malam** di bawah panggung. Di mode latihan, geser slider **Geser wayang** untuk menguji telunjuk secara manual, atau tekan `3` untuk gerakan demo otomatis. Dalam duet, kedua tokoh berbagi panggung dan dapat saling melintas.
 
 `D` membuka/menutup latihan, `P` memilih pemain latihan dalam mode Duet, `?` membuka panduan, `V` mengatur dialog, dan `K` mengatur kamera. Saat panel bacaan terbuka, pintasan gestur dinonaktifkan agar tidak mengganggu bacaan. Pilih **Coba tanpa kamera** untuk langsung membuka panggung dan latihan.
 
@@ -106,3 +111,7 @@ python backend/tools/test_p2_model.py
 Uji model menggunakan sampel dataset dan berbeda dari pengujian webcam langsung. Kamera nyata, pencahayaan ruang presentasi, serta suara Indonesia perlu diperiksa pada perangkat demo.
 
 Untuk QA responsif lokal tambahan, `npm run dev` memakai Python dan dependensi yang sama; Node tidak diperlukan untuk menjalankan backend biasa. Fixture pada `/__qa/responsive-preview.html` hanya tersedia lewat entry point preview, bukan server aplikasi normal.
+
+## Upgrade v0.3
+
+Lihat [catatan riset dan keputusan gerak](docs/research/2026-11-18-upgrade-v03.md) dan [hasil verifikasi](docs/verification/2026-11-18-jatim-v03.json).

@@ -19,6 +19,7 @@
   let pemainWrap = null;
   const ticks = [null, null];
   const clock = [0, 0];
+  const lastWrist = [0.5, 0.5];
 
   function list() {
     return window.Wayang ? window.Wayang.gestures() : [];
@@ -59,6 +60,14 @@
       });
     }
 
+    const sliderLabel = document.createElement("label");
+    sliderLabel.className = "practice-travel";
+    sliderLabel.innerHTML = '<span>Geser wayang <small>telunjuk</small></span><span class="travel-arrow" aria-hidden="true">←</span><input id="practice-wrist" type="range" min="0" max="100" value="50" aria-label="Posisi tangan latihan" /><span class="travel-arrow" aria-hidden="true">→</span>';
+    root.appendChild(sliderLabel);
+    sliderLabel.querySelector("input").addEventListener("input", function (event) {
+      stopTick(pemain);
+      kirim(pemain, "telunjuk", Number(event.target.value) / 100);
+    });
     build();
     markPemain();
     document.addEventListener("keydown", onKeyDown);
@@ -101,6 +110,8 @@
     const baru = Number.isFinite(index) ? index : 0;
     pemain = baru > 0 && jumlah > 1 ? 1 : 0;
     markPemain();
+    const slider = document.getElementById("practice-wrist");
+    if (slider) slider.value = String(Math.round(lastWrist[pemain] * 100));
     return pemain;
   }
 
@@ -116,6 +127,9 @@
   /* Jumlah wayang di panggung: P2 hanya bisa dipilih kalau panggung dua wayang. */
   function setJumlah(banyak) {
     jumlah = Math.max(1, Number(banyak) || 1);
+    lastWrist[0] = lastWrist[1] = 0.5;
+    const slider = document.getElementById("practice-wrist");
+    if (slider) slider.value = "50";
     if (pemainWrap) {
       const tombolDua = pemainWrap.querySelector('button[data-pemain="1"]');
       if (tombolDua) {
@@ -160,6 +174,9 @@
   }
 
   function kirim(index, gesture, wrist) {
+    lastWrist[index] = wrist;
+    const slider = document.getElementById("practice-wrist");
+    if (slider && pemain === index) slider.value = String(Math.round(wrist * 100));
     onGesture({ player: index, gesture: gesture, wrist: wrist });
   }
 
@@ -170,6 +187,8 @@
     ticks[index] = setInterval(function () {
       clock[index] += 0.1;
       const wrist = Math.max(0.08, Math.min(0.92, 0.5 + 0.3 * Math.sin(clock[index] * 1.6)));
+      const slider = document.getElementById("practice-wrist");
+      if (slider && pemain === index) slider.value = String(Math.round(wrist * 100));
       kirim(index, "telunjuk", wrist);
     }, 100);
   }

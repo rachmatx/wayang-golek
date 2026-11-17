@@ -1,24 +1,7 @@
-/* animation.js — mesin pose wayang (Rancangan Bab 3.3 & 3.4).
- *
- * Wayang tidak digambar ulang tiap frame. Setiap gestur punya pose: daftar
- * sudut putar untuk tiap layer SVG, lalu browser yang menggerakkannya lewat
- * transisi CSS. Nama pose diambil dari shared/gesture_map.json.
- *
- * Rig dari P2 (`handoff_p2/wayang_kiri.svg`):
- *   .grup-posisi  (dibuat di sini)  -> geser panggung mengikuti wrist_x
- *     .grup-arah  (dibuat di sini)  -> cermin kiri/kanan (gestur ok)
- *       .grup-hidup                 -> idle / membungkuk
- *         .grup-wayang              -> pose (gestur jempol)
- *           .badan
- *           .lengan-atas-*  -> .lengan-bawah-*  (nested, pivot dari data-pivot-x/y)
- *
- * Dua wayang sekaligus: satu SVG dipasang dua kali, dan ID tidak boleh dobel
- * di satu dokumen. Jadi tiap instans diberi prefix ("p0-", "p1-") dan ID
- * aslinya disimpan sebagai class. Semua CSS rig memakai class, bukan ID.
- *
- * Tidak ada .kepala dan .tongkat di rig P2 (lihat handoff_p2/DEVIATION.md):
- *   - jempol   -> putar .grup-wayang 7° dengan pivot di kaki
- *   - dua_jari -> putar .lengan-bawah-kiri (batang/cepala menempel di tangan)
+/* Spring-driven SVG puppetry. Translation uses screen pixels on the outer slot;
+ * pose joints use rig metadata in SVG units. Forearms lag behind shoulders and
+ * velocity drives a small body lean/arm sway. CSS owns theatrical entrance/bow.
+ * Every SVG ID/reference is prefixed so two instances remain independent.
  */
 (function () {
   "use strict";
@@ -33,10 +16,7 @@
     "lengan-bawah-kanan",
   ];
 
-  /* Angka mengikuti rentang aman rigging P2 (DEVIATION.md bagian 2):
-   * bahu ±25°, siku kiri −40…+15°, siku kanan −15…+40°.
-   * Arah: bahu kiri + = angkat, bahu kanan − = angkat,
-   *       siku kiri − = lipat/angkat, siku kanan + = lipat/angkat. */
+  /* Detached Jatim limbs allow larger shoulder/elbow gestures than the legacy rig. */
   const POSES = {
     netral: {
       angles: {},
@@ -46,8 +26,10 @@
     },
     telapak_terbuka: {
       angles: {
-        "lengan-atas-kiri": 20,
-        "lengan-atas-kanan": -20,
+        "lengan-atas-kiri": 34,
+        "lengan-bawah-kiri": -24,
+        "lengan-atas-kanan": -30,
+        "lengan-bawah-kanan": 20,
       },
       group: 0,
       duration: 600,
@@ -67,12 +49,11 @@
       mode: "follow",
     },
     dua_jari: {
-      /* Angkat sedikit lengan bawah kiri. Sudut sengaja kecil: art raster
-       * tidak punya sendi siku gambar tangan, jadi tekukan besar bikin
-       * potongan lengan kelihatan. */
+      /* Cepala gesture: raise the shoulder, then fold the forearm. */
       angles: {
-        "lengan-atas-kiri": 8,
-        "lengan-bawah-kiri": -14,
+        "lengan-atas-kiri": 24,
+        "lengan-bawah-kiri": -38,
+        "lengan-atas-kanan": -7,
       },
       group: 0,
       duration: 600,
@@ -81,7 +62,7 @@
     jempol: {
       /* Tidak ada layer kepala: seluruh wayang membungkuk dari kaki. */
       angles: {},
-      group: 7,
+      group: 12,
       duration: 700,
       mode: "auto",
       resetMs: 1000,
@@ -108,9 +89,7 @@
     ],
   };
 
-  const MAX_SHIFT = 64;   // geseran panggung maksimum (satuan viewBox)
-  const DEADZONE = 0.03;  // zona mati di tengah
-  const LERP = 0.2;       // perataan posisi (Bab 3.3)
+  const Motion = window.WayangMotion;
 
   let map = DEFAULT_MAP;
 
@@ -157,7 +136,16 @@
     let currentPose = null;
     let facing = 1;
     let stageX = 0;
-    let targetX = 0;
+    let wrist = 0.5;
+    let bounds = { min: 0, max: 0 };
+    let previousTime = 0;
+    let phase = nomor * 1.7;
+    const travel = { x: 0, v: 0 };
+    const joints = Object.fromEntries(LAYERS.concat("group").map(id => [id, { x: 0, v: 0 }]));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let measureTravel = function () {};
+    const resize = new ResizeObserver(function () { measureTravel(); });
+    resize.observe(container);
     let rafId = null;
     let facingHandler = null;
     let destroyed = false;
@@ -212,12 +200,42 @@
 
     function startLoop() {
       stopLoop();
-      const step = function () {
+      previousTime = 0;
+      const step = function (now) {
         if (destroyed) { rafId = null; return; }
-        stageX += (targetX - stageX) * LERP;
-        if (Math.abs(targetX - stageX) < 0.05) stageX = targetX;
-        if (nodes.posisi) {
-          nodes.posisi.setAttribute("transform", "translate(" + stageX.toFixed(2) + ",0)");
+        const dt = previousTime ? Math.min((now - previousTime) / 1000, 0.05) : 1 / 60;
+        previousTime = now;
+        const paused = document.hidden || (window.Teater && Teater.isReading());
+        if (!paused) {
+          phase += dt;
+          const pose = POSES[currentPose] || POSES.netral;
+          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds) : 0;
+          if (reduced.matches) { travel.x = target; travel.v = 0; }
+          else Motion.spring(travel, target, dt, 15);
+          // Clamp the rendered position too: a rapid reversal must never overshoot the stage.
+          travel.x = Motion.clamp(travel.x, bounds.min, bounds.max);
+          stageX = travel.x;
+          container.style.transform = "translateX(" + stageX.toFixed(2) + "px)";
+          const speed = reduced.matches ? 0 : Motion.clamp(travel.v / 110, -4, 4);
+          const breathing = reduced.matches ? 0 : Math.sin(phase * 1.65) * 0.55;
+          const moving = Math.min(Math.abs(travel.v) / 180, 1);
+          const sway = Math.sin(phase * 7) * moving;
+          LAYERS.forEach(function (id, i) {
+            const element = nodes[id];
+            if (!element) return;
+            const isArm = i > 0;
+            const side = id.endsWith("kiri") ? 1 : -1;
+            const secondary = isArm ? side * (speed * 1.7 + sway * 3 + breathing * 1.5) : 0;
+            const targetAngle = (pose.angles[id] || 0) + secondary;
+            const joint = joints[id];
+            if (reduced.matches) { joint.x = targetAngle; joint.v = 0; }
+            else Motion.spring(joint, targetAngle, dt, id.includes("bawah") ? 10 : 13);
+            element.style.transform = "rotate(" + joint.x.toFixed(3) + "deg)";
+          });
+          const bodyTarget = (pose.group || 0) + speed * facing * 0.65 + breathing;
+          if (reduced.matches) { joints.group.x = bodyTarget; joints.group.v = 0; }
+          else Motion.spring(joints.group, bodyTarget, dt, 11);
+          if (nodes.wayang) nodes.wayang.style.transform = "translateY(" + (-Math.abs(sway) * 1.7).toFixed(2) + "px) rotate(" + joints.group.x.toFixed(3) + "deg)";
         }
         rafId = requestAnimationFrame(step);
       };
@@ -232,7 +250,12 @@
 
       stopLoop();
       stageX = 0;
-      targetX = 0;
+      wrist = 0.5;
+      travel.x = travel.v = 0;
+      container.style.transform = "translateX(0px)";
+      Object.values(joints).forEach(j => { j.x = j.v = 0; });
+      const previousSvg = container.querySelector("svg");
+      if (previousSvg) resize.unobserve(previousSvg);
       container.innerHTML = await response.text();
 
       const svg = container.querySelector("svg");
@@ -303,6 +326,20 @@
         console.warn("[wayang] p" + nomor + " layer tidak ditemukan:", missing.join(", "));
       }
 
+      // Keep a safety envelope for raised arms/tilt; allow crossing the centre in duet.
+      // Range is measured in screen pixels, independent of SVG letterboxing and fullscreen.
+      measureTravel = function () {
+        const stage = container.closest(".panggung");
+        if (!stage || !container.offsetWidth) return;
+        const sr = stage.getBoundingClientRect();
+        const cr = container.getBoundingClientRect();
+        const scale = Math.min(svg.clientWidth / width, svg.clientHeight / height);
+        const envelope = Math.min(width * scale * 0.54, sr.width * 0.42);
+        const centre = cr.left + cr.width / 2 - stageX;
+        bounds = Motion.bounds(sr.width, centre - sr.left, envelope, 20);
+      };
+      resize.observe(svg);
+      measureTravel();
       currentPose = null;
       startLoop();
       applyPose(start.pose || "netral", true);
@@ -316,18 +353,7 @@
       if (!force && name === currentPose) return pose;
       currentPose = name;
 
-      LAYERS.forEach(function (id) {
-        const element = nodes[id];
-        if (!element) return;
-        const angle = Object.prototype.hasOwnProperty.call(pose.angles, id) ? pose.angles[id] : 0;
-        element.style.transitionDuration = pose.duration + "ms";
-        element.style.transform = "rotate(" + angle + "deg)";
-      });
-
-      if (nodes.wayang) {
-        nodes.wayang.style.transitionDuration = pose.duration + "ms";
-        nodes.wayang.style.transform = "rotate(" + (pose.group || 0) + "deg)";
-      }
+      // Targets are blended every frame; interrupted poses keep their current velocity.
       return pose;
     }
 
@@ -335,7 +361,7 @@
     function setFacing(value, animate) {
       facing = value < 0 ? -1 : 1;
       if (nodes.arah) {
-        nodes.arah.style.transitionDuration = animate === false ? "0ms" : "400ms";
+        nodes.arah.style.transitionDuration = animate === false || reduced.matches ? "0ms" : "400ms";
         nodes.arah.style.transform = "scaleX(" + facing + ")";
       }
       if (facingHandler) facingHandler(facing, nomor);
@@ -350,9 +376,7 @@
     function setWrist(wristX) {
       const value = Number(wristX);
       if (!Number.isFinite(value)) return;
-      const delta = value - 0.5;
-      const clamped = Math.max(-1, Math.min(1, delta * 2));
-      targetX = Math.abs(delta) < DEADZONE ? 0 : clamped * MAX_SHIFT;
+      wrist = Motion.clamp(value, 0, 1);
     }
 
     function onFacingChange(handler) {
@@ -363,6 +387,7 @@
     function destroy() {
       destroyed = true;
       stopLoop();
+      resize.disconnect();
       facingHandler = null;
       container.innerHTML = "";
       nodes = { posisi: null, arah: null, hidup: null, wayang: null };

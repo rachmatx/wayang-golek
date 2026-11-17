@@ -168,9 +168,10 @@
     const container = $("gesture-mini");
     if (!container) return;
     const short = { telapak_terbuka: "Telapak", kepalan: "Kepalan", telunjuk: "Telunjuk", dua_jari: "Dua jari", jempol: "Jempol", ok: "OK" };
-    container.innerHTML = Wayang.gestures().map(function (gesture) {
-      return '<button type="button" class="gesture-item" title="' + escapeHtml(gesture.hint) + '">' +
-        (window.Glif ? Glif.tangan(gesture.id) : "") + '<span>' + short[gesture.id] + '</span></button>';
+    const action = {telapak_terbuka: "Angkat lengan", kepalan: "Kembali diam", telunjuk: "Geser wayang", dua_jari: "Mainkan cepala", jempol: "Beri hormat", ok: "Balik arah"};
+    container.innerHTML = Wayang.gestures().map(function (gesture, index) {
+      return '<button type="button" class="gesture-item" data-guide-gesture="' + gesture.id + '" title="' + escapeHtml(gesture.hint) + '" aria-label="Panduan ' + short[gesture.id] + ': ' + action[gesture.id] + '">' + '<span class="gesture-number">0' + (index + 1) + '</span>' +
+        (window.Glif ? Glif.tangan(gesture.id) : "") + '<strong>' + short[gesture.id] + '</strong><small>' + action[gesture.id] + '</small></button>';
     }).join("");
     container.addEventListener("click", function () { $("tombol-panduan").click(); });
   }

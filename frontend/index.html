@@ -82,7 +82,8 @@
       <div class="studio-grid">
         <div class="stage-column">
           <div class="stage-toolbar"><div class="studio-label"><span class="live-dot"></span> PANGGUNG INTERAKTIF</div><div class="stage-mode"><span>Penampil</span><div class="segmen" id="kontrol-jumlah" role="group" aria-label="Jumlah wayang"><button type="button" data-jumlah="1" class="aktif" aria-pressed="true">Solo</button><button type="button" data-jumlah="2" aria-pressed="false">Duet</button></div></div></div>
-      <section class="panggung" id="panggung" data-karakter="gatotkaca" data-arah="kanan" data-tirai="tutup" aria-label="Panggung wayang">
+      <section class="panggung" id="panggung" data-scene="pendopo" data-karakter="gatotkaca" data-arah="kanan" data-tirai="tutup" aria-label="Panggung wayang">
+        <div class="stage-scenery" aria-hidden="true"><div class="scene-image scene-pendopo"></div><div class="scene-image scene-rimba"></div><div class="scene-vignette"></div></div>
         <div class="stage-caption" aria-hidden="true"><span>PANGGUNG JAWA TIMURAN</span><span>WARISAN BUDAYA · RUANG EKSPRESI</span></div>
         <div class="kelir" id="kelir" data-jumlah="1">
           <div class="kelir-loading" id="kelir-loading">memuat wayang…</div>
@@ -136,8 +137,7 @@
           <span class="pembuka-catatan" id="pembuka-catatan">gestur apa pun yang terbaca akan membuka tirai</span>
         </div>
       </section>
-
-
+          <div class="scene-toolbar"><div><span class="eyebrow">SUASANA PANGGUNG</span><span class="scene-description" id="scene-description">Cahaya hangat, cerita yang dekat.</span></div><div class="scene-choices" role="group" aria-label="Latar panggung"><button type="button" data-scene="pendopo" class="active" aria-pressed="true"><span class="scene-swatch swatch-pendopo"></span>Pendopo Senja</button><button type="button" data-scene="rimba" aria-pressed="false"><span class="scene-swatch swatch-rimba"></span>Rimba Malam</button></div></div>
           <div class="cast-header"><div><span class="eyebrow">PARA TOKOH</span><h2>Pilih teman sepanggungmu.</h2></div><span class="cast-note">Setiap tokoh, sebuah cerita.</span></div>
           <div class="cast-row">
             <div class="cast-group"><span class="tray-label">Pemain 1</span><div class="kontrol-wayang" id="kontrol-wayang-0" role="group" aria-label="Wayang pemain 1"></div></div>
@@ -279,6 +279,7 @@
     </div>
   </section>
   <script src="js/ws_client.js"></script>
+  <script src="js/motion-core.js"></script>
   <script src="js/animation.js"></script>
   <script src="js/slots.js"></script>
   <script src="js/glyphs.js"></script>
@@ -293,5 +294,6 @@
   <script src="js/culture-core.js"></script>
   <script src="js/culture.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/stage.js"></script>
 </body>
 </html>

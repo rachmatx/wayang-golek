@@ -210,3 +210,56 @@ body.stage-focus .fullscreen-exit { display: flex; justify-content: center; gap:
 
 .fact-flower { width: 30px; height: 30px; }
 .practice-symbol { width: 24px; height: 24px; flex-shrink: 0; }
+/* v0.3 — scenic kelir and legible gesture cards. */
+.panggung { isolation: isolate; border-color: #ad8141; background: #a88349; }
+.stage-scenery { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.scene-image { position: absolute; inset: 0; background-position: center; background-size: 100% 100%; transition: opacity .8s ease; }
+.scene-pendopo { background-image: url('../assets/jatim/stage-pendopo.webp'); }
+.scene-rimba { background-image: url('../assets/jatim/stage-rimba.webp'); opacity: 0; }
+[data-scene="rimba"] .scene-pendopo { opacity: 0; }
+[data-scene="rimba"] .scene-rimba { opacity: 1; }
+.scene-vignette { position: absolute; inset: 0; box-shadow: inset 0 0 70px #27140555; background: linear-gradient(0deg,#0d18172b,transparent 40%); }
+.kelir, .kelir[data-jumlah="2"] { inset: 46px 7% 32px; padding: 0; }
+.kelir::before, .kelir::after { display: none; }
+.kelir .wayang-svg { height: 100%; width: 100%; overflow: visible; filter: drop-shadow(7px 5px 2px #201c1866); }
+.kelir[data-jumlah="2"] .wayang-svg { height: 91%; }
+.kelir-slot { will-change: transform; }
+.kelir .badan, .kelir [class*="lengan-"], .kelir .grup-wayang { transition: none; }
+.kelir .grup-hidup.idle { animation: none; }
+.stage-caption { top: 15px; left: 8%; right: 8%; color: #e7cc94; text-shadow: 0 1px 4px #000; letter-spacing: .17em; }
+.stage-caption span:last-child { color: #d2b880; }
+.panggung-kaki { background: #171b18ef; border-color: #d6ac5a38; color: #ded0b1; z-index: 4; }
+.panggung-kaki-label, .panggung-kaki-meta { color: #acb1a2; }
+.panggung-kaki-pose, .panggung-kaki-angka { color: #e1c38c; }
+.strip-yakin { background: #f9d49325; }.strip-yakin i { background: #d5aa65; }
+.lampu { opacity: .18; mix-blend-mode: soft-light; }
+.tirai { background: #171b18; background-image: linear-gradient(90deg,#0007,transparent 20%,#d3aa5b0a 50%,#0005 90%); }
+.scene-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 0 0; }
+.scene-toolbar .eyebrow { font-size: 7px; letter-spacing: .16em; }
+.scene-description { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; }
+.scene-choices { display: flex; gap: 8px; }
+.scene-choices button { display: flex; align-items: center; gap: 7px; padding: 8px 11px; min-height: 40px; background: #ffffff03; border: 1px solid var(--line); border-radius: 4px; font: inherit; color: var(--muted); font-size: 10px; }
+.scene-choices button.active { color: var(--gold-soft); border-color: #bc955d80; background: #bc955d10; }
+.scene-swatch { width: 19px; height: 19px; border-radius: 50%; background-size: cover; background-position: center; border: 1px solid #fff3; }
+.swatch-pendopo { background-image: url('../assets/jatim/stage-pendopo.webp'); }.swatch-rimba { background-image: url('../assets/jatim/stage-rimba.webp'); }
+.gesture-mini { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 15px; }
+.gesture-item { position: relative; border: 1px solid #bc955d22; background: #bc955d06; border-radius: 7px; padding: 13px 5px 10px; min-height: 104px; transition: background .2s,border-color .2s; }
+.gesture-item .gesture-number { position: absolute; left: 8px; top: 7px; font-size: 7px; color: #c5b79780; }
+.gesture-item svg { width: 47px; height: 47px; margin-bottom: 6px; color: #e2c395; }
+.gesture-item strong { display: block; font-size: 10px; font-weight: 600; color: var(--cream); }
+.gesture-item small { display: block; font-size: 8px; color: var(--muted); margin-top: 4px; }
+.gesture-item.is-active { background: #bc955d1c; border-color: var(--gold); box-shadow: inset 0 0 20px #bc955d08; }
+.gesture-item.is-active::after { content: ""; position: absolute; right: 9px; top: 9px; width: 4px; height: 4px; background: var(--gold-soft); border-radius: 50%; }
+.panduan-item .panduan-glif { width: 62px; height: 62px; color: var(--gold-soft); }
+.panduan-item { min-height: 104px; gap: 18px; }
+.practice-travel { display: flex; grid-column: 1 / -1; order: 3; flex: 1 0 100%; align-items: center; gap: 12px; width: 100%; border-top: 1px solid var(--line); padding-top: 12px; }
+.practice-travel > span:first-child { min-width: 110px; font-size: 10px; }.practice-travel small { color: var(--muted); margin-left: 5px; font-size: 8px; }
+.practice-travel input { width: 100%; height: 28px; cursor: ew-resize; }.travel-arrow { color: var(--gold-soft); }
+@media(min-width: 1200px) { .studio-grid { grid-template-columns: minmax(0,1fr) 280px; } .panggung { height: clamp(440px,36vw,570px); } }
+@media(max-width: 900px) { .gesture-item svg { width: 39px; height: 39px; }.gesture-item { min-height: 96px; }.scene-toolbar { flex-wrap: wrap; }.scene-toolbar > div:first-child { display: none; } }
+@media(max-width: 680px) { .panggung { height: 350px; }.scene-image { background-size: auto 100%; }.kelir,.kelir[data-jumlah="2"] { inset: 36px 2% 35px; }.scene-toolbar { padding-top: 10px; }.scene-choices { width: 100%; }.scene-choices button { flex: 1; justify-content: center; font-size: 9px; }.dalang-sidebar { grid-template-columns: 1fr 1fr; }.gesture-heading { grid-column: 1 / -1; grid-row: 6; padding-top: 8px; }.gesture-mini { grid-column: 1 / -1; grid-row: 7; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }.gesture-item { min-height: 98px; padding: 12px 3px 9px; }.gesture-item svg { width: 43px; height: 43px; }.gesture-item strong { font-size: 9px; }.gesture-item small { font-size: 7px; }.guide-link { grid-column: 1 / -1; grid-row: 8; }.practice-note { grid-row: 9; }.practice-travel { gap: 6px; }.practice-travel > span:first-child { min-width: 90px; }.practice-travel small { display: none; } }
+@media(prefers-reduced-motion: reduce) { .scene-image { transition: none; }.grup-arah { transition: none; } }
+/* Override the legacy stage selector's mobile height as well as its minimum. */
+@media(max-width:1080px) { .panggung-wrap .panggung { height: 430px; min-height: 0; } }
+@media(max-width:680px) { .panggung-wrap .panggung { height: 350px; min-height: 0; }.dummy-bar { grid-template-columns: 1fr auto auto; }.dummy-bar-label { grid-column: 1; }#dummy-pemain { grid-column: 2; }#dummy-tutup { grid-column: 3; grid-row: 1; }.dummy-tombol { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; flex-wrap: wrap; }.practice-travel { grid-row: 3; }.panduan-item .panduan-glif { width: 50px; height: 50px; } }
+@media(max-width:680px) { .dalang-sidebar { display: block; }.sidebar-heading h2 { margin-bottom: 18px; }.inset-frame { aspect-ratio: 16/9; }.camera-tip { margin-top: 10px; }.gesture-heading { margin-top: 20px; }.gesture-mini { display: grid; margin-top: 12px; }.guide-link { margin-top: 8px; }.practice-note { margin-top: 12px; } }
