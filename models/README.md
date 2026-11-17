@@ -5,7 +5,7 @@ Paket P2 sudah dipasang di sini. Backend memuatnya otomatis saat start.
 ```
 models/
   model_mlp.pkl     <- model MLP dari handoff_p2/model.pkl (default)
-  model_rf.pkl      <- belum ada: P2 tidak mengirim model Random Forest
+  model_rf.pkl      <- model Random Forest yang sudah tersedia di repo
   labels.json       <- 6 label, disalin dari handoff_p2/labels.json
 ```
 

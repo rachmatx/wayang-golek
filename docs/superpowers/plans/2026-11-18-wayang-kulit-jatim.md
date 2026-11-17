@@ -3,7 +3,7 @@
 Tanggal: 18 November 2026 (Asia/Jakarta)
 Branch: `feat/wayang-kulit-jatim`
 Baseline: `0114a3f` pada `main`
-Status: rencana implementasi; perubahan aplikasi belum dikerjakan.
+Status: implementasi versi 0.2 tersedia; lihat [hasil verifikasi](../../verification/2026-11-18-jatim.json). Uji webcam dan performa perangkat presentasi masih perlu dilakukan.
 
 ## 1. Sasaran produk
 

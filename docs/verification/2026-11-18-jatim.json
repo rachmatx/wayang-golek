@@ -1,0 +1,100 @@
+{
+  "version": "0.2.0",
+  "date": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "branch": "feat/wayang-kulit-jatim",
+  "baseline": "0114a3f",
+  "checks": {
+    "frontend_unit_tests": {
+      "passed": 76,
+      "failed": 0,
+      "command": "node --test frontend/tools/test_*.mjs"
+    },
+    "svg_contract": {
+      "passed": 7,
+      "failed": 0,
+      "active_jatim_rigs": 3
+    },
+    "backend_suites": {
+      "passed": [
+        "test_logika.py",
+        "test_model_service.py",
+        "test_kamera.py",
+        "test_dua_tangan.py",
+        "test_p2_model.py"
+      ],
+      "method": "existing logic and mock suites; MLP integration uses dataset samples"
+    },
+    "mlp_sample_integration": {
+      "correct": 119,
+      "total": 120,
+      "camera_accuracy_claim": false
+    },
+    "browser": {
+      "method": "managed preview + CUA browser; responsive app inside same-origin QA iframe",
+      "viewport_presets": [
+        {
+          "width": 390,
+          "height": 844,
+          "horizontal_overflow": false
+        },
+        {
+          "width": 1366,
+          "height": 768,
+          "horizontal_overflow": false
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "horizontal_overflow": false
+        }
+      ],
+      "passed": [
+        "opening screen and gunungan",
+        "new PNG/WebP/SVG artwork renders in Chrome",
+        "six training gestures on Gatotkaca",
+        "character switching to Semar",
+        "duet with independently controlled Semar and Bagong",
+        "two SVG instances have no duplicate IDs or broken use references",
+        "culture category filter",
+        "gesture shortcuts ignored while culture panel is open",
+        "Escape closes culture panel while retaining training mode",
+        "focus-mode fallback enters/exits and can open culture panel"
+      ],
+      "native_fullscreen": "Browser returned TypeError: not granted; focus-mode fallback used instead.",
+      "missing_images_on_checked_stage": 0,
+      "duplicate_ids_on_checked_duet": 0,
+      "broken_svg_use_refs_on_checked_duet": 0
+    },
+    "content": {
+      "facts": 12,
+      "sources": 7,
+      "local_fonts": true,
+      "local_artwork": true,
+      "source_links_require_internet": true
+    }
+  },
+  "limits": [
+    "No real webcam/lighting/latency validation: execution environment lacks OpenCV, MediaPipe and a presentation webcam.",
+    "No measured frame-rate comparison on the user laptop.",
+    "Semar/Bagong speech uses browser TTS; Indonesian voice availability and sound quality vary by device.",
+    "Native fullscreen not verified; focus fallback verified.",
+    "Illustrations are original interpretations informed by research, not practitioner-validated reproductions.",
+    "Background recordings span traditions; music is opt-in and is not presented as authentic Jekdong accompaniment."
+  ],
+  "assets": {
+    "mode": "built_in_image_gen",
+    "manifest": "frontend/assets/jatim/manifest.json",
+    "credits": "frontend/assets/jatim/ASSET_CREDITS.md",
+    "rig_sizes_kib": {
+      "gatotkaca": 585.9,
+      "semar": 443.1,
+      "bagong": 446.7
+    }
+  },
+  "screenshots": [
+    "docs/images/jatim-duet.jpg",
+    "docs/images/jatim-budaya.jpg",
+    "docs/images/jatim-pembuka.jpg"
+  ]
+}
