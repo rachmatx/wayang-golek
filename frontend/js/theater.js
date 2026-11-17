@@ -11,6 +11,7 @@
   const VOLUME_KEY = "wayang-volume";
   const DIALOG_KEY = "wayang-dialog";
   const MUSIC_KEY = "wayang-musik";
+  const SFX_KEY = "wayang-sfx";
   const DUST_COUNT = 12;
   const TICK_MS = 250;
 
@@ -33,7 +34,9 @@
   let lastWristAt = 0;
   let reading = false;
   let readingAt = null;
-  let musicOn = false;
+  let musicOn = true;
+  let sfxOn = true;
+  let levels = { dialog: 0.85, musik: 0.28, sfx: 0.7 };
   const tumpukanModal = [];
 
   function $(id) { return document.getElementById(id); }
@@ -78,19 +81,29 @@
     soundOn = readSoundPreference();
     dialogOn = readDialogPreference();
     volume = readVolumePreference();
-    try { musicOn = window.localStorage.getItem(MUSIC_KEY) === "nyala"; } catch (error) { musicOn = false; }
+    levels = AudioPrefs.read(audioStorage());
+    try { musicOn = window.localStorage.getItem(MUSIC_KEY) !== "mati"; } catch (_) { musicOn = true; }
+    try { sfxOn = window.localStorage.getItem(SFX_KEY) !== "mati"; } catch (_) { sfxOn = true; }
     const musicToggle = $("kontrol-musik");
-    if (musicToggle) {
-      musicToggle.setAttribute("aria-pressed", String(musicOn));
-      musicToggle.textContent = musicOn ? "Musik latar nyala" : "Musik latar mati";
-      musicToggle.addEventListener("click", function () {
-        musicOn = !musicOn;
-        musicToggle.setAttribute("aria-pressed", String(musicOn));
-        musicToggle.textContent = musicOn ? "Musik latar nyala" : "Musik latar mati";
-        try { localStorage.setItem(MUSIC_KEY, musicOn ? "nyala" : "mati"); } catch (error) { /* pilihan tetap berlaku selama sesi */ }
-        syncAmbient();
+    if (musicToggle) musicToggle.addEventListener("click", function () {
+      musicOn = !musicOn;
+      try { localStorage.setItem(MUSIC_KEY, musicOn ? "nyala" : "mati"); } catch (_) { /* Optional storage. */ }
+      applyChannelLevels(); syncAmbient();
+    });
+    const sfxToggle = $("kontrol-sfx");
+    if (sfxToggle) sfxToggle.addEventListener("click", function () {
+      sfxOn = !sfxOn;
+      try { localStorage.setItem(SFX_KEY, sfxOn ? "nyala" : "mati"); } catch (_) { /* Optional storage. */ }
+      applyChannelLevels();
+    });
+    Object.keys(levels).forEach(function (channel) {
+      const slider = $("volume-" + channel);
+      if (slider) slider.addEventListener("input", function () {
+        levels[channel] = Number(slider.value);
+        AudioPrefs.write(audioStorage(), levels);
+        applyChannelLevels();
       });
-    }
+    });
     /* Wayang ngomong -> gamelan dikecilkan. Dipasang sekali, sebelum unlock. */
     if (window.SuaraDialog) {
       window.SuaraDialog.setPengaturDuck(function (aktif) {
@@ -105,6 +118,8 @@
     syncKameraButton();
     syncVolumeOutput();
     terapkanDialog();
+    applyChannelLevels();
+    document.addEventListener("wayang:audio-status", syncAudioControls);
     listenAudioUnlock();
     bindTheaterEvents();
     document.addEventListener("visibilitychange", onVisibility);
@@ -408,7 +423,7 @@
     if (!els.tombolSuara) return;
     els.tombolSuara.dataset.on = soundOn ? "true" : "false";
     els.tombolSuara.setAttribute("aria-pressed", soundOn ? "true" : "false");
-    const label = soundOn ? "Matikan suara" : "Nyalakan suara";
+    const label = soundOn ? "Bisukan semua suara" : "Aktifkan kembali suara";
     els.tombolSuara.setAttribute("aria-label", label);
     els.tombolSuara.title = label;
   }
@@ -427,6 +442,7 @@
     }
     terapkanDialog();
     syncAmbient();
+    syncAudioControls();
   }
 
   /* Kamera dipegang backend: tombol ini cuma mengajukan niat, state akhirnya
@@ -458,12 +474,14 @@
     writeVolumePreference(volume);
     syncVolumeOutput();
     if (window.Suara) window.Suara.setVolume(volume);
+    applyChannelLevels();
   }
 
   function setDialog(on) {
     dialogOn = Boolean(on);
     writeDialogPreference(dialogOn);
     terapkanDialog();
+    syncAudioControls();
   }
 
   function terapkanDialog() {
@@ -479,11 +497,61 @@
 
   function syncDialogButton() {
     if (!els.kontrolDialog) return;
-    const on = soundOn && dialogOn;
+    const on = dialogOn;
     els.kontrolDialog.setAttribute("aria-pressed", on ? "true" : "false");
     const label = on ? "Matikan suara dialog" : "Nyalakan suara dialog";
     els.kontrolDialog.setAttribute("aria-label", label);
     els.kontrolDialog.title = label;
+    els.kontrolDialog.textContent = on ? "Nyala" : "Mati";
+  }
+
+  function audioStorage() { try { return window.localStorage; } catch (_) { return null; } }
+
+  function applyChannelLevels() {
+    if (window.Suara) {
+      Suara.setChannelVolume("musik", levels.musik);
+      Suara.setChannelVolume("sfx", levels.sfx);
+      Suara.setChannelEnabled("musik", musicOn);
+      Suara.setChannelEnabled("sfx", sfxOn);
+    }
+    if (window.SuaraDialog) SuaraDialog.setVolume(volume * levels.dialog);
+    syncAudioControls();
+  }
+
+  function syncAudioControls() {
+    const values = { dialog: dialogOn, musik: musicOn, sfx: sfxOn };
+    Object.keys(values).forEach(function (channel) {
+      const toggle = $("kontrol-" + channel);
+      if (toggle) {
+        toggle.setAttribute("aria-pressed", String(values[channel]));
+        const label = values[channel] ? "Nyala" : "Mati";
+        if (toggle.textContent !== label) toggle.textContent = label;
+      }
+      const slider = $("volume-" + channel);
+      if (slider && slider.value !== String(levels[channel])) slider.value = String(levels[channel]);
+      const output = $("volume-" + channel + "-nilai");
+      const percentage = Math.round(levels[channel] * 100) + "%";
+      if (output && output.textContent !== percentage) output.textContent = percentage;
+    });
+    const musicState = $("audio-music-state");
+    if (musicState && window.Suara) {
+      const state = Suara.status();
+      musicState.dataset.playing = String(state.musicPlaying);
+      const message = !musicOn ? "Musik latar dimatikan." : !soundOn ? "Dibisukan bersama semua suara." : !state.available ? "Audio tidak didukung browser ini." : document.hidden ? "Dijeda saat tab tidak aktif." : reading ? "Dijeda selama membaca." : state.musicFailed ? "Musik gagal dimuat. Coba muat ulang." : state.musicPlaying ? "Sedang mengalun di panggung." : !core || core.state() === "pembuka" ? "Mulai setelah panggung dibuka." : state.context !== "running" ? "Ketuk panggung untuk mengaktifkan audio." : "Menyiapkan iringan panggung…";
+      if (musicState.textContent !== message) musicState.textContent = message;
+    }
+    const master = $("audio-master");
+    if (master) {
+      master.setAttribute("aria-pressed", String(!soundOn));
+      const label = soundOn ? "Bisukan semua" : "Aktifkan kembali suara";
+      if (master.textContent !== label) master.textContent = label;
+    }
+    const note = $("audio-status");
+    const message = soundOn ? "Atur tiap suara tanpa mematikan yang lain." : "Semua suara sedang dibisukan. Pilihan tiap kanal tetap tersimpan.";
+    if (note && note.textContent !== message) note.textContent = message;
+    document.querySelectorAll("[data-open-audio]").forEach(function (button) {
+      button.dataset.muted = String(!soundOn);
+    });
   }
 
   function listenAudioUnlock() {
@@ -500,6 +568,7 @@
     window.Suara.setEnabled(soundOn);
     window.Suara.unlock();
     window.Suara.setVolume(volume);
+    applyChannelLevels();
     if (pendingGong && soundOn) {
       pendingGong = false;
       window.Suara.play("buka");
@@ -510,10 +579,11 @@
   function syncAmbient() {
     if (!window.Suara) return;
     const act = core ? core.state() : "pembuka";
-    const connected = core ? core.snapshot().connected : true;
+    const connected = (core ? core.snapshot().connected : true) || (window.Dummy && window.Dummy.isActive());
     const on = musicOn && soundOn && audioUnlocked && !document.hidden && !reading && connected
       && (act === "live" || act === "jeda");
     window.Suara.musik(on, act === "jeda" ? "jeda" : "panggung");
+    syncAudioControls();
   }
 
   /* ---------- debu ---------- */
@@ -871,7 +941,7 @@
       if (els.balon) els.balon.hidden = true;
       if (window.SuaraDialog) { SuaraDialog.setEnabled(false); terapkanDialog(); }
     },
-    openPanel: function (panel, focus, close) { bukaModal(panel, focus, close); setReading(true); },
+    openPanel: function (panel, focus, close, options) { bukaModal(panel, focus, close); if (!(options && options.keepAudio)) setReading(true); },
     closePanel: function (panel) { tutupModal(panel); setReading(false); },
     exitCharacter: function () {
       if (!core) return Promise.resolve();
@@ -892,6 +962,7 @@
       run(core.setCharacter(key, performance.now()));
     },
     setSound: setSound,
+    soundEnabled: function () { return soundOn; },
     setCamera: setCamera,
     fail: fail,
     onWrist: onWrist,

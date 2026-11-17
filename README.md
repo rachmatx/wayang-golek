@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.3 berada di branch `feat/wayang-kulit-jatim`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.3.1 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -15,7 +15,9 @@ Pengembangan versi 0.3 berada di branch `feat/wayang-kulit-jatim`. [Rencana](doc
 - Panduan enam gestur dengan ikon duotone besar, keterangan aksi, dan indikator gestur aktif.
 - Dua belas fakta budaya dengan kategori, konteks daerah, dan sumber penelitian. Konten tersedia lokal.
 - Panel budaya menahan cue suara dan pintasan gestur saat dibaca; Escape menutup panel dan mengembalikan fokus.
-- Font dan aset lokal, tata letak ponsel, reduced motion, layar penuh, pengaturan suara, dan musik latar opsional.
+- Tombol Audio dekat panggung: dialog, musik latar, dan SFX memiliki toggle serta volume terpisah; tersedia volume master dan Bisukan semua. Pilihan tersimpan di perangkat.
+- Untuk pengunjung baru, BGM mulai pelan setelah panggung dibuka. Pilihan musik mati dari sesi sebelumnya tetap dihormati.
+- Font dan aset lokal, tata letak ponsel, reduced motion, layar penuh, serta panel audio berbentuk bottom sheet di ponsel.
 
 ![Panggung duet](docs/images/jatim-v03-rimba-duet.jpg)
 
@@ -115,3 +117,13 @@ Untuk QA responsif lokal tambahan, `npm run dev` memakai Python dan dependensi y
 ## Upgrade v0.3
 
 Lihat [catatan riset dan keputusan gerak](docs/research/2026-11-18-upgrade-v03.md) dan [hasil verifikasi](docs/verification/2026-11-18-jatim-v03.json).
+
+## Tahap 1 — audio v0.3.1
+
+Tekan **Audio** di toolbar panggung. Matikan **Dialog wayang** untuk menikmati musik dan SFX sambil tetap membaca teks dialog. Toggle ketiga kanal saling independen; **Bisukan semua** mempertahankan pilihan masing-masing kanal ketika suara diaktifkan kembali. Pengaturan teknis juga mempunyai tautan ke panel Audio yang sama.
+
+Volume master sekarang ikut mengatur rekaman dialog dan TTS browser. Pada beberapa browser, perubahan volume TTS saat sedang berbicara menghentikan kalimat tersebut; kalimat berikutnya memakai level baru. Rekaman dialog menyesuaikan volume saat itu juga.
+
+Musik tetap dapat didengar selama panel Audio terbuka. Panel bacaan budaya masih menjeda panggung/audio. Panel audio menunjukkan status musik dan pesan jika berkas gagal dimuat. Sumber audio lama tetap digunakan dengan keterangan lintas tradisi; tahap ini tidak menambahkan rekaman baru atau klaim iringan Jekdong autentik.
+
+[Verifikasi tahap 1](docs/verification/2026-11-18-audio-stage1.json)

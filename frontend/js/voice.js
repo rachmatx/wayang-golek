@@ -19,6 +19,8 @@
   };
 
   let enabled = true;
+  let volume = 1;
+  let utterance = null;
   let bicara = false;
   let pengaturDuck = null;
   let pemain = null;
@@ -48,6 +50,7 @@
 
   function selesai() {
     bicara = false;
+    utterance = null;
     if (pengaturDuck) pengaturDuck(false);
   }
 
@@ -100,6 +103,7 @@
       if (!ucapTTS(kunci, kalimat)) selesai();
     }
     el.preload = "auto";
+    el.volume = volume;
     el.src = DASAR + rel;
     el.addEventListener("playing", function () {
       if (request !== requestId) return;
@@ -131,6 +135,8 @@
     const profil = PROFIL[kunci] || PROFIL.klasik;
     const bunyi = new Utterance(kalimat);
     bunyi.lang = "id-ID";
+    bunyi.volume = volume;
+    utterance = bunyi;
     bunyi.rate = profil.rate;
     bunyi.pitch = profil.pitch;
     const voz = cariVoz();
@@ -150,7 +156,7 @@
 
   function ucap(kunci, teks) {
     const kalimat = typeof teks === "string" ? teks.trim() : "";
-    if (!enabled || !kalimat || bicara) return false;
+    if (!enabled || volume === 0 || !kalimat || bicara) return false;
     const rel = cariBerkas(kunci, kalimat);
     if (rel) return ucapBerkas(kunci, kalimat, rel);
     return ucapTTS(kunci, kalimat);
@@ -175,9 +181,23 @@
     selesai();
   }
 
+  function setVolume(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return;
+    const next = Math.max(0, Math.min(1, numeric));
+    if (next === volume) return;
+    volume = next;
+    if (pemain) pemain.volume = volume;
+    // Browser TTS does not reliably change volume in flight. Stop the current
+    // phrase when its volume changes; the next phrase uses the new level.
+    if (bicara && (utterance || volume === 0)) { const wasEnabled = enabled; setEnabled(false); enabled = wasEnabled; }
+  }
+
   window.SuaraDialog = {
     ucap: ucap,
     setEnabled: setEnabled,
+    setVolume: setVolume,
+    volume: function () { return volume; },
     enabled: function () { return enabled; },
     isBicara: function () { return bicara; },
     setPengaturDuck: function (fn) { pengaturDuck = typeof fn === "function" ? fn : null; },

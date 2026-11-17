@@ -245,3 +245,68 @@ test("tidur: keprak lalu ambien jangkrik, gestur membangunkannya", async functio
   alat.Suara.play("telapak");
   assert.ok(malam[0].berhenti, "ambien malam tidak berhenti saat wayang bangun");
 });
+
+test('mute SFX silences ringing effects while BGM keeps playing', async () => {
+  const a = await hidupkan(muat());
+  a.Suara.musik(true); a.Suara.play('telunjuk');
+  const music = cariSumber(a, 'latar-panggung.ogg')[0];
+  const effect = cariSumber(a, 'pukulan-bonang.wav')[0];
+  a.Suara.setChannelEnabled('sfx', false);
+  assert.equal(a.bus(effect).gain.value, 0);
+  assert.equal(music.berhenti, false);
+  assert.equal(a.Suara.isMusik(), true);
+  const count = a.sumber().length;
+  a.Suara.play('telapak'); assert.equal(a.sumber().length, count);
+  a.Suara.setChannelEnabled('sfx', true);
+  assert.equal(a.bus(effect).gain.value, .9);
+});
+
+test('music mute stops both BGM and night ambience, preserving SFX', async () => {
+  const a = await hidupkan(muat());
+  a.Suara.musik(true); a.Suara.play('tidur');
+  const night = cariSumber(a, 'suasana-malam.wav')[0];
+  const music = cariSumber(a, 'latar-panggung.ogg')[0];
+  a.Suara.setChannelEnabled('musik', false);
+  assert.ok(night.berhenti && music.berhenti);
+  a.Suara.play('telunjuk');
+  assert.ok(cariSumber(a, 'pukulan-bonang.wav').length);
+  const before = cariSumber(a, 'suasana-malam.wav').length;
+  a.Suara.play('tidur');
+  assert.equal(cariSumber(a, 'suasana-malam.wav').length, before);
+});
+
+test('ducking respects the chosen music level without touching effects', async () => {
+  const a = await hidupkan(muat());
+  a.Suara.musik(true); a.Suara.play('telunjuk');
+  const music = a.bus(cariSumber(a, 'latar-panggung.ogg')[0]);
+  const effect = a.bus(cariSumber(a, 'pukulan-bonang.wav')[0]);
+  a.Suara.setChannelVolume('musik', .3); a.Suara.setChannelVolume('sfx', .6);
+  a.Suara.ducking(true);
+  assert.ok(Math.abs(music.gain.value - .108) < 1e-10);
+  a.Suara.setChannelVolume('musik', .4);
+  a.Suara.ducking(false);
+  assert.equal(music.gain.value, .4); assert.equal(effect.gain.value, .6);
+});
+
+test('master mute silences already-playing effects and restores chosen levels', async () => {
+  const a = await hidupkan(muat());
+  a.Suara.play('telunjuk');
+  const master = a.keLuarga()[0];
+  a.Suara.setVolume(.35); a.Suara.setChannelVolume('sfx', .6);
+  a.Suara.setEnabled(false);
+  assert.equal(master.gain.value, 0);
+  a.Suara.setVolume(.25); assert.equal(master.gain.value, 0);
+  a.Suara.setEnabled(true);
+  assert.equal(master.gain.value, .25);
+  assert.equal(a.bus(cariSumber(a, 'pukulan-bonang.wav')[0]).gain.value, .6);
+});
+
+test('levels set before first interaction survive AudioContext creation', async () => {
+  const a = muat();
+  a.Suara.setVolume(.4); a.Suara.setChannelVolume('musik', .25);
+  a.Suara.setChannelEnabled('sfx', false);
+  await hidupkan(a); a.Suara.musik(true);
+  assert.equal(a.keLuarga()[0].gain.value, .4);
+  assert.equal(a.bus(cariSumber(a, 'latar-panggung.ogg')[0]).gain.value, .25);
+  a.kosong(); a.Suara.play('telunjuk'); assert.equal(a.sumber().length, 0);
+});

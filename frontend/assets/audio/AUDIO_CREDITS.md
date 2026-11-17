@@ -47,6 +47,10 @@ lisensi: `whoosh-tirai.wav`, `ketuk-kayu-keprak.wav`, `suasana-malam.wav`
 
 ## Penyesuaian Jawa Timuran — 18 November 2026
 
-Musik latar lama merupakan sampel lintas tradisi; **bukan** rekaman autentik khusus Jekdong. Musik default mati dan dapat dinyalakan di Pengaturan dengan keterangan asal. Cue hormat (`jempol`) sekarang memakai saron, bukan kacapi. Cue tersebut adalah interpretasi interaksi digital, bukan reproduksi iringan pakem.
+Musik latar lama merupakan sampel lintas tradisi; **bukan** rekaman autentik khusus Jekdong. Pada v0.2/v0.3 musik default mati dan dapat dinyalakan di Pengaturan dengan keterangan asal. Cue hormat (`jempol`) sekarang memakai saron, bukan kacapi. Cue tersebut adalah interpretasi interaksi digital, bukan reproduksi iringan pakem.
 
 Semar dan Bagong menggunakan naskah original aplikasi serta profil suara browser yang berbeda. Ketersediaan suara Indonesia bergantung pada perangkat. Tidak memakai ulang rekaman Cepot sebagai suara Bagong. Karakter lama dan berkasnya tetap menjadi arsip teknis.
+
+## Kontrol audio v0.3.1 — 18 November 2026
+
+Audio kini dapat diatur melalui tombol Audio di dekat panggung: dialog, musik, dan SFX mempunyai toggle serta volume sendiri. Untuk pengunjung baru, musik siap menyala pelan setelah panggung dibuka; pilihan mati yang pernah disimpan tetap dihormati. Asal rekaman di atas tetap berlaku, termasuk keterangannya sebagai sampel lintas tradisi. Tidak ada aset audio baru atau perubahan klaim budaya pada tahap ini.

@@ -81,7 +81,7 @@
     <main class="panggung-wrap" id="studio" tabindex="-1">
       <div class="studio-grid">
         <div class="stage-column">
-          <div class="stage-toolbar"><div class="studio-label"><span class="live-dot"></span> PANGGUNG INTERAKTIF</div><div class="stage-mode"><span>Penampil</span><div class="segmen" id="kontrol-jumlah" role="group" aria-label="Jumlah wayang"><button type="button" data-jumlah="1" class="aktif" aria-pressed="true">Solo</button><button type="button" data-jumlah="2" aria-pressed="false">Duet</button></div></div></div>
+          <div class="stage-toolbar"><div class="studio-label"><span class="live-dot"></span> PANGGUNG INTERAKTIF</div><div class="stage-mode"><button type="button" class="audio-trigger" data-open-audio aria-haspopup="dialog" aria-controls="audio-panel" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 9h6M9 15h6M16 7h6"/></svg><span>Audio</span></button><span>Penampil</span><div class="segmen" id="kontrol-jumlah" role="group" aria-label="Jumlah wayang"><button type="button" data-jumlah="1" class="aktif" aria-pressed="true">Solo</button><button type="button" data-jumlah="2" aria-pressed="false">Duet</button></div></div></div>
       <section class="panggung" id="panggung" data-scene="pendopo" data-karakter="gatotkaca" data-arah="kanan" data-tirai="tutup" aria-label="Panggung wayang">
         <div class="stage-scenery" aria-hidden="true"><div class="scene-image scene-pendopo"></div><div class="scene-image scene-rimba"></div><div class="scene-vignette"></div></div>
         <div class="stage-caption" aria-hidden="true"><span>PANGGUNG JAWA TIMURAN</span><span>WARISAN BUDAYA · RUANG EKSPRESI</span></div>
@@ -235,17 +235,7 @@
             <input id="kontrol-ambang" type="range" min="0.40" max="0.90" step="0.01" value="0.60" />
             <output id="kontrol-ambang-nilai" for="kontrol-ambang">0,60</output>
           </div>
-          <div class="kontrol-baris">
-            <label class="kontrol-label" for="kontrol-volume">Volume</label>
-            <input id="kontrol-volume" type="range" min="0" max="1" step="0.05" value="0.80" />
-            <output id="kontrol-volume-nilai" for="kontrol-volume">0,80</output>
-          </div>
-          <div class="kontrol-baris"><span class="kontrol-label">Musik latar</span><button type="button" class="tombol" id="kontrol-musik" aria-pressed="false">Musik latar mati</button></div>
-          <p class="music-source-note">Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. Lihat kredit audio untuk asal rekaman.</p>
-          <div class="kontrol-baris">
-            <span class="kontrol-label">Suara dialog</span>
-            <button type="button" class="tombol" id="kontrol-dialog" aria-pressed="true">Wayang bersuara (V)</button>
-          </div>
+          <div class="kontrol-baris"><span class="kontrol-label">Audio panggung</span><button type="button" class="tombol" data-open-audio aria-haspopup="dialog" aria-controls="audio-panel" aria-expanded="false">Atur dialog, musik & efek</button></div>
           <div class="kontrol-baris">
             <span class="kontrol-label">Mode latihan</span>
             <button type="button" class="tombol" id="kontrol-dummy">Mode latihan (D)</button>
@@ -278,6 +268,30 @@
       <section class="culture-credits" id="culture-credits"><p class="eyebrow">TENTANG PANGGUNG INI</p><h3>Sebuah cara baru untuk mengenal tradisi.</h3><p>Interpretasi digital wayang kulit Jawa Timuran dengan kendali gestur tangan. Ilustrasi dan dialog dibuat untuk aplikasi; rujukan budaya dapat dibaca pada setiap fakta.</p><p>Tokoh dan ilustrasi merupakan interpretasi visual, belum ditinjau praktisi pedalangan. Penyajian mengikuti konteks daerah yang disebutkan pada sumber.</p><p>Suara dialog memakai rekaman yang tersedia atau suara perangkat. Ketersediaan suara Bahasa Indonesia bergantung pada browser.</p><p><a href="assets/jatim/ASSET_CREDITS.md" target="_blank" rel="noopener noreferrer">Kredit ilustrasi</a> · <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Kredit audio</a> · <a href="assets/fonts/OFL.txt" target="_blank" rel="noopener noreferrer">Lisensi font</a></p></section>
     </div>
   </section>
+  <div id="audio-backdrop" class="audio-backdrop" hidden></div>
+  <section id="audio-panel" class="audio-panel" role="dialog" aria-modal="true" aria-labelledby="audio-title" aria-describedby="audio-status" hidden>
+    <div class="audio-panel-head"><div><span class="eyebrow">SUASANA DALAM SUARA</span><h2 id="audio-title">Audio panggung</h2></div><button type="button" id="audio-close" class="ikon-tombol" aria-label="Tutup audio">×</button></div>
+    <p id="audio-status" class="audio-status" role="status">Atur tiap suara tanpa mematikan yang lain.</p>
+    <div class="audio-channels">
+      <div class="audio-channel">
+        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v12H9l-4 4V4Z"/><path d="M8 8h8M8 12h5"/></svg></span><div><h3>Dialog wayang</h3><p>Matikan ucapan, tetap baca ceritanya.</p></div><button type="button" id="kontrol-dialog" class="audio-toggle" aria-label="Suara dialog" aria-pressed="true">Nyala</button></div>
+        <div class="audio-channel-volume"><label class="sr-only" for="volume-dialog">Volume dialog wayang</label><input id="volume-dialog" type="range" min="0" max="1" step="0.01" value="0.85" /><output id="volume-dialog-nilai" for="volume-dialog">85%</output></div>
+      </div>
+      <div class="audio-channel">
+        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17V5l11-2v12M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></span><div><h3>Musik latar</h3><p id="audio-music-state" role="status">Mulai setelah panggung dibuka.</p></div><button type="button" id="kontrol-musik" class="audio-toggle" aria-label="Musik latar" aria-pressed="true">Nyala</button></div>
+        <div class="audio-channel-volume"><label class="sr-only" for="volume-musik">Volume musik latar</label><input id="volume-musik" type="range" min="0" max="1" step="0.01" value="0.28" /><output id="volume-musik-nilai" for="volume-musik">28%</output></div>
+      </div>
+      <div class="audio-channel">
+        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9v6M7 5v14M12 8v8M17 3v18M21 9v6"/></svg></span><div><h3>Efek suara</h3><p>Ketukan gestur dan bunyi panggung.</p></div><button type="button" id="kontrol-sfx" class="audio-toggle" aria-label="Efek suara" aria-pressed="true">Nyala</button></div>
+        <div class="audio-channel-volume"><label class="sr-only" for="volume-sfx">Volume efek suara</label><input id="volume-sfx" type="range" min="0" max="1" step="0.01" value="0.70" /><output id="volume-sfx-nilai" for="volume-sfx">70%</output></div>
+      </div>
+    </div>
+    <div class="audio-master-row"><div><label for="kontrol-volume">Volume keseluruhan</label><p>Mengatur ketiga suara bersamaan.</p></div><output id="kontrol-volume-nilai" for="kontrol-volume">0,80</output></div>
+    <input id="kontrol-volume" type="range" min="0" max="1" step="0.01" value="0.80" />
+    <button type="button" id="audio-master" class="audio-master" aria-pressed="false">Bisukan semua</button>
+    <p class="audio-footnote">Musik mulai setelah panggung dibuka. Pilihanmu tersimpan di perangkat ini.</p>
+    <details class="audio-credits"><summary>Tentang rekaman</summary><p>Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Lihat asal dan kredit audio</a>.</p></details>
+  </section>
   <script src="js/ws_client.js"></script>
   <script src="js/motion-core.js"></script>
   <script src="js/animation.js"></script>
@@ -290,10 +304,12 @@
   <script src="js/dialog_audio.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/theater-core.js"></script>
+  <script src="js/audio-prefs.js"></script>
   <script src="js/theater.js"></script>
   <script src="js/culture-core.js"></script>
   <script src="js/culture.js"></script>
   <script src="js/app.js"></script>
   <script src="js/stage.js"></script>
+  <script src="js/audio-controls.js"></script>
 </body>
 </html>

@@ -224,3 +224,31 @@ test("baris tanpa berkas tetap pakai TTS", function () {
   assert.equal(alat.ucap.length, 1);
   assert.equal(AudioPalsu.daftar.length, 0, "Audio dibuat untuk baris tanpa berkas");
 });
+
+test('dialogue volume applies to recorded clips and changes during playback', () => {
+  const a = muatBerkas();
+  a.SuaraDialog.setVolume(.34);
+  a.SuaraDialog.ucap('klasik', 'Sudah cukup. Kita diam sejenak.');
+  assert.equal(AudioPalsu.daftar[0].volume, .34);
+  a.SuaraDialog.setVolume(.2); assert.equal(AudioPalsu.daftar[0].volume, .2);
+});
+
+test('TTS uses chosen volume; updating an unchanged level never interrupts speech', () => {
+  const a = muat();
+  let cancellations = 0;
+  a.window.speechSynthesis.cancel = () => cancellations++;
+  a.SuaraDialog.setVolume(.4); a.SuaraDialog.ucap('semar', 'Halo, dalang.');
+  assert.equal(a.terakhir().volume, .4);
+  a.SuaraDialog.setVolume(.4);
+  assert.equal(cancellations, 0); assert.equal(a.SuaraDialog.isBicara(), true);
+  a.SuaraDialog.setVolume(.2);
+  assert.equal(cancellations, 1); assert.equal(a.SuaraDialog.isBicara(), false);
+  a.SuaraDialog.ucap('semar', 'Lanjut, dalang.'); assert.equal(a.terakhir().volume, .2);
+});
+
+test('zero voice volume stops ducking and suppresses silent future speech', () => {
+  const a = muat(); const log = a.kunci();
+  a.SuaraDialog.ucap('semar', 'Halo.'); a.SuaraDialog.setVolume(0);
+  assert.deepEqual(log, [true,false]); assert.equal(a.SuaraDialog.ucap('semar','Lanjut.'),false);
+  a.SuaraDialog.setVolume(.5); assert.equal(a.SuaraDialog.ucap('semar','Lanjut.'),true);
+});

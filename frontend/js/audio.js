@@ -73,10 +73,14 @@
   let suasanaMusik = "panggung";
   let duck = false;
   let levelMaster = VOL_MASTER;
+  const channelLevels = { sfx: VOL_SFX, musik: VOL_MUSIK };
+  const channelEnabled = { sfx: true, musik: true };
   let bus = null;
   const buffers = {};
   const janjiMuat = {};
+  const gagalMuat = new Set();
   let musikAktif = null; /* { kunci, src, gain } */
+  let malamDiminta = false;
   let malamAktif = null; /* { src, gain } */
 
   function ensureContext() {
@@ -84,10 +88,11 @@
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
     ctx = new Ctor();
+    ctx.onstatechange = notifyStatus;
     bus = {
-      master: buatkanGain(VOL_MASTER),
-      sfx: buatkanGain(VOL_SFX),
-      musik: buatkanGain(VOL_MUSIK),
+      master: buatkanGain(enabled ? levelMaster : 0),
+      sfx: buatkanGain(channelEnabled.sfx ? channelLevels.sfx : 0),
+      musik: buatkanGain(channelEnabled.musik ? channelLevels.musik * (duck ? MUSIK_DUCK / VOL_MUSIK : 1) : 0),
       vokal: buatkanGain(VOL_VOKAL),
     };
     bus.sfx.connect(bus.master);
@@ -113,7 +118,7 @@
     if (janjiMuat[kunci]) return janjiMuat[kunci];
     if (!ctx || typeof fetch !== "function") return Promise.resolve(null);
     janjiMuat[kunci] = fetch(DASAR + BERKAS[kunci])
-      .then(function (res) { return res.arrayBuffer(); })
+      .then(function (res) { if (res.ok === false) throw new Error("HTTP " + res.status); return res.arrayBuffer(); })
       .then(function (data) {
         const hasil = ctx.decodeAudioData(data);
         if (hasil && typeof hasil.then === "function") return hasil;
@@ -124,6 +129,8 @@
         return buffer || null;
       })
       .catch(function (error) {
+        gagalMuat.add(kunci);
+        notifyStatus();
         console.warn("[wayang] berkas audio gagal dimuat:", kunci, error);
         return null;
       });
@@ -180,16 +187,18 @@
 
   /* ---------- ambien malam (babak tidur) ---------- */
   function mulaiMalam() {
-    if (malamAktif) return;
+    malamDiminta = true;
+    if (malamAktif || !channelEnabled.musik) return;
     malamAktif = putar("malam", { bus: "musik", gain: 0.55, loop: true, pudarMasuk: 2.0 });
     if (!malamAktif) {
       muatBerkas("malam").then(function () {
-        if (buffers["malam"] && !malamAktif && enabled && unlocked) mulaiMalam();
+        if (buffers["malam"] && malamDiminta && !malamAktif && enabled && unlocked && channelEnabled.musik) mulaiMalam();
       });
     }
   }
 
   function hentikanMalam() {
+    malamDiminta = false;
     if (!malamAktif) return;
     pudarkanBerhenti(malamAktif, 0.8);
     malamAktif = null;
@@ -198,8 +207,9 @@
   /* ---------- cue ---------- */
   function play(cue) {
     if (!enabled || !unlocked || !ctx) return;
+    if (!channelEnabled.sfx && cue !== "tidur") return;
     if (cue === "tidur") {
-      putar("keprak", { bus: "sfx", gain: 0.7 });
+      if (channelEnabled.sfx) putar("keprak", { bus: "sfx", gain: 0.7 });
       mulaiMalam();
       return;
     }
@@ -227,16 +237,18 @@
     const lama = musikAktif;
     musikAktif = putar(kunci, { bus: "musik", gain: 0.95, loop: true, pudarMasuk: PUDAR_MUSIK });
     if (lama) pudarkanBerhenti(lama, PUDAR_MUSIK);
+    notifyStatus();
   }
 
   function hentikanMusik() {
     if (!musikAktif) return;
     pudarkanBerhenti(musikAktif, 0.6);
     musikAktif = null;
+    notifyStatus();
   }
 
   function terapMusik() {
-    const jalan = musikDiminta && enabled && unlocked;
+    const jalan = musikDiminta && channelEnabled.musik && enabled && unlocked;
     musikJalan = jalan;
     if (!jalan) { hentikanMusik(); return; }
     if (!ensureContext()) { musikJalan = false; return; }
@@ -255,7 +267,7 @@
   function ducking(on) {
     duck = Boolean(on);
     if (!bus) return;
-    const target = duck ? MUSIK_DUCK : VOL_MUSIK;
+    const target = channelEnabled.musik ? channelLevels.musik * (duck ? MUSIK_DUCK / VOL_MUSIK : 1) : 0;
     const at = ctx ? ctx.currentTime : 0;
     try {
       bus.musik.gain.cancelScheduledValues(at);
@@ -271,17 +283,21 @@
     try {
       bus.master.gain.cancelScheduledValues(ctx.currentTime);
       bus.master.gain.setValueAtTime(bus.master.gain.value, ctx.currentTime);
-      bus.master.gain.setTargetAtTime(levelMaster, ctx.currentTime, 0.05);
+      bus.master.gain.setTargetAtTime(enabled ? levelMaster : 0, ctx.currentTime, 0.05);
     } catch (error) { /* param tidak didukung */ }
   }
 
   function unlock() {
     try {
       if (!ensureContext()) return;
-      if (ctx.state === "suspended" && ctx.resume) ctx.resume();
+      if (ctx.state === "suspended" && ctx.resume) {
+        const resuming = ctx.resume();
+        if (resuming && resuming.then) resuming.then(notifyStatus).catch(function () { unlocked = false; notifyStatus(); });
+      }
       unlocked = true;
       pramuat();
       terapMusik();
+      notifyStatus();
     } catch (error) {
       console.warn("[wayang] audio tidak bisa dimulai:", error);
     }
@@ -289,18 +305,55 @@
 
   function setEnabled(on) {
     enabled = Boolean(on);
+    setVolume(levelMaster);
     if (!enabled) hentikanMalam();
     terapMusik();
   }
 
+  function status() {
+    return {
+      context: ctx ? ctx.state : "locked",
+      available: Boolean(window.AudioContext || window.webkitAudioContext),
+      musicPlaying: Boolean(musikAktif && musikJalan && ctx && ctx.state === "running"),
+      musicFailed: gagalMuat.has(kunciMusik()),
+    };
+  }
+  function notifyStatus() {
+    if (typeof document !== "undefined" && typeof CustomEvent === "function") {
+      document.dispatchEvent(new CustomEvent("wayang:audio-status", { detail: status() }));
+    }
+  }
+
+  function setChannelVolume(channel, value) {
+    if (!(channel in channelLevels)) return;
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return;
+    channelLevels[channel] = Math.max(0, Math.min(1, numeric));
+    if (channel === "musik") { ducking(duck); return; }
+    if (bus) bus.sfx.gain.setTargetAtTime(channelEnabled.sfx ? channelLevels.sfx : 0, ctx.currentTime, 0.03);
+  }
+
+  function setChannelEnabled(channel, on) {
+    if (!(channel in channelEnabled)) return;
+    channelEnabled[channel] = Boolean(on);
+    setChannelVolume(channel, channelLevels[channel]);
+    if (channel === "musik") {
+      if (!on) hentikanMalam();
+      terapMusik();
+    }
+  }
+
   window.Suara = {
     unlock: unlock,
+    status: status,
     setEnabled: setEnabled,
     enabled: function () { return enabled; },
     isUnlocked: function () { return unlocked; },
     play: play,
     musik: musik,
     setVolume: setVolume,
+    setChannelVolume: setChannelVolume,
+    setChannelEnabled: setChannelEnabled,
     volume: function () { return levelMaster; },
     ducking: ducking,
     ducked: function () { return duck; },

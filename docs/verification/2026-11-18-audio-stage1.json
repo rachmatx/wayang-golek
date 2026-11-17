@@ -1,0 +1,40 @@
+{
+  "version": "0.3.1",
+  "date": "2026-11-18",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Tahap 1: kontrol dan pemisahan audio",
+  "unit_tests": {
+    "passed": 93,
+    "failed": 0,
+    "new_tests": 12
+  },
+  "browser": {
+    "method": "managed preview + CUA; input UI dan pembacaan DOM",
+    "checked": [
+      "dialog mati dengan musik playing=true dan SFX nyala",
+      "SFX mati dengan musik playing=true",
+      "musik mati dengan SFX nyala",
+      "master mute mempertahankan pilihan kanal",
+      "pilihan master/dialog/musik dan volume 30% bertahan setelah reload",
+      "akses Audio dari toolbar serta Pengaturan",
+      "Escape menutup mixer dan mengembalikan fokus",
+      "status menunggu sebelum membuka panggung",
+      "panel mobile 390x844; lebar konten 388px dan scrollWidth 388px"
+    ],
+    "screenshots": [
+      "docs/images/jatim-audio-desktop.jpg",
+      "docs/images/jatim-audio-mobile.jpg"
+    ],
+    "page_console_errors_observed": 0
+  },
+  "limitations": [
+    "Routing dan level audio diuji dengan AudioContext/Audio/TTS tiruan; UI browser memverifikasi status playback. Kualitas bunyi pada speaker fisik belum dinilai.",
+    "Ketersediaan dan karakter suara TTS Indonesia bergantung pada browser/perangkat.",
+    "Berkas musik yang sama seperti versi sebelumnya; tetap berlabel lintas tradisi."
+  ],
+  "next_stages": [
+    "hierarki layout desktop dan mobile",
+    "fakta otomatis 30 detik dengan kontrol jeda",
+    "penyempurnaan kalibrasi dan kendali"
+  ]
+}
