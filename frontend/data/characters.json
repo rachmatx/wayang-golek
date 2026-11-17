@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "default_players": ["gatotkaca", "bagong"],
+  "characters": [
+    { "id": "gatotkaca", "label": "Gatotkaca", "role": "Kesatria berjiwa teguh", "file": "assets/jatim/wayang-gatotkaca.svg", "representation": "Ilustrasi interpretatif terinspirasi kajian Gathutkaca Krodha dalam Jekdong", "source_refs": ["S04"], "expert_reviewed": false },
+    { "id": "semar", "label": "Semar", "role": "Sang pamong bijaksana", "file": "assets/jatim/wayang-semar.svg", "representation": "Ilustrasi interpretatif Semar Jawa Timuran", "source_refs": ["S03"], "expert_reviewed": false },
+    { "id": "bagong", "label": "Bagong", "role": "Sahabat penuh kelakar", "file": "assets/jatim/wayang-bagong.svg", "representation": "Ilustrasi interpretatif Bagong Jawa Timuran", "source_refs": ["S03"], "expert_reviewed": false }
+  ]
+}

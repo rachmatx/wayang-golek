@@ -13,6 +13,8 @@
     klasik: { rate: 0.95, pitch: 1.0 },
     arjuna: { rate: 0.82, pitch: 0.82 },
     gatotkaca: { rate: 1.0, pitch: 0.62 },
+    semar: { rate: 0.86, pitch: 0.78 },
+    bagong: { rate: 1.12, pitch: 1.18 },
     cepot: { rate: 1.22, pitch: 1.3 },
   };
 
@@ -20,6 +22,7 @@
   let bicara = false;
   let pengaturDuck = null;
   let pemain = null;
+  let requestId = 0;
   const berkasBusuk = {};
   const sudahPreload = {};
 
@@ -77,6 +80,7 @@
   }
 
   function ucapBerkas(kunci, kalimat, rel) {
+    const request = ++requestId;
     let el;
     try {
       el = new window.Audio();
@@ -87,6 +91,7 @@
     bicara = true;
     let jatuh = false;
     function gagal() {
+      if (request !== requestId) return;
       berkasBusuk[rel] = true;
       if (pemain === el) pemain = null;
       if (jatuh) return;
@@ -97,9 +102,11 @@
     el.preload = "auto";
     el.src = DASAR + rel;
     el.addEventListener("playing", function () {
+      if (request !== requestId) return;
       if (pengaturDuck) pengaturDuck(true);
     });
     el.addEventListener("ended", function () {
+      if (request !== requestId) return;
       if (pemain === el) pemain = null;
       selesai();
     });
@@ -119,6 +126,7 @@
     const sintesis = window.speechSynthesis;
     const Utterance = window.SpeechSynthesisUtterance;
     if (!sintesis || typeof sintesis.speak !== "function" || !Utterance) return false;
+    const request = ++requestId;
 
     const profil = PROFIL[kunci] || PROFIL.klasik;
     const bunyi = new Utterance(kalimat);
@@ -128,11 +136,12 @@
     const voz = cariVoz();
     if (voz) bunyi.voice = voz;
     bunyi.onstart = function () {
+      if (request !== requestId) return;
       bicara = true;
       if (pengaturDuck) pengaturDuck(true);
     };
-    bunyi.onend = selesai;
-    bunyi.onerror = selesai;
+    bunyi.onend = function () { if (request === requestId) selesai(); };
+    bunyi.onerror = function () { if (request === requestId) selesai(); };
 
     bicara = true;
     sintesis.speak(bunyi);
@@ -149,6 +158,7 @@
 
   function setEnabled(on) {
     enabled = Boolean(on);
+    if (!enabled) requestId += 1;
     if (enabled || !bicara) return;
     if (pemain) {
       try {

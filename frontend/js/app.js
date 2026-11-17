@@ -32,14 +32,13 @@
 
   const NO_HAND_RESET_MS = 1000;
 
-  const CHARACTERS = {
-    klasik: { file: "assets/wayang.svg", label: "Klasik" },
-    arjuna: { file: "assets/wayang-arjuna.svg", label: "Arjuna" },
-    gatotkaca: { file: "assets/wayang-gatotkaca.svg", label: "Gatotkaca" },
-    cepot: { file: "assets/wayang-cepot.svg", label: "Cepot" },
+  let CHARACTERS = {
+    gatotkaca: { file: "assets/jatim/wayang-gatotkaca.svg", label: "Gatotkaca", role: "Kesatria berjiwa teguh" },
+    semar: { file: "assets/jatim/wayang-semar.svg", label: "Semar", role: "Sang pamong bijaksana" },
+    bagong: { file: "assets/jatim/wayang-bagong.svg", label: "Bagong", role: "Sahabat penuh kelakar" },
   };
 
-  const AWAL = ["klasik", "cepot"];
+  const AWAL = ["gatotkaca", "bagong"];
 
   const app = {
     source: "live",
@@ -67,7 +66,7 @@
       index: index,
       container: container,
       wayang: window.Wayang ? window.Wayang.createPlayer(container, index) : null,
-      karakter: AWAL[index] || "klasik",
+      karakter: AWAL[index] || "gatotkaca",
       loaded: false,
       gesture: null,
       lastGesture: null,
@@ -82,11 +81,21 @@
   }
 
   async function boot() {
+    await loadCharacters();
+    buildCharacters();
     Panel.init();
     Panel.setThreshold(app.threshold);
     app.slots = window.createSlots({ jumlah: 1 });
     app.players = [];
     for (let i = 0; i < MAX_PEMAIN; i += 1) app.players.push(buatPemain(i));
+    document.addEventListener("wayang:reading", function () {
+      app.players.forEach(function (pemain) {
+        cancelNeutral(pemain);
+        cancelAuto(pemain);
+        pemain.gesture = null;
+        pemain.lastGesture = null;
+      });
+    });
 
     Dummy.init({ onGesture: onDummyGesture, onToggle: onDummyToggle });
     Dummy.setJumlah(app.jumlah);
@@ -104,13 +113,71 @@
     await muatPemain(app.players[0]);
 
     buildPanduan();
+    buildMiniGuide();
     Dummy.rebuild();
     setFacingLabel(0, app.players[0].wayang ? app.players[0].wayang.facing() : 1);
   }
 
+  async function loadCharacters() {
+    try {
+      const response = await fetch("data/characters.json");
+      if (!response.ok) throw new Error("registry HTTP " + response.status);
+      const registry = await response.json();
+      const parsed = {};
+      (registry.characters || []).forEach(function (character) {
+        if (!/^[a-z]+$/.test(character.id) || !/^assets\/[a-zA-Z0-9_./-]+\.svg$/.test(character.file)) return;
+        parsed[character.id] = character;
+      });
+      if (AWAL.every(function (id) { return parsed[id]; })) CHARACTERS = parsed;
+    } catch (error) {
+      console.warn("[wayang] memakai registry karakter bawaan", error);
+    }
+  }
+
+  function buildCharacters() {
+    for (let index = 0; index < MAX_PEMAIN; index += 1) {
+      const container = $("kontrol-wayang-" + index);
+      if (!container) continue;
+      container.textContent = "";
+      Object.keys(CHARACTERS).forEach(function (key) {
+        const character = CHARACTERS[key];
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "character-card" + (key === AWAL[index] ? " aktif" : "");
+        button.dataset.wayang = key;
+        button.setAttribute("aria-pressed", String(key === AWAL[index]));
+        button.setAttribute("aria-label", character.label + ", pemain " + (index + 1));
+        const image = document.createElement("img");
+        image.src = character.file;
+        image.alt = "";
+        image.width = 44;
+        image.height = 58;
+        const copy = document.createElement("span");
+        const name = document.createElement("strong");
+        name.textContent = character.label;
+        const role = document.createElement("small");
+        role.textContent = character.role || "";
+        copy.append(name, role);
+        button.append(image, copy);
+        container.appendChild(button);
+      });
+    }
+  }
+
+  function buildMiniGuide() {
+    const container = $("gesture-mini");
+    if (!container) return;
+    const short = { telapak_terbuka: "Telapak", kepalan: "Kepalan", telunjuk: "Telunjuk", dua_jari: "Dua jari", jempol: "Jempol", ok: "OK" };
+    container.innerHTML = Wayang.gestures().map(function (gesture) {
+      return '<button type="button" class="gesture-item" title="' + escapeHtml(gesture.hint) + '">' +
+        (window.Glif ? Glif.tangan(gesture.id) : "") + '<span>' + short[gesture.id] + '</span></button>';
+    }).join("");
+    container.addEventListener("click", function () { $("tombol-panduan").click(); });
+  }
+
   async function muatPemain(pemain, key) {
     if (!pemain.wayang || !pemain.container) return false;
-    const karakter = CHARACTERS[key || pemain.karakter] || CHARACTERS.klasik;
+    const karakter = CHARACTERS[key || pemain.karakter] || CHARACTERS.gatotkaca;
     try {
       await pemain.wayang.load(karakter.file, {
         pose: "netral",
@@ -166,6 +233,8 @@
       });
     }
     for (let i = 1; i < MAX_PEMAIN; i += 1) {
+      const group = $("cast-group-" + i);
+      if (group) group.hidden = i >= jumlah;
       const tray = $("kontrol-wayang-" + i);
       const label = $("tray-label-" + i);
       if (tray) tray.hidden = i >= jumlah;
@@ -247,7 +316,7 @@
     const hands = Array.isArray(message.hands) ? message.hands : [];
 
     Panel.setCamera(message.camera);
-    Panel.setMeta(message.model, message.fps, message.model_loaded);
+    Panel.setMeta(message.model, message.camera === true ? message.fps : 0, message.model_loaded);
 
     const penugasan = app.slots.assign(hands);
     const perSlot = new Map();
@@ -270,6 +339,7 @@
   }
 
   function prosesTangan(pemain, hand, message) {
+    if (window.Teater && Teater.isReading && Teater.isReading()) return;
     const index = pemain.index;
 
     if (!hand) {
@@ -341,6 +411,7 @@
 
   /* ---------- gestur -> pose ---------- */
   function activateGesture(pemain, gesture, wrist, source, confidence) {
+    if (window.Teater && Teater.isReading && Teater.isReading()) return;
     cancelAuto(pemain);
     const index = pemain.index;
     const from = source || app.source;
@@ -431,6 +502,7 @@
 
   /* ---------- mode dummy ---------- */
   function onDummyGesture(payload) {
+    if (window.Teater && Teater.isReading && Teater.isReading()) return;
     const gesture = payload.gesture;
     const pemain = app.players[payload.player] || app.players[0];
     if (!gesture || !pemain.wayang || !pemain.loaded) return;
@@ -442,7 +514,7 @@
     Panel.setTop3([[gesture === "netral" ? "netral" : gesture, 1]]);
     const confidence = gesture === "netral" ? 1 : (DUMMY_CONFIDENCE[gesture] || 0.9);
     Panel.setConfidence(confidence);
-    Panel.setHint("mode dummy — gestur dari tombol, bukan kamera");
+    Panel.setHint("mode latihan — gestur dari tombol, bukan kamera");
 
     app.focus = pemain.index;
     if (gesture === pemain.gesture && gesture !== "telunjuk") return;
@@ -452,10 +524,11 @@
   function onDummyToggle(active) {
     app.source = active ? "dummy" : "live";
     app.players.forEach(function (pemain) { pemain.lastGesture = null; });
+    if (active) Panel.setMeta("dummy", 0, true);
     const badge = $("panggung-badge");
     if (badge) badge.hidden = !active;
     const tombol = $("kontrol-dummy");
-    if (tombol) tombol.textContent = active ? "Keluar mode dummy" : "Mode dummy (D)";
+    if (tombol) tombol.textContent = active ? "Keluar mode latihan" : "Mode latihan (D)";
 
     if (active) {
       /* Jangan biarkan timer "tangan hilang" dari mode live mereset pose
@@ -464,7 +537,7 @@
         cancelNeutral(pemain);
         cancelAuto(pemain);
       });
-      Panel.setHint("mode dummy — pilih gestur lewat tombol atau angka 1–6");
+      Panel.setHint("mode latihan — pilih gestur lewat tombol atau angka 1–6");
     } else {
       app.players.forEach(cancelNeutral);
       Panel.setHint("menunggu data prediksi…");
@@ -569,7 +642,11 @@
     if (window.Teater && Teater.isBusy && Teater.isBusy()) return;
 
     app.characterLoading = true;
+    const castButtons = document.querySelectorAll(".kontrol-wayang button");
+    castButtons.forEach(function (item) { item.disabled = true; });
+    $("kelir").setAttribute("aria-busy", "true");
     const teater = window.Teater;
+    if (teater && teater.stopVoice) teater.stopVoice();
     const state = teater && teater.state ? teater.state() : "live";
     const tampil = state === "live" || state === "jeda";
     const lama = pemain.karakter;
@@ -582,15 +659,22 @@
       const sukses = await muatPemain(pemain, key);
       if (!sukses) throw new Error("gagal memuat " + karakter.file);
       pemain.karakter = key;
+      resetPemain(pemain, false);
       markTray(index, button);
       if (dalang) teater.setCharacter(key);
+      document.dispatchEvent(new CustomEvent("wayang:character", { detail: { character: key, player: index } }));
     } catch (error) {
       console.error("[wayang] gagal memuat " + karakter.label + ":", error);
       Panel.setHint("wayang " + karakter.label + " gagal dimuat");
       await muatPemain(pemain, lama);
       if (dalang) teater.setCharacter(lama);
     } finally {
+      if (dalang && tampil && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        await new Promise(function (resolve) { setTimeout(resolve, 900); });
+      }
       app.characterLoading = false;
+      castButtons.forEach(function (item) { item.disabled = false; });
+      $("kelir").setAttribute("aria-busy", "false");
     }
   }
 
@@ -598,6 +682,7 @@
     if (!button || !button.parentNode) return;
     Array.prototype.forEach.call(button.parentNode.children, function (child) {
       child.classList.toggle("aktif", child === button);
+      child.setAttribute("aria-pressed", String(child === button));
     });
   }
 
@@ -689,7 +774,7 @@
       if (window.Teater) Teater.setCamera(hidup);
       app.kameraAktif = hidup;
       if (!hidup) Panel.setHint("kamera dimatikan — perangkat bebas dipakai aplikasi lain");
-      else if (message.ok === false) Panel.setHint("kamera tidak bisa dibuka — coba sumber lain di Info demo");
+      else if (message.ok === false) Panel.setHint("kamera tidak bisa dibuka — coba sumber lain di Pengaturan");
       else Panel.setHint("kamera dinyalakan");
       muatKamera(false);
       return;
@@ -750,7 +835,7 @@
     }
 
     if (data.model_loaded === false && app.source === "live") {
-      Panel.setHint("model P2 belum terpasang — backend jalan tanpa model, coba mode dummy (D)");
+      Panel.setHint("model P2 belum terpasang — backend jalan tanpa model, coba mode latihan (D)");
     }
   }
 

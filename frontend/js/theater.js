@@ -10,6 +10,7 @@
   const SOUND_KEY = "wayang-suara";
   const VOLUME_KEY = "wayang-volume";
   const DIALOG_KEY = "wayang-dialog";
+  const MUSIC_KEY = "wayang-musik";
   const DUST_COUNT = 12;
   const TICK_MS = 250;
 
@@ -30,6 +31,9 @@
   let pendingGong = false;
   let audioUnlocked = false;
   let lastWristAt = 0;
+  let reading = false;
+  let readingAt = null;
+  let musicOn = false;
   const tumpukanModal = [];
 
   function $(id) { return document.getElementById(id); }
@@ -74,6 +78,19 @@
     soundOn = readSoundPreference();
     dialogOn = readDialogPreference();
     volume = readVolumePreference();
+    try { musicOn = window.localStorage.getItem(MUSIC_KEY) === "nyala"; } catch (error) { musicOn = false; }
+    const musicToggle = $("kontrol-musik");
+    if (musicToggle) {
+      musicToggle.setAttribute("aria-pressed", String(musicOn));
+      musicToggle.textContent = musicOn ? "Musik latar nyala" : "Musik latar mati";
+      musicToggle.addEventListener("click", function () {
+        musicOn = !musicOn;
+        musicToggle.setAttribute("aria-pressed", String(musicOn));
+        musicToggle.textContent = musicOn ? "Musik latar nyala" : "Musik latar mati";
+        try { localStorage.setItem(MUSIC_KEY, musicOn ? "nyala" : "mati"); } catch (error) { /* pilihan tetap berlaku selama sesi */ }
+        syncAmbient();
+      });
+    }
     /* Wayang ngomong -> gamelan dikecilkan. Dipasang sekali, sebelum unlock. */
     if (window.SuaraDialog) {
       window.SuaraDialog.setPengaturDuck(function (aktif) {
@@ -113,17 +130,17 @@
 
   function bindTheaterEvents() {
     document.addEventListener("wayang:gesture", function (event) {
-      if (!core) return;
+      if (!core || reading) return;
       run(core.gesture(event.detail, performance.now()));
       syncAmbient();
     });
     document.addEventListener("wayang:nohand", function () {
-      if (!core) return;
+      if (!core || reading) return;
       run(core.noHand(performance.now()));
       syncAmbient();
     });
     document.addEventListener("wayang:hand", function () {
-      if (!core) return;
+      if (!core || reading) return;
       run(core.hand(performance.now()));
       syncAmbient();
     });
@@ -184,7 +201,10 @@
     }
 
     document.addEventListener("keydown", function (event) {
+      if (event.defaultPrevented) return;
       if (event.key === "Escape") {
+        const top = tumpukanModal[tumpukanModal.length - 1];
+        if (top && top.close) { event.preventDefault(); top.close(); return; }
         if (els.panduan && !els.panduan.hidden) {
           setGuide(false);
           return;
@@ -193,9 +213,15 @@
           setDrawer(false);
           return;
         }
+        if (document.body.classList.contains("stage-focus")) {
+          document.body.classList.remove("stage-focus");
+          event.preventDefault();
+          return;
+        }
         if (window.Dummy && window.Dummy.isActive()) window.Dummy.setActive(false);
         return;
       }
+      if (tumpukanModal.length && event.key !== "Tab") return;
       if (event.key === "v" || event.key === "V") {
         const target = event.target;
         if (target && target.closest && target.closest("input, textarea, select")) return;
@@ -244,9 +270,13 @@
     }
   }
 
-  function bukaModal(panel, fokusKe) {
+  function bukaModal(panel, fokusKe, close) {
     if (!panel) return;
-    tumpukanModal.push({ panel: panel, sebelum: document.activeElement });
+    if (tumpukanModal.some(function (entry) { return entry.panel === panel; })) return;
+    tumpukanModal.slice().forEach(function (entry) {
+      if (entry.close) entry.close();
+    });
+    tumpukanModal.push({ panel: panel, sebelum: document.activeElement, close: close });
     sinkronInert();
     if (fokusKe) fokusKe.focus();
   }
@@ -286,7 +316,7 @@
     if (els.laciBackdrop) els.laciBackdrop.hidden = !open;
     if (els.tombolLaci) els.tombolLaci.setAttribute("aria-expanded", open ? "true" : "false");
     if (open) {
-      bukaModal(els.laci, els.laciTutup);
+      bukaModal(els.laci, els.laciTutup, function () { setDrawer(false); });
       return;
     }
     tutupModal(els.laci);
@@ -296,23 +326,29 @@
     if (!els.panduan) return;
     els.panduan.hidden = !open;
     if (open) {
-      bukaModal(els.panduan, els.panduanTutup);
+      bukaModal(els.panduan, els.panduanTutup, function () { setGuide(false); });
       return;
     }
     tutupModal(els.panduan);
   }
 
   function toggleFullscreen() {
-    const target = els.root;
+    const target = document.documentElement;
     if (!target) return;
+    if (document.body.classList.contains("stage-focus")) {
+      document.body.classList.remove("stage-focus");
+      return;
+    }
+    function focusFallback() { document.body.classList.add("stage-focus"); }
     try {
       if (!document.fullscreenElement) {
-        target.requestFullscreen();
+        const pending = target.requestFullscreen();
+        if (pending && pending.catch) pending.catch(focusFallback);
       } else {
         document.exitFullscreen();
       }
     } catch (error) {
-      console.warn("[wayang] layar penuh tidak tersedia:", error);
+      focusFallback();
     }
   }
 
@@ -432,7 +468,7 @@
 
   function terapkanDialog() {
     syncDialogButton();
-    if (window.SuaraDialog) window.SuaraDialog.setEnabled(soundOn && dialogOn);
+    if (window.SuaraDialog) window.SuaraDialog.setEnabled(soundOn && dialogOn && !reading);
   }
 
   function syncVolumeOutput() {
@@ -475,7 +511,7 @@
     if (!window.Suara) return;
     const act = core ? core.state() : "pembuka";
     const connected = core ? core.snapshot().connected : true;
-    const on = soundOn && audioUnlocked && !document.hidden && connected
+    const on = musicOn && soundOn && audioUnlocked && !document.hidden && !reading && connected
       && (act === "live" || act === "jeda");
     window.Suara.musik(on, act === "jeda" ? "jeda" : "panggung");
   }
@@ -499,7 +535,7 @@
   function startLoop() {
     if (loopTimer !== null) return;
     loopTimer = setInterval(function () {
-      if (!core || document.hidden) return;
+      if (!core || document.hidden || reading) return;
       run(core.tick(performance.now()));
       syncAmbient();
     }, TICK_MS);
@@ -520,7 +556,7 @@
       return;
     }
     const now = performance.now();
-    if (hiddenAt && core) core.shift(now - hiddenAt);
+    if (hiddenAt && core && !reading) core.shift(now - hiddenAt);
     hiddenAt = 0;
     startLoop();
     syncAmbient();
@@ -539,7 +575,7 @@
   function showOpeningCard() {
     if (!els.pembuka) return;
     els.pembuka.hidden = false;
-    if (els.pembukaJudul) els.pembukaJudul.textContent = "Tunjukkan telapak tangan";
+    if (els.pembukaJudul) els.pembukaJudul.textContent = "Cerita dimulai dari tanganmu.";
     if (els.pembukaCatatan) {
       els.pembukaCatatan.textContent = "gestur apa pun yang terbaca akan membuka tirai";
     }
@@ -646,7 +682,7 @@
   }
 
   function showBubble(effect) {
-    if (!els.balon || !effect.text) return;
+    if (!els.balon || !effect.text || reading) return;
     const delay = Number(effect.delay) || 0;
     clearTimeout(bubblePending);
     if (delay > 0) {
@@ -657,7 +693,8 @@
   }
 
   function paintBubble(effect) {
-    if (!els.balon) return;
+    if (!els.balon || reading) return;
+    if (core && (core.state() === "pembuka" || core.state() === "tidur")) return;
     /* Sinkron teks-suara: selama ucapan sebelumnya masih jalan, balon baru
      * tidak ditampilkan. voice.js memang menolak ucapan yang menumpuk, jadi
      * balon yang tetap berganti cuma bikin teks dan suara beda kalimat. */
@@ -694,7 +731,7 @@
   }
 
   function playSound(cue) {
-    if (!cue || !soundOn) return;
+    if (!cue || !soundOn || reading) return;
     if (!audioUnlocked) {
       if (cue === "buka") pendingGong = true;
       return;
@@ -747,6 +784,26 @@
 
   function setCharacterColor(key) {
     if (els.root) els.root.dataset.karakter = key || "klasik";
+  }
+
+  function setReading(on) {
+    if (reading === Boolean(on)) return;
+    reading = Boolean(on);
+    const now = performance.now();
+    if (reading) {
+      readingAt = now;
+      pendingGong = false;
+      clearTimeout(bubblePending);
+      clearTimeout(bubbleTimer);
+      if (els.balon) els.balon.hidden = true;
+    } else {
+      if (readingAt !== null && core) core.shift(now - readingAt);
+      readingAt = null;
+      if (document.hidden) hiddenAt = now;
+    }
+    terapkanDialog();
+    syncAmbient();
+    document.dispatchEvent(new CustomEvent("wayang:reading", { detail: { reading: reading } }));
   }
 
   /* ---------- transisi karakter ---------- */
@@ -806,6 +863,16 @@
     init: init,
     state: function () { return core ? core.state() : "pembuka"; },
     isBusy: function () { return core ? core.snapshot().busy : false; },
+    isReading: function () { return reading; },
+    open: function () { openStage("button"); },
+    toggleFullscreen: toggleFullscreen,
+    stopVoice: function () {
+      clearTimeout(bubblePending);
+      if (els.balon) els.balon.hidden = true;
+      if (window.SuaraDialog) { SuaraDialog.setEnabled(false); terapkanDialog(); }
+    },
+    openPanel: function (panel, focus, close) { bukaModal(panel, focus, close); setReading(true); },
+    closePanel: function (panel) { tutupModal(panel); setReading(false); },
     exitCharacter: function () {
       if (!core) return Promise.resolve();
       run(core.exitCharacter(performance.now()));
@@ -814,6 +881,10 @@
       });
     },
     setCharacter: function (key) {
+      if (window.SuaraDialog) {
+        window.SuaraDialog.setEnabled(false);
+        terapkanDialog();
+      }
       if (!core) {
         setCharacterColor(key);
         return;

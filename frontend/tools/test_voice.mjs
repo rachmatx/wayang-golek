@@ -88,6 +88,30 @@ test("karakter tidak dikenal pakai suara klasik, tidak crash", function () {
   assert.equal(alat.terakhir().text, "Aku bukan siapa-siapa.");
 });
 
+test("Semar dan Bagong punya profil suara berbeda", function () {
+  const alat = muat();
+  alat.SuaraDialog.ucap("semar", "Selamat datang, dalang.");
+  const semar = alat.terakhir();
+  alat.selesai();
+  alat.SuaraDialog.ucap("bagong", "Ayo, kita mulai!");
+  const bagong = alat.terakhir();
+  assert.ok(semar.rate < bagong.rate);
+  assert.ok(semar.pitch < bagong.pitch);
+});
+
+test("callback suara yang dibatalkan tidak menghentikan ucapan karakter baru", function () {
+  const alat = muat();
+  alat.SuaraDialog.ucap("semar", "Ucapan lama.");
+  const old = alat.terakhir();
+  alat.SuaraDialog.setEnabled(false);
+  alat.SuaraDialog.setEnabled(true);
+  alat.SuaraDialog.ucap("bagong", "Ucapan baru.");
+  old.onend();
+  assert.equal(alat.SuaraDialog.isBicara(), true);
+  alat.selesai();
+  assert.equal(alat.SuaraDialog.isBicara(), false);
+});
+
 test("wayang tidak memotong bicaranya sendiri", function () {
   const alat = muat();
   assert.equal(alat.SuaraDialog.ucap("cepot", "Baris pertama."), true);

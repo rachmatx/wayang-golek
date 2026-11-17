@@ -1,6 +1,6 @@
-# Kredit Audio — Wayang Golek
+# Kredit Audio — Panggung Wayang Jawa Timuran
 
-Semua suara di folder ini adalah rekaman asli (bukan lagi sintesis WebAudio).
+Audio di folder ini terdiri atas rekaman instrumen, dialog TTS, dan efek prosedural.
 Sumber paket lengkap + panduan ada di Google Drive pemilik repo, folder
 "Wayang Golek - Audio Assets". Lisensi per berkas:
 
@@ -44,3 +44,9 @@ browser (cadangan di `js/voice.js`). Dua sumber:
 Buatan sendiri dengan ffmpeg/Python (sintesis prosedural sederhana), bebas
 lisensi: `whoosh-tirai.wav`, `ketuk-kayu-keprak.wav`, `suasana-malam.wav`
 (ambien jangkrik untuk babak tidur).
+
+## Penyesuaian Jawa Timuran — 18 November 2026
+
+Musik latar lama merupakan sampel lintas tradisi; **bukan** rekaman autentik khusus Jekdong. Musik default mati dan dapat dinyalakan di Pengaturan dengan keterangan asal. Cue hormat (`jempol`) sekarang memakai saron, bukan kacapi. Cue tersebut adalah interpretasi interaksi digital, bukan reproduksi iringan pakem.
+
+Semar dan Bagong menggunakan naskah original aplikasi serta profil suara browser yang berbeda. Ketersediaan suara Indonesia bergantung pada perangkat. Tidak memakai ulang rekaman Cepot sebagai suara Bagong. Karakter lama dan berkasnya tetap menjadi arsip teknis.

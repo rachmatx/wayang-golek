@@ -189,6 +189,129 @@
     },
   };
 
+  // Naskah original aplikasi; bukan kutipan pakem atau suara dalang historis.
+  Object.assign(Dialog.karakter, {
+  "semar": {
+    "gestur": {
+      "telapak_terbuka": [
+        "Tangan terbuka, hati pun lapang.",
+        "Mari menyambut dengan niat baik."
+      ],
+      "kepalan": [
+        "Tenang dahulu, pikirkan langkahmu.",
+        "Kekuatan juga berarti menahan diri."
+      ],
+      "telunjuk": [
+        "Tentukan arah dengan hati yang jernih.",
+        "Aku menemani langkahmu, dalang."
+      ],
+      "dua_jari": [
+        "Pelan-pelan, setiap gerak ada artinya.",
+        "Tangan bergerak, pikiran tetap tenang."
+      ],
+      "jempol": [
+        "Terima kasih. Kebaikanmu berarti.",
+        "Matur nuwun, dalang yang baik."
+      ],
+      "ok": [
+        "Lihat dari sisi lain, tambah pengertian.",
+        "Berganti arah, tetap menjaga hati."
+      ]
+    },
+    "suasana": {
+      "sambutan": [
+        "Sugeng rawuh. Mari belajar bersama."
+      ],
+      "sambutan2": [
+        "Mari mulai dengan hati yang lapang."
+      ],
+      "bangun": [
+        "Kau kembali. Kita lanjut perlahan."
+      ],
+      "tidur": [
+        "Beristirahatlah, esok belajar lagi."
+      ],
+      "masuk": [
+        "Semar hadir untuk menemanimu."
+      ],
+      "keluar": [
+        "Jagalah niat baikmu, dalang."
+      ],
+      "sambung": [
+        "Kita lanjutkan cerita ini."
+      ],
+      "idle": [
+        "Cerita juga hidup dalam keheningan.",
+        "Aku menunggu di sini, dalang.",
+        "Apa yang ingin kau pelajari hari ini?"
+      ],
+      "half": [
+        "Dalang, tanganmu sudah beristirahat?"
+      ]
+    }
+  },
+  "bagong": {
+    "gestur": {
+      "telapak_terbuka": [
+        "Wah, terbuka lebar! Mau mulai cerita?",
+        "Siap, dalang! Aku ikut bergerak."
+      ],
+      "kepalan": [
+        "Baik, berhenti dulu. Aku ambil napas.",
+        "Diam sebentar juga boleh, kan?"
+      ],
+      "telunjuk": [
+        "Ke sana? Ayo, aku ikut!",
+        "Tunjukkan arahnya, jangan bikin bingung."
+      ],
+      "dua_jari": [
+        "Dua jari, dua kali semangat!",
+        "Tanganku sudah siap. Lihat, dalang!"
+      ],
+      "jempol": [
+        "Matur nuwun! Aku jadi tambah semangat.",
+        "Jempolmu bikin aku bangga!"
+      ],
+      "ok": [
+        "Lho, kita menghadap sana sekarang!",
+        "Pindah arah? Ceritanya makin seru!"
+      ]
+    },
+    "suasana": {
+      "sambutan": [
+        "Lho, dalangnya datang! Sugeng rawuh!"
+      ],
+      "sambutan2": [
+        "Ayo main! Tanganku sudah siap."
+      ],
+      "bangun": [
+        "Nah, akhirnya! Aku sudah menunggu."
+      ],
+      "tidur": [
+        "Aku istirahat dulu. Sampai nanti!"
+      ],
+      "masuk": [
+        "Bagong datang, bawa cerita!"
+      ],
+      "keluar": [
+        "Aku pamit dulu. Jangan lupa latihan!"
+      ],
+      "sambung": [
+        "Sudah tersambung! Ayo lanjut."
+      ],
+      "idle": [
+        "Dalang, ceritanya mau ke mana?",
+        "Aku masih di sini. Jangan lupa aku!",
+        "Tanganmu istirahat, aku ikut santai."
+      ],
+      "half": [
+        "Dalang, masih di situ, kan?"
+      ]
+    }
+  }
+});
+  Object.assign(Dialog.label, { semar: "Semar", bagong: "Bagong" });
+
   if (typeof module !== "undefined" && module.exports) module.exports = Dialog;
   if (typeof window !== "undefined") window.Dialog = Dialog;
 })(typeof globalThis !== "undefined" ? globalThis : this);

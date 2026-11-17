@@ -170,7 +170,7 @@
   }
 
   function setMeta(model, fps, modelLoaded) {
-    const namaModel = model ? String(model).toUpperCase() : "—";
+    const namaModel = model ? (model === "dummy" ? "LATIHAN" : String(model).toUpperCase()) : "—";
     if (el.model) {
       el.model.textContent = modelLoaded === false ? "belum ada model" : namaModel;
     }

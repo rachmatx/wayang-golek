@@ -3,31 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Wayang Digital Gestur Tangan</title>
-  <meta name="description" content="Wayang golek digital yang digerakkan gestur tangan — Tugas Besar Pengolahan Citra." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23120d09'/%3E%3Cpath d='M12 4l7 4.5v7L12 20l-7-4.5v-7z' fill='none' stroke='%23d9b573' stroke-width='1.4'/%3E%3C/svg%3E" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Wayang Kulit Jawa Timuran — Panggung Interaktif</title>
+  <meta name="description" content="Kenali tradisi wayang kulit Jawa Timuran dan hidupkan panggung dengan gestur tangan. Jelajahi tokoh, cengkok, musik, dan cerita budayanya." />
+  <meta name="theme-color" content="#151310" />
+  <link rel="icon" href="assets/brand.svg" type="image/svg+xml" />
+  <link rel="preload" href="assets/fonts/noto-serif-display.woff" as="font" type="font/woff" crossorigin />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/teater.css" />
+  <link rel="stylesheet" href="css/jawatimuran.css" />
 </head>
 <body data-source="live">
+  <a class="skip-link" href="#studio">Langsung ke panggung</a>
   <div class="app">
-
     <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2.5 20 8v8l-8 5.5L4 16V8z" />
-            <path d="M12 7v10M8.5 10.5 12 13l3.5-2.5" />
-          </svg>
-        </span>
-        <div class="brand-text">
-          <h1>Wayang Digital <span>Gestur Tangan</span></h1>
-          <p>kendali wayang golek dengan gerak tangan</p>
-        </div>
-      </div>
+      <a class="brand" href="#" aria-label="Wayang Kulit Jawa Timuran, beranda">
+        <span class="brand-mark"><svg viewBox="0 0 40 48" fill="none" aria-hidden="true"><path d="M20 3C17 12 5 19 5 31a15 15 0 0 0 30 0C35 19 23 12 20 3Z" stroke="currentColor" stroke-width="1.4"/><path d="M20 14v29m-9-17 9 8 9-8m-16 9 7 5 7-5M14 44h12" stroke="currentColor" stroke-width="1.2"/></svg></span>
+        <span class="brand-text"><span class="brand-name">Wayang Kulit</span><span class="brand-region">JAWA TIMURAN</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Navigasi utama">
+        <a href="#studio" class="nav-active">Panggung</a>
+        <button type="button" data-open-culture>Jelajah budaya <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button>
+      </nav>
       <div class="topbar-kanan">
         <div class="status-pill" id="status-pill" data-state="disconnected" role="status" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
@@ -72,12 +68,22 @@
           </button>
           <span class="ikon-caption" aria-hidden="true">layar</span>
         </span>
-        <button type="button" class="tombol tombol-kecil" id="tombol-laci" aria-expanded="false" aria-controls="laci-teknis">Info demo</button>
+        <button type="button" class="tombol tombol-kecil" id="tombol-laci" aria-expanded="false" aria-controls="laci-teknis">Pengaturan</button>
       </div>
-    </header>
 
-    <main class="panggung-wrap">
-      <section class="panggung" id="panggung" data-karakter="klasik" data-arah="kanan" data-tirai="tutup" aria-label="Panggung wayang">
+    </header>
+    <section class="intro" aria-labelledby="intro-title">
+      <div><p class="eyebrow"><span class="tiny-rule"></span> WARISAN YANG TERUS HIDUP</p>
+        <h1 id="intro-title">Satu gerak, <em>seribu cerita.</em></h1>
+      </div>
+      <div class="intro-copy"><p>Temui para tokoh. Kenali tradisinya.<br />Hidupkan wayang dengan gerak tanganmu.</p><button type="button" class="text-button" data-open-culture>Kenali Jawa Timuran <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button></div>
+    </section>
+    <main class="panggung-wrap" id="studio" tabindex="-1">
+      <div class="studio-grid">
+        <div class="stage-column">
+          <div class="stage-toolbar"><div class="studio-label"><span class="live-dot"></span> PANGGUNG INTERAKTIF</div><div class="stage-mode"><span>Penampil</span><div class="segmen" id="kontrol-jumlah" role="group" aria-label="Jumlah wayang"><button type="button" data-jumlah="1" class="aktif" aria-pressed="true">Solo</button><button type="button" data-jumlah="2" aria-pressed="false">Duet</button></div></div></div>
+      <section class="panggung" id="panggung" data-karakter="gatotkaca" data-arah="kanan" data-tirai="tutup" aria-label="Panggung wayang">
+        <div class="stage-caption" aria-hidden="true"><span>PANGGUNG JAWA TIMURAN</span><span>WARISAN BUDAYA · RUANG EKSPRESI</span></div>
         <div class="kelir" id="kelir" data-jumlah="1">
           <div class="kelir-loading" id="kelir-loading">memuat wayang…</div>
           <div class="kelir-slot" id="kelir-0"></div>
@@ -87,6 +93,7 @@
         <div class="lampu" id="lampu" data-level="low" aria-hidden="true"></div>
         <div class="debu" id="debu" aria-hidden="true"></div>
 
+        <img class="gunungan-pembuka" src="assets/jatim/gunungan.webp" alt="" aria-hidden="true" />
         <div class="tirai tirai-kiri" id="tirai-kiri" aria-hidden="true"></div>
         <div class="tirai tirai-kanan" id="tirai-kanan" aria-hidden="true"></div>
 
@@ -94,18 +101,7 @@
 
         <div class="balon" id="balon" role="status" aria-live="polite" hidden></div>
 
-        <div class="panggung-badge" id="panggung-badge" hidden>mode dummy</div>
-
-        <div class="inset-dalang" id="inset-dalang">
-          <div class="inset-kepala">
-            <span class="inset-label">booth dalang</span>
-            <span class="kamera-badge" id="kamera-badge" data-state="wait">menunggu</span>
-          </div>
-          <div class="inset-frame">
-            <img id="video-feed" src="assets/kamera-off.svg" alt="Siaran kamera dan skeleton tangan" />
-            <canvas id="skeleton" aria-hidden="true"></canvas>
-          </div>
-        </div>
+        <div class="panggung-badge" id="panggung-badge" hidden>mode latihan</div>
 
         <div class="panggung-kaki">
           <div class="kaki-pemain" id="kaki-pemain-0" data-pemain="0">
@@ -132,57 +128,65 @@
         </div>
 
         <div class="pembuka-kartu" id="pembuka-kartu">
-          <span class="pembuka-eyebrow">panggung menunggu</span>
-          <strong id="pembuka-judul">Tunjukkan telapak tangan</strong>
-          <p>atau tekan <kbd>D</kbd> untuk mode dummy</p>
-          <button type="button" class="tombol tombol-emas" id="tombol-buka">Buka panggung</button>
+          <span class="pembuka-eyebrow">giliranmu menjadi dalang</span>
+          <strong id="pembuka-judul">Cerita dimulai dari tanganmu.</strong>
+          <p>Nyalakan kamera, tunjukkan tangan, dan hidupkan wayangmu.</p>
+          <button type="button" class="tombol tombol-emas" id="tombol-buka">Mulai mendalang <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button>
+          <button type="button" class="text-button" id="mulai-latihan">Coba tanpa kamera <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button>
           <span class="pembuka-catatan" id="pembuka-catatan">gestur apa pun yang terbaca akan membuka tirai</span>
         </div>
       </section>
 
-      <div class="tray">
-        <span class="tray-label">Panggung</span>
-        <div class="segmen" id="kontrol-jumlah" role="group" aria-label="Jumlah wayang">
-          <button type="button" data-jumlah="1" class="aktif" aria-pressed="true">1 wayang</button>
-          <button type="button" data-jumlah="2" aria-pressed="false">2 wayang</button>
-        </div>
-        <span class="tray-label">Pemain 1</span>
-        <div class="segmen kontrol-wayang" id="kontrol-wayang-0" role="group" aria-label="Wayang pemain 1">
-          <button type="button" data-wayang="klasik" class="aktif">Klasik</button>
-          <button type="button" data-wayang="arjuna">Arjuna</button>
-          <button type="button" data-wayang="gatotkaca">Gatotkaca</button>
-          <button type="button" data-wayang="cepot">Cepot</button>
-        </div>
-        <span class="tray-label" id="tray-label-1" hidden>Pemain 2</span>
-        <div class="segmen kontrol-wayang" id="kontrol-wayang-1" role="group" aria-label="Wayang pemain 2" hidden>
-          <button type="button" data-wayang="klasik">Klasik</button>
-          <button type="button" data-wayang="arjuna">Arjuna</button>
-          <button type="button" data-wayang="gatotkaca">Gatotkaca</button>
-          <button type="button" data-wayang="cepot" class="aktif">Cepot</button>
-        </div>
-        <span class="tray-petunjuk">gestur 1–6 · dummy <kbd>D</kbd> · pemain <kbd>P</kbd></span>
-      </div>
 
+          <div class="cast-header"><div><span class="eyebrow">PARA TOKOH</span><h2>Pilih teman sepanggungmu.</h2></div><span class="cast-note">Setiap tokoh, sebuah cerita.</span></div>
+          <div class="cast-row">
+            <div class="cast-group"><span class="tray-label">Pemain 1</span><div class="kontrol-wayang" id="kontrol-wayang-0" role="group" aria-label="Wayang pemain 1"></div></div>
+            <div class="cast-group" id="cast-group-1" hidden><span class="tray-label" id="tray-label-1" hidden>Pemain 2</span><div class="kontrol-wayang" id="kontrol-wayang-1" role="group" aria-label="Wayang pemain 2" hidden></div></div>
+          </div>
+        </div>
+        <aside class="dalang-sidebar" aria-label="Ruang dalang">
+          <div class="sidebar-heading"><span class="eyebrow">DI BALIK KELIR</span><h2>Ruang dalang</h2></div>
+        <div class="inset-dalang" id="inset-dalang">
+          <div class="inset-kepala">
+            <span class="inset-label">Kamera dalang</span>
+            <span class="kamera-badge" id="kamera-badge" data-state="wait">menunggu</span>
+          </div>
+          <div class="inset-frame">
+            <img id="video-feed" src="assets/kamera-off.svg" alt="Preview kamera dan panduan posisi tangan" />
+            <canvas id="skeleton" aria-hidden="true"></canvas>
+          </div>
+        </div>
+
+
+          <p class="camera-tip">Posisikan tangan di dalam kamera.<br />Cahaya yang cukup membantu pembacaan.</p>
+          <div class="sidebar-rule"></div>
+          <div class="gesture-heading"><h3>Enam gerak, banyak cerita.</h3><span>01—06</span></div>
+          <div class="gesture-mini" id="gesture-mini" aria-label="Ringkasan enam gestur"></div>
+          <button type="button" class="guide-link" id="buka-panduan-sidebar">Lihat panduan gestur <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button>
+          <div class="practice-note"><svg class="practice-symbol" viewBox="0 0 28 24" fill="none" aria-hidden="true"><rect x="2" y="4" width="24" height="16" rx="2" stroke="currentColor"/><path d="M6 8h2m3 0h2m3 0h2m3 0h1M6 12h2m3 0h2m3 0h2m3 0h1M8 16h12" stroke="currentColor" stroke-width="1.3"/></svg><div><strong>Belum pakai kamera?</strong><button type="button" class="text-button" id="latihan-sidebar">Coba mode latihan <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button></div><kbd>D</kbd></div>
+        </aside>
+      </div>
       <div class="dummy-bar" id="dummy" hidden>
-        <span class="dummy-bar-label">mode dummy</span>
-        <div class="segmen" id="dummy-pemain" role="group" aria-label="Pilih pemain untuk mode dummy">
-          <button type="button" data-pemain="0" class="aktif" aria-pressed="true">P1</button>
-          <button type="button" data-pemain="1" aria-pressed="false" disabled>P2</button>
-        </div>
-        <div class="dummy-tombol" id="dummy-tombol"></div>
-        <button type="button" class="ikon-tombol" id="dummy-tutup" aria-label="Tutup mode dummy">×</button>
+        <span class="dummy-bar-label">mode latihan</span><div class="segmen" id="dummy-pemain" role="group" aria-label="Pilih pemain untuk mode latihan"><button type="button" data-pemain="0" class="aktif" aria-pressed="true">P1</button><button type="button" data-pemain="1" aria-pressed="false" disabled>P2</button></div>
+        <div class="dummy-tombol" id="dummy-tombol"></div><button type="button" class="ikon-tombol" id="dummy-tutup" aria-label="Tutup mode latihan">×</button>
       </div>
+      <section class="culture-strip" aria-labelledby="fact-label">
+        <div class="fact-heading"><svg class="fact-flower" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 2v28M2 16h28M6 6l20 20M6 26 26 6" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="5" fill="#151310" stroke="currentColor"/></svg><span class="eyebrow" id="fact-label">TAHUKAH KAMU?</span><span class="fact-counter" id="fact-counter">01 / 12</span></div>
+        <div class="fact-copy" aria-live="polite" aria-atomic="true"><h2 id="fact-title">Budaya di balik panggung.</h2><p id="fact-text">Sedang menyiapkan cerita dari Jawa Timuran…</p></div>
+        <div class="fact-actions"><button type="button" class="text-button" id="fact-detail" disabled>Baca konteks <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button><button type="button" class="fact-next" id="fact-next" aria-label="Fakta berikutnya" disabled><svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button></div>
+      </section>
+      <div class="fullscreen-exit"><button type="button" class="tombol" id="keluar-fullscreen">Keluar layar penuh <kbd>Esc</kbd></button><button type="button" class="tombol" data-open-culture>Jelajah budaya ↗</button></div>
     </main>
+    <footer class="site-footer"><p>TRADISI BERTEMU TEKNOLOGI.</p><div><span>Jawa Timuran · Indonesia</span><button type="button" class="text-button" data-open-credits>Tentang & sumber <svg class="arrow-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.4"/></svg></button></div></footer>
   </div>
-
   <div class="laci-backdrop" id="laci-backdrop" hidden></div>
   <div class="laci" id="laci-teknis" role="dialog" aria-modal="true" aria-label="Info teknis demo" aria-hidden="true">
     <div class="laci-kepala">
       <div>
         <span class="laci-eyebrow">di balik panggung</span>
-        <h2>Info demo</h2>
+        <h2>Pengaturan panggung</h2>
       </div>
-      <button type="button" class="ikon-tombol" id="laci-tutup" aria-label="Tutup info demo">×</button>
+      <button type="button" class="ikon-tombol" id="laci-tutup" aria-label="Tutup pengaturan panggung">×</button>
     </div>
     <div class="laci-isi">
       <section class="kartu kartu-hasil">
@@ -236,13 +240,15 @@
             <input id="kontrol-volume" type="range" min="0" max="1" step="0.05" value="0.80" />
             <output id="kontrol-volume-nilai" for="kontrol-volume">0,80</output>
           </div>
+          <div class="kontrol-baris"><span class="kontrol-label">Musik latar</span><button type="button" class="tombol" id="kontrol-musik" aria-pressed="false">Musik latar mati</button></div>
+          <p class="music-source-note">Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. Lihat kredit audio untuk asal rekaman.</p>
           <div class="kontrol-baris">
             <span class="kontrol-label">Suara dialog</span>
             <button type="button" class="tombol" id="kontrol-dialog" aria-pressed="true">Wayang bersuara (V)</button>
           </div>
           <div class="kontrol-baris">
-            <span class="kontrol-label">Mode dummy</span>
-            <button type="button" class="tombol" id="kontrol-dummy">Mode dummy (D)</button>
+            <span class="kontrol-label">Mode latihan</span>
+            <button type="button" class="tombol" id="kontrol-dummy">Mode latihan (D)</button>
           </div>
         </div>
       </section>
@@ -259,11 +265,19 @@
         <button type="button" class="ikon-tombol" id="panduan-tutup" aria-label="Tutup panduan">×</button>
       </div>
       <div class="panduan" id="panduan-isi"></div>
-      <p class="panduan-catatan">Tekan <kbd>1</kbd>–<kbd>6</kbd> kapan saja untuk mode dummy, <kbd>0</kbd> untuk netral.</p>
+      <p class="panduan-catatan">Tekan <kbd>1</kbd>–<kbd>6</kbd> kapan saja untuk mode latihan, <kbd>0</kbd> untuk netral.</p>
       <p class="panduan-catatan">Panggung dua wayang: tangan yang muncul di kiri layar menggerakkan wayang kiri, tangan di kanan layar menggerakkan wayang kanan. Ganti pemain dummy dengan <kbd>P</kbd>.</p>
     </div>
   </div>
 
+
+  <div class="culture-backdrop" id="culture-backdrop" hidden></div>
+  <section class="culture-panel" id="culture-panel" role="dialog" aria-modal="true" aria-labelledby="culture-title" hidden>
+    <header class="culture-panel-heading"><div><p class="eyebrow">CERITA DI BALIK KELIR</p><h2 id="culture-title">Jelajah budaya.</h2><p>Kenali tokoh, bunyi, gerak, dan masyarakatnya.</p></div><button type="button" class="ikon-tombol" id="culture-close" aria-label="Tutup jelajah budaya">×</button></header>
+    <div class="culture-content"><div class="culture-filters" id="culture-filters" role="group" aria-label="Kategori fakta budaya"></div><p class="culture-summary" id="culture-summary"></p><div class="culture-entries" id="culture-entries"></div>
+      <section class="culture-credits" id="culture-credits"><p class="eyebrow">TENTANG PANGGUNG INI</p><h3>Sebuah cara baru untuk mengenal tradisi.</h3><p>Interpretasi digital wayang kulit Jawa Timuran dengan kendali gestur tangan. Ilustrasi dan dialog dibuat untuk aplikasi; rujukan budaya dapat dibaca pada setiap fakta.</p><p>Tokoh dan ilustrasi merupakan interpretasi visual, belum ditinjau praktisi pedalangan. Penyajian mengikuti konteks daerah yang disebutkan pada sumber.</p><p>Suara dialog memakai rekaman yang tersedia atau suara perangkat. Ketersediaan suara Bahasa Indonesia bergantung pada browser.</p><p><a href="assets/jatim/ASSET_CREDITS.md" target="_blank" rel="noopener noreferrer">Kredit ilustrasi</a> · <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Kredit audio</a> · <a href="assets/fonts/OFL.txt" target="_blank" rel="noopener noreferrer">Lisensi font</a></p></section>
+    </div>
+  </section>
   <script src="js/ws_client.js"></script>
   <script src="js/animation.js"></script>
   <script src="js/slots.js"></script>
@@ -276,6 +290,8 @@
   <script src="js/voice.js"></script>
   <script src="js/theater-core.js"></script>
   <script src="js/theater.js"></script>
+  <script src="js/culture-core.js"></script>
+  <script src="js/culture.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

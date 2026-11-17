@@ -165,12 +165,29 @@
     /* Semua ID di dalam SVG ini diganti jadi prefixed, ID aslinya disimpan
      * sebagai class supaya CSS dan querySelector tetap bisa pakai nama rig. */
     function prefixIds(svg) {
+      const ids = new Map();
       const semua = svg.querySelectorAll("[id]");
       semua.forEach(function (element) {
         const asli = element.id;
         if (asli.indexOf(prefix) === 0) return;
         element.classList.add(asli);
+        ids.set(asli, prefix + asli);
         element.id = prefix + asli;
+      });
+      svg.querySelectorAll("*").forEach(function (element) {
+        Array.from(element.attributes).forEach(function (attribute) {
+          let value = attribute.value;
+          value = value.replace(/url\(\s*['"]?#([^)'"\s]+)['"]?\s*\)/g, function (match, id) {
+            return ids.has(id) ? "url(#" + ids.get(id) + ")" : match;
+          });
+          if ((attribute.localName === "href") && value.charAt(0) === "#" && ids.has(value.slice(1))) {
+            value = "#" + ids.get(value.slice(1));
+          }
+          if (attribute.name === "aria-labelledby" || attribute.name === "aria-describedby") {
+            value = value.split(/\s+/).map(function (id) { return ids.get(id) || id; }).join(" ");
+          }
+          if (value !== attribute.value) element.setAttributeNS(attribute.namespaceURI, attribute.name, value);
+        });
       });
     }
 
@@ -229,6 +246,8 @@
       const viewBox = svg.viewBox && svg.viewBox.baseVal;
       const width = viewBox && viewBox.width ? viewBox.width : 444;
       const height = viewBox && viewBox.height ? viewBox.height : 562;
+      const footX = Number(svg.dataset.footX) || width * 0.63;
+      const footY = Number(svg.dataset.footY) || height * 0.88;
 
       /* Bungkus grup asli P2:
        * grup-posisi (geser) > grup-arah (cermin) > grup-hidup (idle/bungkuk)
@@ -249,8 +268,8 @@
       const shadow = document.createElementNS(SVG_NS, "ellipse");
       shadow.id = prefix + "bayangan-wayang";
       shadow.classList.add("bayangan-wayang");
-      shadow.setAttribute("cx", String(width * 0.63));
-      shadow.setAttribute("cy", String(height * 0.88));
+      shadow.setAttribute("cx", String(footX));
+      shadow.setAttribute("cy", String(footY));
       shadow.setAttribute("rx", String(width * 0.149));
       shadow.setAttribute("ry", String(height * 0.0196));
       shadow.setAttribute("fill", "rgba(0, 0, 0, 0.5)");
@@ -259,8 +278,8 @@
       /* Pivot cermin di tengah kanvas; pivot bungkuk/idle di kaki wayang.
        * Angka kaki (0.63 / 0.88 dari viewBox) dituning sekali untuk rig P2. */
       gayaPivot(arah, width / 2, height / 2);
-      gayaPivot(hidup, width * 0.63, height * 0.88);
-      gayaPivot(wayang, width * 0.63, height * 0.88);
+      gayaPivot(hidup, footX, footY);
+      gayaPivot(wayang, footX, footY);
 
       nodes = { posisi: posisi, arah: arah, hidup: hidup, wayang: wayang };
       LAYERS.forEach(function (id) {

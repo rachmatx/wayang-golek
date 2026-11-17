@@ -12,7 +12,7 @@
       "label": "Telapak Terbuka",
       "pose": "telapak_terbuka",
       "key": "1",
-      "hint": "kedua tangan terbuka — wayang mengangkat kedua lengan"
+      "hint": "telapak tangan terbuka — wayang mengangkat kedua lengan"
     },
     {
       "id": "kepalan",
@@ -33,7 +33,7 @@
       "label": "Dua Jari",
       "pose": "dua_jari",
       "key": "4",
-      "hint": "dua jari terangkat — lengan bawah dan cepala terangkat"
+      "hint": "dua jari terangkat — wayang mengangkat lengan bawah"
     },
     {
       "id": "jempol",

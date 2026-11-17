@@ -124,7 +124,7 @@ const PETA_CUE = {
   kepalan: ["pukulan-kendang.wav", 0.9],
   telunjuk: ["pukulan-bonang.wav", 0.75],
   dua_jari: ["pukulan-peking.wav", 0.75],
-  jempol: ["kacapi-hormat.ogg", 0.85],
+  jempol: ["pukulan-saron.wav", 0.85],
   ok: ["whoosh-tirai.wav", 0.65],
   saron: ["pukulan-saron.wav", 0.45],
   "ambient-nada": ["pukulan-peking.wav", 0.3],

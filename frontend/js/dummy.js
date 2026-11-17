@@ -182,6 +182,9 @@
   }
 
   function onKeyDown(event) {
+    if (event.defaultPrevented || Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"]')).some(function (panel) {
+      return !panel.closest('[hidden], [aria-hidden="true"]');
+    })) return;
     const target = event.target;
     if (target && target.closest && target.closest("input, textarea, select")) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;

@@ -73,7 +73,7 @@ async def index():
     return FileResponse(config.FRONTEND_DIR / "index.html")
 
 
-for _folder in ("css", "js", "assets"):
+for _folder in ("css", "js", "assets", "data"):
     _path = config.FRONTEND_DIR / _folder
     if _path.exists():
         app.mount(f"/{_folder}", StaticFiles(directory=_path), name=_folder)

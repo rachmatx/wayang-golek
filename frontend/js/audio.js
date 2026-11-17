@@ -12,7 +12,7 @@
  *   kepalan  -> kendang + gong lirih: hentakan turun, wayang diam
  *   telunjuk -> bonang: ketukan tegas penunjuk arah
  *   dua_jari -> peking + saron: tongkat terangkat, nada tinggi ringan
- *   jempol   -> kacapi: petikan lembut untuk hormat
+ *   jempol   -> saron lirih: cue digital untuk hormat
  *   ok       -> whoosh + saron: wayang berbalik arah
  *   tidur    -> keprak dalang, lalu ambien jangkrik malam mengisi panggung
  *   musik latar live  -> gamelan kraton (latar-panggung.ogg, loop mulus)
@@ -50,7 +50,7 @@
     "kepalan": [["kendang", 1.0, 0], ["gong", 0.3, 0.02]],
     "telunjuk": [["bonang", 0.8, 0]],
     "dua_jari": [["peking", 0.8, 0], ["saron", 0.45, 0.16]],
-    "jempol": [["kacapi", 0.9, 0]],
+    "jempol": [["saron", 0.9, 0]],
     "ok": [["whoosh", 0.7, 0], ["saron", 0.5, 0.12]],
     "saron": [["saron", 0.5, 0]],
     "ambient-nada": [["peking", 0.35, 0]],
