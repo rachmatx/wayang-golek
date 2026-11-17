@@ -151,3 +151,12 @@ html:fullscreen .stage-column:has(#dummy:not([hidden])) .panggung, body.stage-fo
 @media(prefers-reduced-motion:reduce) { .fact-copy.fact-updated { animation: none; } }
 
 .fact-copy { position: relative; }.fact-measure { position: absolute; top: 0; left: 0; width: 100%; visibility: hidden; pointer-events: none; }
+/* RAF owns joint interpolation. A second CSS tween erased the sharp accents. */
+.wayang-svg .grup-wayang,
+.wayang-svg .badan,
+.wayang-svg .lengan-atas-kiri,
+.wayang-svg .lengan-bawah-kiri,
+.wayang-svg .lengan-atas-kanan,
+.wayang-svg .lengan-bawah-kanan { transition: none; }
+/* A planted shadow puppet rests on its gapit; it does not breathe like a torso. */
+.wayang-svg .grup-hidup.idle { animation: none; }

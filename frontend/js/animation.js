@@ -1,6 +1,7 @@
 /* Spring-driven SVG puppetry. Translation uses screen pixels on the outer slot;
  * pose joints use rig metadata in SVG units. Forearms lag behind shoulders and
- * velocity drives a small body lean/arm sway. CSS owns theatrical entrance/bow.
+ * distance drives rod-arm gait; authored phrases add preparation, accent and holds.
+ * CSS owns theatrical entrances only, never the frame-driven joint transforms.
  * Every SVG ID/reference is prefixed so two instances remain independent.
  */
 (function () {
@@ -16,63 +17,15 @@
     "lengan-bawah-kanan",
   ];
 
-  /* Detached Jatim limbs allow larger shoulder/elbow gestures than the legacy rig. */
+  /* Public gesture modes remain stable; movement phrases live in puppetry-core. */
   const POSES = {
-    netral: {
-      angles: {},
-      group: 0,
-      duration: 400,
-      mode: "hold",
-    },
-    telapak_terbuka: {
-      angles: {
-        "lengan-atas-kiri": 34,
-        "lengan-bawah-kiri": -24,
-        "lengan-atas-kanan": -30,
-        "lengan-bawah-kanan": 20,
-      },
-      group: 0,
-      duration: 600,
-      mode: "hold",
-    },
-    kepalan: {
-      angles: {},
-      group: 0,
-      duration: 500,
-      mode: "hold",
-    },
-    telunjuk: {
-      /* Aksi utama: panggung bergeser mengikuti wrist_x (lihat setWrist). */
-      angles: {},
-      group: 0,
-      duration: 300,
-      mode: "follow",
-    },
-    dua_jari: {
-      /* Cepala gesture: raise the shoulder, then fold the forearm. */
-      angles: {
-        "lengan-atas-kiri": 24,
-        "lengan-bawah-kiri": -38,
-        "lengan-atas-kanan": -7,
-      },
-      group: 0,
-      duration: 600,
-      mode: "hold",
-    },
-    jempol: {
-      /* Tidak ada layer kepala: seluruh wayang membungkuk dari kaki. */
-      angles: {},
-      group: 12,
-      duration: 700,
-      mode: "auto",
-      resetMs: 1000,
-    },
-    ok: {
-      angles: {},
-      group: 0,
-      duration: 400,
-      mode: "toggle",
-    },
+    netral: { mode: "hold" },
+    telapak_terbuka: { mode: "hold" },
+    kepalan: { mode: "hold" },
+    telunjuk: { mode: "follow" },
+    dua_jari: { mode: "hold" },
+    jempol: { mode: "auto", resetMs: 2200 },
+    ok: { mode: "toggle" },
   };
 
   /* Dipakai bila gesture_map.json belum bisa diambil (mis. backend mati). */
@@ -80,11 +33,11 @@
     version: 1,
     neutral: { id: "netral", label: "Netral", pose: "netral" },
     gestures: [
-      { id: "telapak_terbuka", label: "Telapak Terbuka", pose: "telapak_terbuka", hint: "kedua tangan terbuka — wayang mengangkat kedua lengan" },
-      { id: "kepalan", label: "Kepalan", pose: "kepalan", hint: "tangan mengepal — perintah eksplisit kembali diam" },
-      { id: "telunjuk", label: "Telunjuk", pose: "telunjuk", hint: "satu jari menunjuk — wayang bergeser mengikuti posisi tangan" },
-      { id: "dua_jari", label: "Dua Jari", pose: "dua_jari", hint: "dua jari terangkat — lengan bawah dan cepala terangkat" },
-      { id: "jempol", label: "Jempol", pose: "jempol", hint: "jempol terangkat — wayang membungkuk, lalu kembali sendiri" },
+      { id: "telapak_terbuka", label: "Telapak Terbuka", pose: "telapak_terbuka", hint: "telapak tangan terbuka — wayang menyapa dengan ayunan kedua lengan" },
+      { id: "kepalan", label: "Kepalan", pose: "kepalan", hint: "tangan mengepal — wayang berhenti dan diam di posisi terakhir" },
+      { id: "telunjuk", label: "Telunjuk", pose: "telunjuk", hint: "satu jari menunjuk — wayang berjalan mengikuti posisi tangan dengan ayunan lengan" },
+      { id: "dua_jari", label: "Dua Jari", pose: "dua_jari", hint: "dua jari terangkat — wayang memainkan dua aksen siku dan lengan" },
+      { id: "jempol", label: "Jempol", pose: "jempol", hint: "jempol terangkat — lengan bersiap, wayang memberi hormat, lalu kembali tegak" },
       { id: "ok", label: "OK", pose: "ok", hint: "jari membentuk lingkaran — wayang berbalik arah" },
     ],
   };
@@ -139,9 +92,13 @@
     let wrist = 0.5;
     let bounds = { min: 0, max: 0 };
     let previousTime = 0;
-    let phase = nomor * 1.7;
+    let poseTime = 0;
+    let stridePhase = 0;
+    let anchor = 0;
+    let svgScale = 1;
+    let character = 'gatotkaca';
     const travel = { x: 0, v: 0 };
-    const joints = Object.fromEntries(LAYERS.concat("group").map(id => [id, { x: 0, v: 0 }]));
+    const joints = Object.fromEntries(LAYERS.concat("group", "lift").map(id => [id, { x: 0, v: 0 }]));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let measureTravel = function () {};
     const resize = new ResizeObserver(function () { measureTravel(); });
@@ -207,35 +164,36 @@
         previousTime = now;
         const paused = document.hidden || (window.Teater && Teater.isReading());
         if (!paused) {
-          phase += dt;
-          const pose = POSES[currentPose] || POSES.netral;
-          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds, window.Kendali ? Kendali.settings(nomor) : null) : 0;
+          poseTime += dt;
+          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds, window.Kendali ? Kendali.settings(nomor) : null) : Motion.clamp(anchor, bounds.min, bounds.max);
+          const oldX = travel.x;
           if (reduced.matches) { travel.x = target; travel.v = 0; }
           else Motion.spring(travel, target, dt, 15);
           // Clamp the rendered position too: a rapid reversal must never overshoot the stage.
           travel.x = Motion.clamp(travel.x, bounds.min, bounds.max);
           stageX = travel.x;
           container.style.transform = "translateX(" + stageX.toFixed(2) + "px)";
-          const speed = reduced.matches ? 0 : Motion.clamp(travel.v / 110, -4, 4);
-          const breathing = reduced.matches ? 0 : Math.sin(phase * 1.65) * 0.55;
-          const moving = Math.min(Math.abs(travel.v) / 180, 1);
-          const sway = Math.sin(phase * 7) * moving;
+          const profile = WayangPuppetry.profiles[character] || WayangPuppetry.profiles.gatotkaca;
+          stridePhase += Math.abs(travel.x - oldX) / Math.max(18, svgScale * profile.stride) * Math.PI * 2;
+          const phrase = WayangPuppetry.sample(currentPose, poseTime, {
+            character, speed: travel.v / Math.max(.3, svgScale), stride: stridePhase,
+            facing, reduced: reduced.matches,
+          });
           LAYERS.forEach(function (id, i) {
             const element = nodes[id];
             if (!element) return;
-            const isArm = i > 0;
-            const side = id.endsWith("kiri") ? 1 : -1;
-            const secondary = isArm ? side * (speed * 1.7 + sway * 3 + breathing * 1.5) : 0;
-            const targetAngle = (pose.angles[id] || 0) + secondary;
+            const targetAngle = i > 0 ? phrase.angles[i - 1] : 0;
             const joint = joints[id];
             if (reduced.matches) { joint.x = targetAngle; joint.v = 0; }
-            else Motion.spring(joint, targetAngle, dt, id.includes("bawah") ? 10 : 13);
+            else Motion.spring(joint, targetAngle, dt, id.includes("bawah") ? 19 : 25);
             element.style.transform = "rotate(" + joint.x.toFixed(3) + "deg)";
           });
-          const bodyTarget = (pose.group || 0) + speed * facing * 0.65 + breathing;
+          const bodyTarget = phrase.body;
           if (reduced.matches) { joints.group.x = bodyTarget; joints.group.v = 0; }
-          else Motion.spring(joints.group, bodyTarget, dt, 11);
-          if (nodes.wayang) nodes.wayang.style.transform = "translateY(" + (-Math.abs(sway) * 1.7).toFixed(2) + "px) rotate(" + joints.group.x.toFixed(3) + "deg)";
+          else Motion.spring(joints.group, bodyTarget, dt, 24);
+          if (reduced.matches) { joints.lift.x = 0; joints.lift.v = 0; }
+          else Motion.spring(joints.lift, phrase.lift, dt, 25);
+          if (nodes.wayang) nodes.wayang.style.transform = "translateY(" + (-joints.lift.x).toFixed(2) + "px) rotate(" + joints.group.x.toFixed(3) + "deg)";
         }
         rafId = requestAnimationFrame(step);
       };
@@ -245,11 +203,13 @@
     /* ---------- pemuatan SVG ---------- */
     async function load(svgUrl, options) {
       const start = options || {};
+      character = start.character || 'gatotkaca';
       const response = await fetch(svgUrl, { cache: "no-store" });
       if (!response.ok) throw new Error("SVG wayang tidak bisa dimuat (HTTP " + response.status + ")");
 
       stopLoop();
       stageX = 0;
+      anchor = poseTime = stridePhase = 0;
       wrist = 0.5;
       travel.x = travel.v = 0;
       container.style.transform = "translateX(0px)";
@@ -334,6 +294,7 @@
         const sr = stage.getBoundingClientRect();
         const cr = container.getBoundingClientRect();
         const scale = Math.min(svg.clientWidth / width, svg.clientHeight / height);
+        svgScale = scale || 1;
         const envelope = Math.min(width * scale * 0.54, sr.width * 0.42);
         const centre = cr.left + cr.width / 2 - stageX;
         bounds = Motion.bounds(sr.width, centre - sr.left, envelope, 20);
@@ -351,7 +312,13 @@
     function applyPose(name, force) {
       const pose = POSES[name] || POSES.netral;
       if (!force && name === currentPose) return pose;
+      // A planted puppet stays where the dalang left it instead of gliding home.
+      if (currentPose === 'telunjuk' && name !== 'telunjuk') {
+        anchor = travel.x;
+        travel.v = 0;
+      }
       currentPose = name;
+      poseTime = 0;
       if (name !== "telunjuk" && window.Kendali) Kendali.clear(nomor);
 
       // Targets are blended every frame; interrupted poses keep their current velocity.
@@ -362,7 +329,7 @@
     function setFacing(value, animate) {
       facing = value < 0 ? -1 : 1;
       if (nodes.arah) {
-        nodes.arah.style.transitionDuration = animate === false || reduced.matches ? "0ms" : "400ms";
+        nodes.arah.style.transitionDuration = animate === false || reduced.matches ? "0ms" : "240ms";
         nodes.arah.style.transform = "scaleX(" + facing + ")";
       }
       if (facingHandler) facingHandler(facing, nomor);

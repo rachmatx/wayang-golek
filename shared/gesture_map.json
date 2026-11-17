@@ -12,35 +12,35 @@
       "label": "Telapak Terbuka",
       "pose": "telapak_terbuka",
       "key": "1",
-      "hint": "telapak tangan terbuka — wayang mengangkat kedua lengan"
+      "hint": "telapak tangan terbuka — wayang menyapa dengan ayunan kedua lengan"
     },
     {
       "id": "kepalan",
       "label": "Kepalan",
       "pose": "kepalan",
       "key": "2",
-      "hint": "tangan mengepal — perintah eksplisit kembali diam"
+      "hint": "tangan mengepal — wayang berhenti dan diam di posisi terakhir"
     },
     {
       "id": "telunjuk",
       "label": "Telunjuk",
       "pose": "telunjuk",
       "key": "3",
-      "hint": "satu jari menunjuk — wayang bergeser mengikuti posisi tangan"
+      "hint": "satu jari menunjuk — wayang berjalan mengikuti posisi tangan dengan ayunan lengan"
     },
     {
       "id": "dua_jari",
       "label": "Dua Jari",
       "pose": "dua_jari",
       "key": "4",
-      "hint": "dua jari terangkat — wayang mengangkat lengan bawah"
+      "hint": "dua jari terangkat — wayang memainkan dua aksen siku dan lengan"
     },
     {
       "id": "jempol",
       "label": "Jempol",
       "pose": "jempol",
       "key": "5",
-      "hint": "jempol terangkat — wayang membungkuk, lalu kembali sendiri"
+      "hint": "jempol terangkat — lengan bersiap, wayang memberi hormat, lalu kembali tegak"
     },
     {
       "id": "ok",

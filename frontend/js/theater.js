@@ -479,6 +479,7 @@
 
   function setDialog(on) {
     dialogOn = Boolean(on);
+    if (!dialogOn) hideBubble();
     writeDialogPreference(dialogOn);
     terapkanDialog();
     syncAudioControls();
@@ -499,7 +500,7 @@
     if (!els.kontrolDialog) return;
     const on = dialogOn;
     els.kontrolDialog.setAttribute("aria-pressed", on ? "true" : "false");
-    const label = on ? "Matikan suara dialog" : "Nyalakan suara dialog";
+    const label = on ? "Matikan dialog dan bubble teks" : "Nyalakan dialog dan bubble teks";
     els.kontrolDialog.setAttribute("aria-label", label);
     els.kontrolDialog.title = label;
     els.kontrolDialog.textContent = on ? "Nyala" : "Mati";
@@ -752,7 +753,7 @@
   }
 
   function showBubble(effect) {
-    if (!els.balon || !effect.text || reading) return;
+    if (!els.balon || !effect.text || reading || !dialogOn) return;
     const delay = Number(effect.delay) || 0;
     clearTimeout(bubblePending);
     if (delay > 0) {
@@ -763,7 +764,7 @@
   }
 
   function paintBubble(effect) {
-    if (!els.balon || reading) return;
+    if (!els.balon || reading || !dialogOn) return;
     if (core && (core.state() === "pembuka" || core.state() === "tidur")) return;
     /* Sinkron teks-suara: selama ucapan sebelumnya masih jalan, balon baru
      * tidak ditampilkan. voice.js memang menolak ucapan yang menumpuk, jadi
@@ -789,6 +790,16 @@
       els.balon.classList.remove("tampil");
       bubbleTimer = setTimeout(function () { els.balon.hidden = true; }, 320);
     }, duration);
+  }
+
+  function hideBubble() {
+    clearTimeout(bubblePending);
+    clearTimeout(bubbleTimer);
+    bubblePending = bubbleTimer = null;
+    if (!els.balon) return;
+    els.balon.hidden = true;
+    els.balon.classList.remove('tampil');
+    els.balon.textContent = '';
   }
 
   /* Balon diucapkan dengan suara pemilik dialognya: efek gestur membawa
@@ -863,9 +874,7 @@
     if (reading) {
       readingAt = now;
       pendingGong = false;
-      clearTimeout(bubblePending);
-      clearTimeout(bubbleTimer);
-      if (els.balon) els.balon.hidden = true;
+      hideBubble();
     } else {
       if (readingAt !== null && core) core.shift(now - readingAt);
       readingAt = null;
@@ -937,8 +946,7 @@
     open: function () { openStage("button"); },
     toggleFullscreen: toggleFullscreen,
     stopVoice: function () {
-      clearTimeout(bubblePending);
-      if (els.balon) els.balon.hidden = true;
+      hideBubble();
       if (window.SuaraDialog) { SuaraDialog.setEnabled(false); terapkanDialog(); }
     },
     openPanel: function (panel, focus, close, options) { bukaModal(panel, focus, close); if (!(options && options.keepAudio)) setReading(true); },

@@ -1,0 +1,84 @@
+{
+  "version": "0.5.0",
+  "date": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Dialog hides captions as well as voice; authored rod-arm movement phrases and planted stopping",
+  "checks": {
+    "frontend_tests": {
+      "passed": 119,
+      "failed": 0
+    },
+    "browser": {
+      "method": "CUA UI interactions and DOM readback on managed preview",
+      "dialog": {
+        "on_bubble_hidden": false,
+        "on_sample_text": "Dua jari! Siap perang!",
+        "off_bubble_hidden": true,
+        "off_text_empty": true,
+        "reload_keeps_off": true,
+        "music_toggle": true,
+        "sfx_toggle": true,
+        "music_playing_while_dialog_off": true
+      },
+      "motion": {
+        "exercised": [
+          "greeting",
+          "two arm accents",
+          "bow and automatic recovery",
+          "manual wrist follow",
+          "automatic practice follow",
+          "stop at last position",
+          "turn in both directions",
+          "duet and character switch"
+        ],
+        "joint_css_transition_duration": "0s",
+        "planted_stop_translate_x_px_before_after": [
+          57.84,
+          57.84
+        ],
+        "semar_held_shoulder_deg": 48.36,
+        "bagong_held_shoulder_deg": 66.96
+      },
+      "responsive": [
+        {
+          "viewport": [
+            320,
+            740
+          ],
+          "clientWidth": 305,
+          "scrollWidth": 305,
+          "audio_panel_width": 320,
+          "audio_panel_scrollHeight": 776,
+          "audio_panel_clientHeight": 716
+        },
+        {
+          "viewport": [
+            390,
+            844
+          ],
+          "clientWidth": 375,
+          "scrollWidth": 375,
+          "audio_panel_width": 390
+        }
+      ],
+      "page_console_errors_observed": 0,
+      "screenshots": [
+        "docs/images/jatim-v05-duet.jpg",
+        "docs/images/jatim-v05-dialog-off.jpg",
+        "docs/images/jatim-v05-audio-mobile.jpg"
+      ],
+      "preview_video": "docs/images/jatim-v05-motion-preview.mp4"
+    },
+    "html_nesting_and_unique_ids": "passed",
+    "javascript_syntax": "passed",
+    "git_diff_check": "passed"
+  },
+  "limitations": [
+    "No physical camera was available; gesture actions were tested in practice mode.",
+    "Small viewports were tested with same-origin iframe fixtures, not physical phones.",
+    "Reduced motion behavior was unit tested; no OS preference switch was exercised in browser.",
+    "Motion is an authored digital interpretation, not motion capture or expert-validated sabet.",
+    "Video is a silent montage of browser screenshots with capture-rate limits; it is not application FPS evidence."
+  ]
+}

@@ -168,7 +168,7 @@
     const container = $("gesture-mini");
     if (!container) return;
     const short = { telapak_terbuka: "Telapak", kepalan: "Kepalan", telunjuk: "Telunjuk", dua_jari: "Dua jari", jempol: "Jempol", ok: "OK" };
-    const action = {telapak_terbuka: "Angkat lengan", kepalan: "Kembali diam", telunjuk: "Geser wayang", dua_jari: "Mainkan cepala", jempol: "Beri hormat", ok: "Balik arah"};
+    const action = {telapak_terbuka: "Sapa penonton", kepalan: "Berhenti & diam", telunjuk: "Jalankan wayang", dua_jari: "Aksen lengan", jempol: "Beri hormat", ok: "Balik arah"};
     container.innerHTML = Wayang.gestures().map(function (gesture, index) {
       return '<button type="button" class="gesture-item" data-guide-gesture="' + gesture.id + '" title="' + escapeHtml(gesture.hint) + '" aria-label="Panduan ' + short[gesture.id] + ': ' + action[gesture.id] + '">' + '<span class="gesture-number">0' + (index + 1) + '</span>' +
         (window.Glif ? Glif.tangan(gesture.id) : "") + '<strong>' + short[gesture.id] + '</strong><small>' + action[gesture.id] + '</small></button>';
@@ -182,6 +182,7 @@
     try {
       await pemain.wayang.load(karakter.file, {
         pose: "netral",
+        character: karakter.id || key || pemain.karakter,
         facing: pemain.index === 1 ? -1 : 1,
       });
       pemain.loaded = true;
@@ -430,9 +431,9 @@
     const pose = Wayang.poseFor(gesture);
     if (pose.mode === "toggle") {
       pemain.wayang.toggleFacing();
-      pemain.wayang.applyPose(gesture);
+      pemain.wayang.applyPose(gesture, from === 'dummy');
     } else {
-      pemain.wayang.applyPose(gesture);
+      pemain.wayang.applyPose(gesture, from === 'dummy' && gesture !== 'telunjuk');
     }
 
     const nilaiWrist = gesture === "telunjuk" ? wrist : 0.5;

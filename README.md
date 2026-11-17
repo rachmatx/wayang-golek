@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.4.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.5.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -120,7 +120,7 @@ Lihat [catatan riset dan keputusan gerak](docs/research/2026-11-18-upgrade-v03.m
 
 ## Tahap 1 — audio v0.3.1
 
-Tekan **Audio** di toolbar panggung. Matikan **Dialog wayang** untuk menikmati musik dan SFX sambil tetap membaca teks dialog. Toggle ketiga kanal saling independen; **Bisukan semua** mempertahankan pilihan masing-masing kanal ketika suara diaktifkan kembali. Pengaturan teknis juga mempunyai tautan ke panel Audio yang sama.
+Tekan **Audio** di toolbar panggung. Matikan **Dialog wayang** untuk menyembunyikan bubble teks dan menghentikan ucapan, sambil tetap menikmati musik dan SFX. Toggle ketiga kanal saling independen; **Bisukan semua** mempertahankan pilihan masing-masing kanal ketika suara diaktifkan kembali. Pengaturan teknis juga mempunyai tautan ke panel Audio yang sama.
 
 Volume master sekarang ikut mengatur rekaman dialog dan TTS browser. Pada beberapa browser, perubahan volume TTS saat sedang berbicara menghentikan kalimat tersebut; kalimat berikutnya memakai level baru. Rekaman dialog menyesuaikan volume saat itu juga.
 
@@ -150,3 +150,16 @@ Buka **Ruang dalang → Sesuaikan gerak**. Pilih kepekaan **Halus**, **Seimbang*
 Kalibrasi juga dapat dicoba tanpa kamera: aktifkan **Latihan**, pilih pemain, lalu geser slider. Input kamera yang tidak terbaca selama lebih dari 1,5 detik tidak dapat dipakai untuk kalibrasi. Area tengah mempunyai toleransi kecil terhadap gerakan ringan, dan batas gerak panggung tetap dijaga agar wayang tidak keluar layar.
 
 [Verifikasi tahap 3–4](docs/verification/2026-11-18-auto-controls.json). Kamera fisik dan kenyamanan gestur tetap perlu diuji pada perangkat presentasi.
+
+
+## Upgrade v0.5.0 — dialog utuh dan rangkaian gerak
+
+Toggle **Dialog wayang** kini mengatur ucapan sekaligus bubble teks. Ketika dimatikan, bubble yang sedang tampil langsung disembunyikan dan dialog tertunda dibatalkan. Menyalakannya kembali hanya menampilkan dialog baru. Musik dan SFX tetap mengikuti pengaturan masing-masing. Slider volume dialog hanya mengatur kerasnya ucapan; **Bisukan semua** tetap menjadi kontrol suara keseluruhan.
+
+Animasi memakai rangkaian persiapan, aksen, tahan dan pulih, dengan tubuh wayang tetap kaku. Telapak menyapa, dua jari memainkan dua aksen lengan, jempol memberi hormat lalu pulih, dan OK membalik arah dengan angkatan singkat. Pada telunjuk, ayunan lengan serta angkatan mengikuti jarak dan kecepatan perpindahan. Kepalan/netral menghentikan wayang di posisi terakhir, tanpa kembali meluncur ke tengah. Klik tombol gestur latihan lagi untuk mengulang rangkaiannya.
+
+Gatotkaca memakai tempo lebih tegas, Semar lebih lambat dan kecil, Bagong lebih cepat dan lebar. Preferensi reduced motion mempertahankan pose terbaca tanpa gerak langkah dan aksen berulang. Transisi CSS pada sendi tidak lagi menunda animasi pegas.
+
+[Cuplikan dari browser](docs/images/jatim-v05-motion-preview.mp4) · [Rujukan dan batas interpretasi gerak](docs/research/2026-11-18-motion-v05.md) · [Verifikasi](docs/verification/2026-11-18-motion-dialog-v05.json)
+
+Cuplikan disusun dari tangkapan browser dengan laju pengambilan terbatas dan tanpa audio; bukan pengukuran FPS aplikasi. Gerak ini belum ditinjau dalang dan tidak diklaim sebagai rekonstruksi motif sabet tradisional tertentu.

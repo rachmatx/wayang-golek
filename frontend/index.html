@@ -299,7 +299,7 @@
     <p id="audio-status" class="audio-status" role="status">Atur tiap suara tanpa mematikan yang lain.</p>
     <div class="audio-channels">
       <div class="audio-channel">
-        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v12H9l-4 4V4Z"/><path d="M8 8h8M8 12h5"/></svg></span><div><h3>Dialog wayang</h3><p>Matikan ucapan, tetap baca ceritanya.</p></div><button type="button" id="kontrol-dialog" class="audio-toggle" aria-label="Suara dialog" aria-pressed="true">Nyala</button></div>
+        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v12H9l-4 4V4Z"/><path d="M8 8h8M8 12h5"/></svg></span><div><h3>Dialog wayang</h3><p>Ucapan dan bubble teks. Musik serta efek tetap bisa dinikmati.</p></div><button type="button" id="kontrol-dialog" class="audio-toggle" aria-label="Dialog wayang" aria-pressed="true">Nyala</button></div>
         <div class="audio-channel-volume"><label class="sr-only" for="volume-dialog">Volume dialog wayang</label><input id="volume-dialog" type="range" min="0" max="1" step="0.01" value="0.85" /><output id="volume-dialog-nilai" for="volume-dialog">85%</output></div>
       </div>
       <div class="audio-channel">
@@ -320,6 +320,7 @@
   <script src="js/ws_client.js"></script>
   <script src="js/control-core.js"></script>
   <script src="js/motion-core.js"></script>
+  <script src="js/puppetry-core.js"></script>
   <script src="js/animation.js"></script>
   <script src="js/slots.js"></script>
   <script src="js/glyphs.js"></script>
