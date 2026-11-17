@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "status": "planning_draft_not_runtime",
+  "locale": "id-ID",
+  "researched_on": "2026-11-18",
+  "timezone": "Asia/Jakarta",
+  "editorial_note": "Klaim teks dicocokkan dengan sumber; ilustrasi, perluasan isi, dan pelafalan belum divalidasi praktisi. Daerah atau subgaya pada scope harus tetap terlihat dalam penyajian.",
+  "sources": [
+    {
+      "id": "S01",
+      "title": "Nyalap-Nyaur: Model Tatakelola Pergelaran Wayang Jekdong dalam Hajatan Tradisi Jawatimuran",
+      "author": "Wisma Nugraha Christianto Rich",
+      "year": 2012,
+      "url": "https://doi.org/10.22146/jh.1060",
+      "content_url": "https://journal.ugm.ac.id/jurnal-humaniora/article/download/1060/889",
+      "access_level": "relevant_pdf_sections_read",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S02",
+      "title": "Wayang Kulit Jawa Timuran Cengkok Trowulan: Asal Usul dan Peta Penyebarannya",
+      "author": "Bambang Suyono; Jojo Winarko; Darni",
+      "issue_year": 2015,
+      "online_publication_year": 2016,
+      "url": "https://doi.org/10.21831/ikadbudi.v4i10.12013",
+      "content_url": "https://journal.uny.ac.id/index.php/ikadbudi/article/download/12013/8583/0",
+      "access_level": "relevant_pdf_sections_read",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S03",
+      "title": "Peran dan Fungsi Tokoh Semar-Bagong dalam Pergelaran Lakon Wayang Kulit Gaya Jawa Timuran",
+      "author": "Wisma Nugraha Christianto R.",
+      "year": 2003,
+      "url": "https://doi.org/10.22146/jh.796",
+      "content_url": "https://journal.ugm.ac.id/jurnal-humaniora/article/download/796/638",
+      "access_level": "relevant_pdf_sections_read",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S04",
+      "title": "Representasi Sosio-Kultural Masyarakat Budaya Arek dalam Boneka Wayang Gathotkaca Krodha pada Wayang Jekdong",
+      "author": "Alfian Candra Ayuswantana; Lutfi Tri Atmaji; Bayu Setiawan",
+      "year": 2024,
+      "url": "https://doi.org/10.33633/andharupa.v10i01.8040",
+      "content_url": "https://publikasi.dinus.ac.id/andharupa/article/view/8040",
+      "access_level": "abstract_read_pdf_login_required",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S05",
+      "title": "Fungsi Gending Ayak Wolu pada Wayang Kulit Gagrag Jawa Timuran Ki Surwedi",
+      "author": "Jepri Ristiono",
+      "issue_year": 2018,
+      "online_publication_year": 2019,
+      "url": "https://doi.org/10.33153/sorai.v11i2.2311",
+      "content_url": "https://jurnal.isi-ska.ac.id/index.php/SOR/article/view/2311",
+      "access_level": "abstract_read",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S06",
+      "title": "Pathet sebagai Struktur Adegan Wayang Kulit Jawatimuran Subgaya Malangan",
+      "author": "Dwi Cahyo Pangestu; Raheni Suhita; Edy Suryanto",
+      "year": 2023,
+      "url": "https://doi.org/10.26742/panggung.v33i4.2929",
+      "content_url": "https://jurnal.isbi.ac.id/index.php/panggung/article/view/2929",
+      "access_level": "abstract_read",
+      "source_type": "journal_article"
+    },
+    {
+      "id": "S07",
+      "title": "Sabet Perang Dugangan Pakeliran Jawa Timuran: Struktur Garap, Representasi Identitas, dan Pergeserannya — Ujian Tugas Akhir S2 Ike Nur Kumalasari",
+      "author": "Program Pascasarjana ISI Surakarta",
+      "published_on": "2026-08-11",
+      "url": "https://pps.isi-ska.ac.id/sabet-perang-dugangan-pakeliran-jawa-timuran-struktur-garap-representasi-identitas-dan-pergeserannya-ujian-tugas-akhir-s2-ike-nur-kumalasari/",
+      "access_level": "institutional_research_summary_read",
+      "source_type": "institutional_thesis_report"
+    }
+  ],
+  "facts": [
+    {
+      "id": "jatim-001",
+      "title": "Kenal nama Jekdong?",
+      "text": "Jekdong adalah sebutan populer untuk pertunjukan wayang kulit purwa gaya Jawa Timuran.",
+      "category": "daerah_cengkok",
+      "scope": "Tradisi wayang kulit purwa gaya Jawa Timuran",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S01", "locator": "Hlm. 176, Pengantar"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-002",
+      "title": "Dekat dengan budaya Arek",
+      "text": "Tradisi Jekdong tumbuh di komunitas berbahasa Jawa dialek Arek, termasuk wilayah Surabaya, Sidoarjo, Gresik, Mojokerto, dan sekitarnya.",
+      "category": "daerah_cengkok",
+      "scope": "Komunitas budaya yang dibahas dalam penelitian, bukan seluruh penduduk Jawa Timur",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S01", "locator": "Hlm. 176, Pengantar"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-003",
+      "title": "Pagelaran ditopang kebersamaan",
+      "text": "Dalam komunitas yang diteliti, hajatan dan pagelaran Jekdong didukung buwuhan: sumbangan timbal balik melalui tradisi nyalap-nyaur.",
+      "category": "tradisi_masyarakat",
+      "scope": "Praktik hajatan dalam penelitian tahun 2012",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S01", "locator": "Hlm. 175, abstrak; hlm. 179, pembahasan nyalap-nyaur"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-004",
+      "title": "Satu tradisi, beragam cengkok",
+      "text": "Kajian Jawa Timuran mencatat ragam cengkok seperti Porong, Trowulan, Malang, Surabaya, Jombang, dan Lamongan.",
+      "category": "daerah_cengkok",
+      "scope": "Contoh variasi yang dicatat penelitian; bukan daftar tertutup",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S02", "locator": "Halaman PDF 1, Pendahuluan"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-005",
+      "title": "Jejak Trowulan dan Ki Pit Asmoro",
+      "text": "Dalam penelitian cengkok Trowulan, Ki Pit Asmoro disebut sebagai tokoh cikal bakal perkembangannya.",
+      "category": "daerah_cengkok",
+      "scope": "Cengkok Trowulan berdasarkan penelitian lapangan 2015",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S02", "locator": "Halaman PDF 9–10, Sejarah Terbentuknya Cengkok Trowulan"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-006",
+      "title": "Belajar mendalang lewat kaset",
+      "text": "Pewarisan cengkok juga berlangsung melalui rekaman: penelitian Trowulan mencatat murid yang belajar dengan menyimak kaset dalang panutannya.",
+      "category": "tradisi_masyarakat",
+      "scope": "Pengalaman belajar yang dicatat dalam kajian Trowulan",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S02", "locator": "Halaman PDF 14–15, pembahasan Ki Rohman dan Penutup"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-007",
+      "title": "Semar sebagai pengayom",
+      "text": "Penelitian lakon Jawa Timuran membaca Semar sebagai figur pengayoman dan pembimbing bagi tokoh yang berada dalam asuhannya.",
+      "category": "tokoh",
+      "scope": "Pembacaan peran Semar dalam penelitian lakon tahun 2003",
+      "character_ids": ["semar"],
+      "source_refs": [{"source_id": "S03", "locator": "Hlm. 300–301, Kesimpulan"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-008",
+      "title": "Cerita bersama, gaya yang berbeda",
+      "text": "Ramayana dan Mahabharata juga menjadi sumber lakon wayang kulit Jawa Timuran. Kedua wiracarita itu turut digunakan tradisi wayang daerah lain.",
+      "category": "tradisi_masyarakat",
+      "scope": "Repertoar bersama; bukan ciri eksklusif Jawa Timur",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S03", "locator": "Hlm. 285, Pengantar"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-009",
+      "title": "Gathutkaca Krodha dan budaya Arek",
+      "text": "Kajian rupa Jekdong meneliti bagaimana bentuk Gathutkaca Krodha mencerminkan nilai budaya Arek.",
+      "category": "tokoh",
+      "scope": "Figur Gathutkaca Krodha yang menjadi objek penelitian, bukan seluruh rupa Gatotkaca",
+      "character_ids": ["gatotkaca"],
+      "source_refs": [{"source_id": "S04", "locator": "Abstrak pada laman artikel"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-010",
+      "title": "Mengenal Ayak Wolu",
+      "text": "Penelitian pertunjukan Ki Surwedi menyoroti pentingnya gending Ayak pathet Wolu dalam sajian wayangnya.",
+      "category": "musik_gerak",
+      "scope": "Pertunjukan Ki Surwedi yang dibahas penelitian",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S05", "locator": "Abstrak pada laman artikel"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-011",
+      "title": "Lima pathet dalam kajian Malangan",
+      "text": "Kajian naskah Malangan Gathotkaca Lair menemukan lima pathet: sepuluh, wolu, sanga, miring, dan serang.",
+      "category": "musik_gerak",
+      "scope": "Naskah Gathotkaca Lair subgaya Malangan yang dianalisis, bukan aturan semua cengkok",
+      "character_ids": ["gatotkaca"],
+      "source_refs": [{"source_id": "S06", "locator": "Abstrak, hasil penelitian"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    },
+    {
+      "id": "jatim-012",
+      "title": "Gerak kaki dalam perang dugangan",
+      "text": "Dalam kajian subgaya Porongan, perang dugangan menonjolkan unsur kaki pada ragam gerak wayang.",
+      "category": "musik_gerak",
+      "scope": "Ringkasan institusi tentang penelitian sabet Porongan; bukan panduan lengkap gerak",
+      "character_ids": [],
+      "source_refs": [{"source_id": "S07", "locator": "Ringkasan tesis: paragraf tentang dugangan dan fokus subgaya Porongan"}],
+      "text_checked": true,
+      "status": "draft_for_editorial_review"
+    }
+  ]
+}
