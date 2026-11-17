@@ -1,0 +1,105 @@
+{
+  "created_on": "2026-11-18",
+  "generation_mode": "built_in_image_gen",
+  "artwork_status": "original_interpretative_illustration_not_expert_validated",
+  "preparation": "Original PNG files preserved. Runtime WebP encoding uses ImageMagick quality88; geometry/crop/joints are assembled as SVG, with one sheet embedded per rig.",
+  "source_prompts": {
+    "gatot": "Use case: scientific-educational. Asset type: transparent 2D articulated puppet sprite sheet for an Indonesian cultural web application. Create an exquisite hand-painted leather shadow puppet inspired by East Javanese Jekdong Gathutkaca Krodha, explicitly an interpretative illustration, NOT a 3D toy or human. Landscape canvas with a completely transparent background. Full flat side profile facing RIGHT. Traditional broad muscular torso, fierce rounded reddish-brown face with one large eye, broad blunt nose, pronounced black moustache, visible small white teeth; black swept curly hair and sculpted gold ear ornaments; ornate red black and gold textiles with tiny tumpal triangles; white patterned knee-length trousers, bent legs and broad feet with angular dark tips; antique gold punched leather filigree, red and emerald accents, fine black ink outlines. Important sprite sheet layout: LEFT HALF contains ONLY the COMPLETE ARMLESS BODY (head, torso, costume, legs and central slim dark support rod), large and centered with generous margin. RIGHT HALF contains FOUR DETACHED arm pieces, spaced very far apart in a clean 2x2 layout, all matching the body scale and colors: upper-left upper arm A, upper-right upper arm B, lower-left forearm and scissor-like fingers A, lower-right forearm and scissor-like fingers B. Upper arms point straight down with round shoulder and elbow caps; forearms point straight down with a slight bend and attached complete hands. Body has small round gold shoulder sockets but absolutely NO attached arms. All components are isolated with fully transparent gaps; never touching each other. No labels, no letters, no title, no shadows, no frame, no decorative background, no duplicated body. Fine detailed polished museum-quality flat illustration with crisp readable silhouette and authentic leather texture.",
+    "semar": "Use case: scientific-educational. Asset type: transparent puppet sprite sheet. Reference image 1 is a STYLE AND SHEET-LAYOUT reference only: match its hand-painted leather texture, crisp flat cutout edges, antique gold detail, and separate sprite component layout. Create a DIFFERENT character, SEMAR, as an interpretative East Javanese Jekdong-inspired wayang kulit figure. Landscape canvas1536x1024 concept, genuinely transparent background with transparent holes. Entirely flat traditional right-facing profile. Semar has a short very round heavy body, forward-leaning posture, enormous rounded rear, rounded belly, serene elderly WHITE face with broad mouth and a small black moustache, small black topknot/white tuft, calm narrow eye. Plain near-black/brown body, modest gold bracelets and simple ear ornament; NO royal crown, no warrior armor, no elaborate necklaces. Brown-black and cream KAWUNG patterned ankle-length sarong and narrow rust-red waist cloth; short bare feet. Traditional refined punched-leather painted puppet, warm antique artisanal finish. Technical layout MUST match: LEFT HALF only a LARGE COMPLETE ARMLESS BODY with face/torso/sarong/feet and a slim straight central support rod, small circular shoulder sockets but NO ATTACHED ARMS. RIGHT HALF four isolated parts with huge transparent gaps, 2x2: top-left upper arm A pointing down, top-right upper arm B pointing down, bottom-left forearm and complete gesturing hand A pointing down, bottom-right forearm and hand B pointing down. Both upper arm and forearm have round gold joint caps at the upper ends for animation. Arms dark brown/black skin with modest gold bracelets, scaled plausibly to Semar body. Do not connect sprites. No words, no typography, no labels, no background, no floor, no glow, no shadow. Not cartoon3D, not humanportrait, not fantasy elf. Educational artistic interpretation, not an exact reproduction of a museum object.",
+    "bagong": "Use case: scientific-educational. Asset type: transparent articulated puppet sprite sheet for a cultural web app. Reference image1 is ONLY a painting-texture and detached-sprite layout reference, do not copy its warrior identity. Make BAGONG, an interpretative East Javanese Jekdong-inspired leather shadow puppet. Flat two-dimensional RIGHT-FACING side-profile, short broad rotund playful body, very large round protruding eyes, cheerful RED/brick-red face, broad snub nose and smiling broad mouth with small white teeth, black short curled hair/topknot, rounded neck and belly. Dark brown near-black torso, red waist sash, patterned cream/black kawung batik sarong below knees with short bare feet; small gold ear ornament and modest gold bracelets. No royal crown, no warrior armor, no long nose. Fine painted and punched leather texture, precise black ink contours, warm antique red/gold/ivory palette. Landscape sheet with genuine TRANSPARENCY and generous transparent margins. Technical layout: LEFT HALF contains a single large COMPLETE ARMLESS BODY (head, torso, sarong, feet, slim central dark support rod), two simple small gold shoulder sockets but absolutely NO ATTACHED ARMS. RIGHT HALF has FOUR separate limb sprites in a 2x2 grid with huge transparent gaps: top-left upper armA pointing down, top-right upper armB pointing down, bottom-left forearm with complete playful gesturing handA, bottom-right forearm with complete handB. Upper arm and forearm pieces begin in rounded joint caps; dark brown/black arms, brick-red hands, modest gold cuffs. All components are to scale for the same body. Exactly one body and four detached pieces, no duplicate heads, no labels, no lettering, no stage, no backdrop, no glow, no shadows. Refined museum illustration quality while retaining humorous Bagong silhouette. This is original interpretative educational art, not a claim of reproducing a validated museum object.",
+    "gunungan": "Use case: stylized-concept. Asset type: transparent decorative GUNUNGAN leather shadow-puppet illustration for opening a cultural web application. Create one tall symmetrical pointed leaf-shaped gunungan inspired by Javanese wayang kulit, refined antique hand-painted punched leather. At its heart a graceful tree-of-life, branches, birds, tiny forest animals and delicate scrolling vines arranged symmetrically, lower area a small stylized gateway and ornamental face motif. Dark ebony pierced cutout spaces with muted antique GOLD edging, ivory details, sparse brick-red and deep green enamel accents. A slim straight dark support rod extends down the center beneath the base. Flat front orthographic view, no perspective, no thickness, no 3D. High detail but clean strong silhouette suited to display on warm cream cloth. The single whole object fills a portrait canvas with generous transparent margin, pointed top and bottom support rod fully visible. GENUINELY TRANSPARENT background, including all pierced holes; no backdrop, no black rectangle, no checkerboard, no floor, no shadows, no glow, no writing, no watermark. This is an original interpretative decorative illustration for a modern educational application, not a claimed exact cultural artifact reproduction."
+  },
+  "reference_sources": [
+    {
+      "title": "Representasi Sosio-Kultural Masyarakat Budaya Arek dalam Boneka Wayang Gathutkaca Krodha pada Wayang Jekdong",
+      "url": "https://publikasi.dinus.ac.id/andharupa/article/download/8040/4421/32800",
+      "authors": "Alfian Candra Ayuswantana; Lutfi Tri Atmaji; Bayu Setiawan",
+      "year": 2024,
+      "access_note": "Relevant full-text descriptions retrieved; PDF screenshot was redirected to login. Photographs were not copied or embedded."
+    },
+    {
+      "title": "Makna dan Perubahan Rupa Boneka Wayang Semar pada Wayang Jekdong Jawa Timur",
+      "url": "https://e-journal.umaha.ac.id/deskovi/article/download/16334/1518",
+      "authors": "Alfian Candra Ayuswantana; Lutfi Tri Atmaji; Diana Aqidatun Nisa; Pungky Febi Arifianto",
+      "year": 2024,
+      "access_note": "Indexed descriptions and author-posted text used for broad traits; primary download blocked during generation. Reference photos were not copied or embedded."
+    }
+  ],
+  "characters": [
+    {
+      "id": "gatotkaca",
+      "label": "Gatotkaca",
+      "rig": "wayang-gatotkaca.svg",
+      "master": "gatotkaca-sheet.png",
+      "runtime_sheet": "gatotkaca-sheet.webp",
+      "view_box": [
+        0,
+        0,
+        444,
+        562
+      ],
+      "foot": [
+        223,
+        505
+      ],
+      "style_note": "Interpretasi visual terinspirasi kajian Gathutkaca Krodha pada Jekdong; bukan rekonstruksi wanda atau gagrak yang telah divalidasi."
+    },
+    {
+      "id": "semar",
+      "label": "Semar",
+      "rig": "wayang-semar.svg",
+      "master": "semar-sheet.png",
+      "runtime_sheet": "semar-sheet.webp",
+      "view_box": [
+        0,
+        0,
+        444,
+        562
+      ],
+      "foot": [
+        225,
+        505
+      ],
+      "style_note": "Interpretasi figur Semar untuk aplikasi, dengan wajah putih, tubuh membulat dan motif kawung; belum divalidasi praktisi."
+    },
+    {
+      "id": "bagong",
+      "label": "Bagong",
+      "rig": "wayang-bagong.svg",
+      "master": "bagong-sheet.png",
+      "runtime_sheet": "bagong-sheet.webp",
+      "view_box": [
+        0,
+        0,
+        444,
+        562
+      ],
+      "foot": [
+        224,
+        500
+      ],
+      "style_note": "Interpretasi figur Bagong, dengan wajah merah dan tubuh membulat; belum divalidasi praktisi."
+    }
+  ],
+  "gunungan": {
+    "master": "gunungan.png",
+    "runtime": "gunungan.webp",
+    "style_note": "Ilustrasi gunungan dekoratif untuk transisi aplikasi; tidak diatribusikan sebagai gunungan pakem subgaya tertentu."
+  },
+  "verification": {
+    "structural_checker": "7 rigs pass, including 3 new rigs",
+    "visual_contact_sheet": "rig-contact-sheet.webp",
+    "contact_sheet_rows": [
+      "gatotkaca",
+      "semar",
+      "bagong"
+    ],
+    "contact_sheet_columns": [
+      "netral",
+      "telapak_terbuka",
+      "dua_jari"
+    ],
+    "raster_render_note": "Inkscape verification uses the identical original PNG sheet because this installed Inkscape cannot decode embedded WebP; runtime browser WebP is to be checked in integration.",
+    "cultural_practitioner_review": "not_performed"
+  }
+}

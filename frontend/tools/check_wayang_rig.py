@@ -9,6 +9,8 @@ Jalankan:  python frontend/tools/check_wayang_rig.py
 """
 from __future__ import annotations
 
+import math
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -20,6 +22,9 @@ FILES = [
     "wayang-arjuna.svg",
     "wayang-gatotkaca.svg",
     "wayang-cepot.svg",
+    "jatim/wayang-gatotkaca.svg",
+    "jatim/wayang-semar.svg",
+    "jatim/wayang-bagong.svg",
 ]
 
 REQUIRED = [
@@ -77,11 +82,24 @@ def check_file(path: Path) -> list[str]:
         errors.append(f"viewBox tidak valid: {viewbox!r}")
         width = height = 0.0
     else:
-        width, height = float(parts[2]), float(parts[3])
-        if width <= 0 or height <= 0:
+        try:
+            width, height = float(parts[2]), float(parts[3])
+        except ValueError:
+            return [f"viewBox bukan angka: {viewbox!r}"]
+        if not math.isfinite(width) or not math.isfinite(height) or width <= 0 or height <= 0:
             errors.append(f"viewBox tidak punya ukuran positif: {viewbox!r}")
 
     by_id, parents = index_elements(root)
+    ids = [element.get("id") for element in root.iter() if element.get("id")]
+    if len(ids) != len(set(ids)):
+        errors.append("ID dalam rig harus unik sebelum dipasang untuk tiap pemain")
+    for element in root.iter():
+        for name, value in element.attrib.items():
+            if local_name(name) == "href" and value.startswith("#") and value[1:] not in by_id:
+                errors.append(f"referensi href tidak ditemukan: {value}")
+            for ref in re.findall(r"url\(#([^\)]+)\)", value):
+                if ref not in by_id:
+                    errors.append(f"referensi efek/crop tidak ditemukan: #{ref}")
     for node_id in REQUIRED:
         if node_id not in by_id:
             errors.append(f"#{node_id} tidak ada")

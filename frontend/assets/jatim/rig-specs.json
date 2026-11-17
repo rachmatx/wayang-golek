@@ -1,0 +1,334 @@
+{
+  "gatotkaca": {
+    "title": "Gatotkaca — interpretasi wayang kulit Jawa Timuran",
+    "runtime_sheet": "gatotkaca-sheet.webp",
+    "master_sheet": "gatotkaca-sheet.png",
+    "sheet_size": [
+      1536,
+      1024
+    ],
+    "foot": [
+      223,
+      505
+    ],
+    "body_scale": 0.48,
+    "arm_scale": 0.4,
+    "parts": {
+      "body": {
+        "id": "body",
+        "rect": [
+          0,
+          0,
+          760,
+          1024
+        ],
+        "translation": [
+          26.48,
+          17.12
+        ]
+      },
+      "upper_kiri": {
+        "id": "upper-kiri",
+        "rect": [
+          780,
+          0,
+          1100,
+          460
+        ],
+        "source_pivot": [
+          966,
+          98
+        ],
+        "pivot": [
+          146.48,
+          153.92
+        ]
+      },
+      "upper_kanan": {
+        "id": "upper-kanan",
+        "rect": [
+          1150,
+          0,
+          1536,
+          460
+        ],
+        "source_pivot": [
+          1315,
+          100
+        ],
+        "pivot": [
+          294.32,
+          155.84
+        ]
+      },
+      "lower_kiri": {
+        "id": "lower-kiri",
+        "rect": [
+          780,
+          470,
+          1100,
+          1024
+        ],
+        "source_pivot": [
+          945,
+          555
+        ],
+        "pivot": [
+          134.88,
+          269.52
+        ],
+        "rod": [
+          138,
+          383,
+          138,
+          526
+        ]
+      },
+      "lower_kanan": {
+        "id": "lower-kanan",
+        "rect": [
+          1150,
+          470,
+          1536,
+          1024
+        ],
+        "source_pivot": [
+          1321,
+          554
+        ],
+        "pivot": [
+          304.72,
+          271.44
+        ],
+        "rod": [
+          310,
+          385,
+          310,
+          526
+        ]
+      }
+    }
+  },
+  "semar": {
+    "title": "Semar — interpretasi wayang kulit Jawa Timuran",
+    "runtime_sheet": "semar-sheet.webp",
+    "master_sheet": "semar-sheet.png",
+    "sheet_size": [
+      1536,
+      1024
+    ],
+    "foot": [
+      225,
+      505
+    ],
+    "body_scale": 0.4,
+    "arm_scale": 0.3,
+    "parts": {
+      "body": {
+        "id": "body",
+        "rect": [
+          0,
+          0,
+          760,
+          1024
+        ],
+        "translation": [
+          64,
+          98.4
+        ]
+      },
+      "upper_kiri": {
+        "id": "upper-kiri",
+        "rect": [
+          780,
+          0,
+          1100,
+          460
+        ],
+        "source_pivot": [
+          965,
+          103
+        ],
+        "pivot": [
+          182.8,
+          217.6
+        ]
+      },
+      "upper_kanan": {
+        "id": "upper-kanan",
+        "rect": [
+          1150,
+          0,
+          1536,
+          460
+        ],
+        "source_pivot": [
+          1316,
+          102
+        ],
+        "pivot": [
+          303.2,
+          228.4
+        ]
+      },
+      "lower_kiri": {
+        "id": "lower-kiri",
+        "rect": [
+          780,
+          470,
+          1100,
+          1024
+        ],
+        "source_pivot": [
+          941,
+          555
+        ],
+        "pivot": [
+          172.3,
+          307.9
+        ],
+        "rod": [
+          184,
+          401,
+          184,
+          526
+        ]
+      },
+      "lower_kanan": {
+        "id": "lower-kanan",
+        "rect": [
+          1150,
+          470,
+          1536,
+          1024
+        ],
+        "source_pivot": [
+          1321,
+          555
+        ],
+        "pivot": [
+          311.9,
+          318.1
+        ],
+        "rod": [
+          296,
+          405,
+          296,
+          526
+        ]
+      }
+    },
+    "back_arm_under_body": false
+  },
+  "bagong": {
+    "title": "Bagong — interpretasi wayang kulit Jawa Timuran",
+    "runtime_sheet": "bagong-sheet.webp",
+    "master_sheet": "bagong-sheet.png",
+    "sheet_size": [
+      1536,
+      1024
+    ],
+    "foot": [
+      224,
+      500
+    ],
+    "body_scale": 0.41,
+    "arm_scale": 0.34,
+    "back_arm_under_body": false,
+    "parts": {
+      "body": {
+        "id": "body",
+        "rect": [
+          0,
+          0,
+          760,
+          1024
+        ],
+        "translation": [
+          65.15,
+          86.8
+        ]
+      },
+      "upper_kiri": {
+        "id": "upper-kiri",
+        "rect": [
+          780,
+          0,
+          1100,
+          460
+        ],
+        "source_pivot": [
+          943,
+          115
+        ],
+        "pivot": [
+          165.6,
+          211.03
+        ]
+      },
+      "upper_kanan": {
+        "id": "upper-kanan",
+        "rect": [
+          1150,
+          0,
+          1536,
+          460
+        ],
+        "source_pivot": [
+          1319,
+          115
+        ],
+        "pivot": [
+          284.91,
+          215.54
+        ]
+      },
+      "lower_kiri": {
+        "id": "lower-kiri",
+        "rect": [
+          780,
+          470,
+          1100,
+          1024
+        ],
+        "source_pivot": [
+          914,
+          535
+        ],
+        "pivot": [
+          149.62,
+          295.35
+        ],
+        "rod": [
+          160,
+          392,
+          160,
+          522
+        ]
+      },
+      "lower_kanan": {
+        "id": "lower-kanan",
+        "rect": [
+          1150,
+          470,
+          1536,
+          1024
+        ],
+        "source_pivot": [
+          1332,
+          533
+        ],
+        "pivot": [
+          299.53,
+          299.86
+        ],
+        "rod": [
+          280,
+          401,
+          280,
+          522
+        ]
+      }
+    }
+  }
+}
