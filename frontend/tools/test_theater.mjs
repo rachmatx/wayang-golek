@@ -153,7 +153,7 @@ test("gestur saat jeda membangunkan dengan balon bangun lalu cue", function () {
   const bubbles = all(result, "bubble");
   assert.equal(bubbles.length, 2);
   assert.equal(bubbles[0].text, "BANGUN");
-  assert.equal(bubbles[1].delay, 900);
+  assert.equal(bubbles[1].delay, 0, "gesture captions should follow the current hand without a stale wake-up delay");
 });
 
 test("jeda 45 detik tetap menampilkan seluruh panggung tanpa tirai setengah", function () {

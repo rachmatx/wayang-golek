@@ -25,7 +25,8 @@
   let core = null;
   let loopTimer = null;
   let hiddenAt = 0;
-  const bubbleTimers=[null,null],bubblePending=[null,null];
+  const bubbleTimers=[null,null],bubblePending=[null,null],bubbleRecords=[null,null];
+  let voiceIntent=0, voiceTimer=null;
   let bowTimer = null;
   let enterTimer = null;
   let pendingGong = false;
@@ -158,6 +159,10 @@
     }).observe(app,{attributes:true,attributeFilter:['inert']});
     document.addEventListener("wayang:gesture", function (event) {
       if (!core || reading) return;
+      // Guided dialogue belongs to the script; extra hand poses remain visual.
+      if(window.Lakon&&Lakon.isActive()&&event.detail.source!=='story')return;
+      const player=event.detail.player===1?1:0;
+      if(event.detail.gesture){clearTimeout(bubblePending[player]);bubblePending[player]=null;}
       run(core.gesture(event.detail, performance.now()));
       syncAmbient();
     });
@@ -774,45 +779,63 @@
     else paintBubble(effect);
   }
 
+  function readingMs(text) {
+    return Math.max(2200, String(text).trim().split(/\s+/).length/2.6*1000+600);
+  }
+  function settleCaption(player,record) {
+    if(bubbleRecords[player]!==record)return;
+    clearTimeout(bubbleTimers[player]);
+    if(record.voice)return;
+    bubbleTimers[player]=setTimeout(function(){
+      if(bubbleRecords[player]!==record)return;
+      const node=els.bubbles[player];node.hidden=true;node.classList.remove('tampil');
+      bubbleRecords[player]=null;
+    },Math.max(0,record.until-performance.now())+350);
+  }
+  function cancelSpoken() {
+    voiceIntent++;clearTimeout(voiceTimer);voiceTimer=null;
+    if(window.SuaraDialog){
+      if(SuaraDialog.cancel)SuaraDialog.cancel();
+      else {SuaraDialog.setEnabled(false);terapkanDialog();}
+    }
+    bubbleRecords.forEach((record,player)=>{if(record){record.voice=false;settleCaption(player,record);}});
+  }
   function paintBubble(effect) {
     const player=effect.player===1?1:0,node=els.bubbles[player];
     if (!node || reading || !dialogOn) return;
     if (core && (core.state() === "pembuka" || core.state() === "tidur")) return;
-    clearTimeout(bubbleTimers[player]);
-    node.dataset.player=String(player);
-    node.dataset.sisi=player===0?'kiri':'kanan';
-    const character=effect.char||(els.root&&els.root.dataset.karakter);
+    cancelSpoken();clearTimeout(bubbleTimers[player]);
+    const record={until:performance.now()+readingMs(effect.text),voice:false};
+    bubbleRecords[player]=record;
+    node.dataset.player=String(player);node.dataset.sisi=player===0?'kiri':'kanan';
+    const character=effect.char||(els.root&&els.root.dataset.karakter)||'klasik';
     const label=(window.Dialog&&window.Dialog.label&&window.Dialog.label[character])||character||'Wayang';
     node.dataset.speaker='P'+(player+1)+' · '+label;
-    node.textContent=effect.text;
-    node.setAttribute('aria-label',label+': '+effect.text);
+    node.textContent=effect.text;node.setAttribute('aria-label',label+': '+effect.text);
     node.hidden=false;node.classList.add('tampil');
     if(typeof document.dispatchEvent==='function'&&typeof CustomEvent==='function')document.dispatchEvent(new CustomEvent('wayang:bubble',{detail:{player}}));
-    // Captions belong to each actor. The newest spoken line replaces any old voice;
-    // a busy P1 voice must never suppress P2's caption or create a delayed queue.
-    if(window.SuaraDialog&&SuaraDialog.isBicara&&SuaraDialog.isBicara()) {
-      SuaraDialog.setEnabled(false);terapkanDialog();
+    if(window.SuaraDialog&&soundOn&&audioUnlocked){
+      const intent=voiceIntent;record.voice=true;
+      // Live poses update immediately, but only a stable latest intent gets a voice.
+      // Story turns are already sequenced and need no hand-jitter debounce.
+      voiceTimer=setTimeout(function(){
+        voiceTimer=null;if(intent!==voiceIntent||bubbleRecords[player]!==record)return;
+        const finish=()=>{if(intent!==voiceIntent||bubbleRecords[player]!==record)return;record.voice=false;settleCaption(player,record);};
+        const accepted=SuaraDialog.ucap(character,effect.text,{onFinish:finish});
+        if(!accepted)finish();
+      },effect.source==='story'?0:280);
     }
-    ucapkanBalon(effect.text,effect.char);
-    bubbleTimers[player]=setTimeout(function(){node.hidden=true;node.classList.remove('tampil');},Number(effect.ms)||2800);
+    settleCaption(player,record);
   }
 
   function hideBubble() {
+    cancelSpoken();
     for(let player=0;player<2;player++) {
       clearTimeout(bubblePending[player]);clearTimeout(bubbleTimers[player]);
-      bubblePending[player]=bubbleTimers[player]=null;
+      bubblePending[player]=bubbleTimers[player]=bubbleRecords[player]=null;
       const node=els.bubbles&&els.bubbles[player];
       if(node){node.hidden=true;node.classList.remove('tampil');node.textContent='';}
     }
-  }
-
-  /* Balon diucapkan dengan suara pemilik dialognya: efek gestur membawa
-   * karakter wayang yang beraksi (effect.char); efek suasana memakai
-   * karakter panggung (pemain 1). */
-  function ucapkanBalon(teks, charKey) {
-    if (!window.SuaraDialog || !soundOn || !dialogOn || !audioUnlocked) return;
-    const kunci = charKey || (els.root && els.root.dataset.karakter) || "klasik";
-    window.SuaraDialog.ucap(kunci, teks);
   }
 
   function playSound(cue) {
@@ -949,13 +972,14 @@
     init: init,
     state: function () { return core ? core.state() : "pembuka"; },
     isBusy: function () { return core ? core.snapshot().busy : false; },
+    say: showBubble,
+    dialogueBusy: function(){return dialogOn&&bubbleRecords.some(r=>r&&(r.voice||performance.now()<r.until));},
     resetInput: function(){if(core&&core.resetGestures)core.resetGestures();},
     isReading: function () { return reading; },
     open: function () { openStage("button"); },
     toggleFullscreen: toggleFullscreen,
     stopVoice: function () {
       hideBubble();
-      if (window.SuaraDialog) { SuaraDialog.setEnabled(false); terapkanDialog(); }
     },
     openPanel: function (panel, focus, close, options) { bukaModal(panel, focus, close); if (!(options && options.keepAudio)) setReading(true); },
     closePanel: function (panel) { tutupModal(panel); setReading(false); },

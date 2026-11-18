@@ -1,0 +1,36 @@
+0.63 request #1 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+1.03 start #1 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+7.03 end #1 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+7.54 request #2 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.
+7.94 start #2 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.
+13.94 end #2 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.
+14.64 request #3 Kemarilah, kanca. | Pertemuan · 2/9 | bubble: Kemarilah, kanca.
+15.04 start #3 Kemarilah, kanca. | Pertemuan · 2/9 | bubble: Kemarilah, kanca.
+21.04 end #3 Kemarilah, kanca. | Pertemuan · 2/9 | bubble: Kemarilah, kanca.
+21.54 request #4 Aku mendekat pelan. | Pertemuan · 2/9 | bubble: Aku mendekat pelan.
+21.94 start #4 Aku mendekat pelan. | Pertemuan · 2/9 | bubble: Aku mendekat pelan.
+27.94 end #4 Aku mendekat pelan. | Pertemuan · 2/9 | bubble: Aku mendekat pelan.
+28.64 request #5 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+29.04 start #5 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+29.59 cancel #5 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+56.48 request #6 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+56.88 start #6 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+62.88 end #6 Sebentar, dengarkan. | Pertemuan · 3/9 | bubble: Sebentar, dengarkan.
+63.34 request #7 Ya, aku menyimak. | Pertemuan · 3/9 | bubble: Ya, aku menyimak.
+63.74 start #7 Ya, aku menyimak. | Pertemuan · 3/9 | bubble: Ya, aku menyimak.
+69.74 end #7 Ya, aku menyimak. | Pertemuan · 3/9 | bubble: Ya, aku menyimak.
+70.45 request #8 Senang bertemu denganmu. | Saling menyapa · 4/9 | bubble: Senang bertemu denganmu.
+70.85 start #8 Senang bertemu denganmu. | Saling menyapa · 4/9 | bubble: Senang bertemu denganmu.
+76.85 end #8 Senang bertemu denganmu. | Saling menyapa · 4/9 | bubble: Senang bertemu denganmu.
+77.34 request #9 Begitu juga denganku! | Saling menyapa · 4/9 | bubble: Begitu juga denganku!
+77.74 start #9 Begitu juga denganku! | Saling menyapa · 4/9 | bubble: Begitu juga denganku!
+80.65 cancel #9 Begitu juga denganku! | Saling menyapa · 4/9 | bubble: Begitu juga denganku!
+81.61 request #10 http://127.0.0.1:4173/assets/audio/dialog/gatotkaca/gestur-kepalan-1.mp3 | Saling menyapa · 4/9 | bubble: Kepalan? Kekuatanku menahan diri.
+82.01 start #10 http://127.0.0.1:4173/assets/audio/dialog/gatotkaca/gestur-kepalan-1.mp3 | Saling menyapa · 4/9 | bubble: Kepalan? Kekuatanku menahan diri.
+88.02 end #10 http://127.0.0.1:4173/assets/audio/dialog/gatotkaca/gestur-kepalan-1.mp3 | Saling menyapa · 4/9 | bubble: Kepalan? Kekuatanku menahan diri.
+126.17 request #11 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+126.57 start #11 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+132.57 end #11 Mari meramaikan kelir! | Pertemuan · 1/9 | bubble: Mari meramaikan kelir!
+133.04 request #12 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.
+133.44 start #12 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.
+139.44 end #12 Siap, aku menemanimu. | Pertemuan · 1/9 | bubble: Siap, aku menemanimu.

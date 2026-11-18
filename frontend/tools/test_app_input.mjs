@@ -124,3 +124,12 @@ test('connection feedback is resynchronized after leaving a disconnected watch s
  assert.equal(s.document.getElementById('pita-terputus').hidden,true);
  await ui.click('exit');assert.equal(s.api.app.source,'live');assert.equal(s.document.getElementById('pita-terputus').hidden,false);assert.equal(s.core.snapshot().connected,false);
 });
+
+test('a correct guided hand gesture presents the authored line with the actual player character',async()=>{
+ const s=setup(1),ui=mountLakon(s),lines=[];s.Teater.say=line=>lines.push(line);
+ await ui.click('play');ui.camera(hand(1,.85,'kepalan'));assert.equal(lines.length,0);
+ ui.camera(hand(1,.85,'telapak_terbuka'));assert.equal(lines.length,1);
+ assert.equal(lines[0].text,'Mari meramaikan kelir!');assert.equal(lines[0].char,'gatotkaca');assert.equal(lines[0].source,'story');
+ ui.camera(hand(1,.85,'dua_jari'));assert.equal(lines.length,1,'extra hand poses must not add script dialogue');
+ await ui.click('exit');
+});

@@ -226,7 +226,7 @@
         if(payload.silent)bubble=null;
         else if(typeof payload.dialog==='string'&&payload.dialog.trim())bubble={type:'bubble',text:payload.dialog.slice(0,90),char:charKey,ms:2400};
       }
-      if (bubble && payload && typeof payload.player === "number") bubble.player = payload.player;
+      if(bubble&&payload){bubble.player=player;bubble.source=payload.source; bubble.delay=0;}
       if (bubble) effects.push(bubble);
 
       const cooled = at - s.lastCueAt < TIMING.cooldown;

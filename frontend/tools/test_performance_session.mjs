@@ -25,7 +25,7 @@ test('watch is isolated; takeover waits for P1; exit restores the original conte
  const s=setup();await s.click('watch');assert.equal(s.api.isActive(),true);assert.equal(s.api.allowInput(0,'live'),false);assert.equal(s.api.allowInput(1,'dummy'),false);
  s.click('takeover');assert.equal(s.api.allowInput(0,'dummy'),true);assert.equal(s.api.allowInput(1,'live'),false);
  const before=s.calls.filter(c=>c[0]==='perform').length;s.tick(200);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before);
- s.gesture(0,'telapak_terbuka');s.tick(17);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+2);
+ s.gesture(0,'telapak_terbuka');s.tick(25);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+2);
  await s.click('exit');s.tick(200);assert.equal(s.api.isActive(),false);assert.equal(s.api.allowInput(1,'live'),true);
  assert.equal(s.node('kontrol-jumlah').inert,false);assert.equal(s.node('dummy').inert,false);
  assert.equal(s.calls.filter(c=>c[0]==='restore').length,1);assert.equal(s.calls.at(-2)[0],'restore');
@@ -34,7 +34,7 @@ test('manual, modal and hidden pauses overlap without advancing or double respon
  const s=setup();await s.click('watch');s.tick(5);s.click('pause');s.modal(true);s.click('pause');
  const before=s.calls.filter(c=>c[0]==='perform').length;s.tick(100);assert.equal(s.api.isPaused(),true);
  assert.equal(s.calls.filter(c=>c[0]==='perform').length,before);s.document.hidden=true;s.modal(false);s.tick(50);assert.equal(s.api.isPaused(),true);
- s.document.hidden=false;s.tick(13);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+1);
+ s.document.hidden=false;s.tick(25);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+1);
 });
 test('cancel during asset loading restores instead of starting late choreography',async()=>{
  let resolve;const s=setup(()=>new Promise(r=>resolve=r));const loading=s.click('watch');
@@ -48,5 +48,5 @@ test('failed setup unlocks the app and provides a retry message',async()=>{
 test('restart replaces the current beat and cannot carry a pending reply',async()=>{
  const s=setup();await s.click('watch');s.tick(10);await s.click('repeat');
  const before=s.calls.filter(c=>c[0]==='perform').length;s.tick(5);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before);
- s.tick(12);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+1);
+ s.tick(20);assert.equal(s.calls.filter(c=>c[0]==='perform').length,before+1);
 });

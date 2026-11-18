@@ -1,0 +1,11 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>QA sinkronisasi dialog lambat</title><style>
+body{margin:0;background:#29241c;color:#f5ead9;font:12px system-ui}header{padding:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}button{padding:10px;background:#463726;color:inherit;border:1px solid #c3a46e;cursor:pointer}iframe{width:100%;height:820px;border:0}#log{max-height:200px;overflow:auto;white-space:pre-wrap;padding:12px}output{color:#f0cd88}</style></head><body><header><strong>QA — simulasi suara 6 detik + latensi 400 ms, bukan suara/webcam fisik</strong><button id="rapid">Rafal tiga gestur</button><output id="result">Menunggu dialog</output></header><iframe title="Panggung dengan suara simulasi lambat"></iframe><pre id="log"></pre><script>
+const frame=document.querySelector('iframe');let overlaps=0,starts=0;const rows=[];
+fetch('/').then(r=>r.text()).then(html=>{frame.srcdoc=html.replace('<head>','<head><base href="/"><script src="/__qa/camera-fixture.js"><'+ '/script><script src="/__qa/dialogue-fixture.js"><'+'/script>');});
+addEventListener('message',e=>{if(e.source!==frame.contentWindow||e.data.type!=='qa-dialogue')return;const d=e.data;
+ if(d.kind==='overlap')overlaps++;if(d.kind==='start')starts++;
+ document.querySelector('#result').textContent=`Mulai: ${starts} · Tumpang tindih: ${overlaps}`;
+ rows.push(`${(d.time/1000).toFixed(2)} ${d.kind} #${d.id} ${d.text} | ${d.step||'bebas'} | bubble: ${d.captions.join(' / ')}`);
+ document.querySelector('#log').textContent=rows.slice(-40).join('\n');});
+document.querySelector('#rapid').onclick=()=>['telapak_terbuka','telunjuk','kepalan'].forEach((gesture,i)=>setTimeout(()=>frame.contentWindow.postMessage({type:'qa-camera',hands:[{id:77,wrist_x:.45,gesture,state:'ok',confidence:.99,landmarks:[]}]},location.origin),i*80));
+</script></body></html>

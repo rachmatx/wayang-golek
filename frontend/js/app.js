@@ -303,8 +303,10 @@
         if(cue.face) p.wayang.setFacing(cue.face);
         if(Number.isFinite(cue.target)) p.wayang.setStageTarget(cue.target);
         if(!cue.manual) activateGesture(p,cue.gesture,.5,'story',1,{dialog:cue.text,silent:cue.silent});
+        else if(Teater.say)Teater.say({player:cue.player,char:p.karakter,text:cue.text,source:'story'});
         // Scripted bows return through their authored phrase, without wall-clock auto timers.
       },
+      say: function(cue){const p=app.players[cue.player];Teater.say({player:cue.player,char:p.karakter,text:cue.text,source:'story'});},
       cancel: cancel,
       syncSource: function(){onSocketStatus(input.connection);},
       freeze: function() {app.players.forEach(p=>{p.wayang.setStageTarget(null);p.wayang.applyPose('kepalan',true);if(p.wayang.cancelCues)p.wayang.cancelCues();p.gesture='kepalan';});},

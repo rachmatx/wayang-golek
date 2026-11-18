@@ -252,3 +252,33 @@ test('zero voice volume stops ducking and suppresses silent future speech', () =
   assert.deepEqual(log, [true,false]); assert.equal(a.SuaraDialog.ucap('semar','Lanjut.'),false);
   a.SuaraDialog.setVolume(.5); assert.equal(a.SuaraDialog.ucap('semar','Lanjut.'),true);
 });
+
+test('one completion owner survives recorded failure and duplicate stale transport events',()=>{
+ const a=muatBerkas(),finished=[],started=[];
+ a.SuaraDialog.ucap('klasik','Sudah cukup. Kita diam sejenak.',{onFinish:r=>finished.push(r),onStart:()=>started.push(true)});
+ const old=AudioPalsu.daftar[0];let stopped=0;old.pause=()=>stopped++;
+ old.pemicu('error');assert.equal(stopped,1);assert.equal(a.ucap.length,1);
+ old.pemicu('ended');old.pemicu('playing');old.pemicu('error');
+ assert.equal(a.SuaraDialog.isBicara(),true);assert.equal(a.ucap.length,1);assert.deepEqual(finished,[]);
+ a.selesai();a.selesai();assert.deepEqual(finished,['ended']);assert.equal(started.length,1);
+});
+test('cancellation settles once and late TTS callbacks cannot duck or finish a new voice',()=>{
+ const a=muat(),finished=[],duck=a.kunci();a.SuaraDialog.ucap('semar','Lama',{onFinish:r=>finished.push(r)});
+ const old=a.terakhir(),lateStart=old.onstart,lateEnd=old.onend;
+ a.SuaraDialog.cancel();a.SuaraDialog.cancel();assert.deepEqual(finished,['cancelled']);
+ a.SuaraDialog.ucap('bagong','Baru');const before=[...duck];lateEnd();lateStart();
+ assert.deepEqual(duck,before);assert.equal(a.SuaraDialog.isBicara(),true);a.selesai();
+});
+test('a synchronous TTS error releases ownership instead of blocking later dialogue',()=>{
+ const a=muat(),finished=[];a.window.speechSynthesis.speak=()=>{throw Error('Unavailable engine');};
+ assert.equal(a.SuaraDialog.ucap('semar','Gagal',{onFinish:r=>finished.push(r)}),false);
+ assert.deepEqual(finished,['error']);assert.equal(a.SuaraDialog.isBicara(),false);
+});
+
+test('a play promise rejected after intentional cancellation never starts a fallback voice',async()=>{
+ const a=muatBerkas();let reject;
+ a.window.Audio=class extends AudioPalsu{play(){return new Promise((_,fail)=>reject=fail);}};
+ a.SuaraDialog.ucap('klasik','Sudah cukup. Kita diam sejenak.');a.SuaraDialog.cancel();
+ a.SuaraDialog.ucap('semar','Ucapan baru');reject(Error('AbortError'));await Promise.resolve();
+ assert.deepEqual(a.ucap.map(u=>u.text),['Ucapan baru']);assert.equal(a.SuaraDialog.isBicara(),true);a.selesai();
+});

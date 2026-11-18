@@ -1,14 +1,7 @@
-/* voice.js — wayang "ngomong": berkas audio dialog per karakter bila ada,
- * kalau tidak ada jatuh ke suara bawaan browser (speechSynthesis).
- *
- * Peta berkas ada di js/dialog_audio.js (window.DialogAudio): kunci karakter
- * + teks persis -> jalur relatif dari assets/audio/. Sekali jalan satu
- * ucapan — wayang tidak memotong bicaranya sendiri, dan gamelan dikecilkan
- * selama ia bicara (lewat pengaturDuck, dari berkas maupun TTS).
- */
+/* One dialogue owner across recorded audio and TTS. Transport callbacks are
+ * generation-checked; completion/cancellation settles exactly once. */
 (function () {
   "use strict";
-
   const PROFIL = {
     klasik: { rate: 0.95, pitch: 1.0 },
     arjuna: { rate: 0.82, pitch: 0.82 },
@@ -18,188 +11,79 @@
     cepot: { rate: 1.22, pitch: 1.3 },
   };
 
-  let enabled = true;
-  let volume = 1;
-  let utterance = null;
-  let bicara = false;
-  let pengaturDuck = null;
-  let pemain = null;
-  let requestId = 0;
-  const berkasBusuk = {};
-  const sudahPreload = {};
 
-  function dasarAudio() {
-    try {
-      const skrip = document.currentScript;
-      if (skrip && skrip.src) return skrip.src.replace(/js\/voice\.js.*$/, "") + "assets/audio/";
-    } catch (error) { /* bukan browser */ }
-    return "assets/audio/";
+  let enabled=true, volume=1, active=null, nextId=0, pengaturDuck=null;
+  const badFiles=new Set();
+  const script=documentSafe();
+  const base=script ? script.replace(/js\/voice\.js.*$/, '')+'assets/audio/' : 'assets/audio/';
+  function documentSafe(){try{return document.currentScript&&document.currentScript.src;}catch(_){return null;}}
+  function timer(fn,ms){const t=setTimeout(fn,ms);if(t&&t.unref)t.unref();return t;}
+  function current(s,g){return active===s&&(g===undefined||s.generation===g);}
+  function stopTransport(s){
+    clearTimeout(s.timer);s.generation++;
+    if(s.audio){try{s.audio.pause();s.audio.removeAttribute('src');s.audio.load();}catch(_){}s.audio=null;}
+    if(s.utterance){s.utterance.onstart=s.utterance.onend=s.utterance.onerror=()=>{};s.utterance=null;
+      try{window.speechSynthesis.cancel();}catch(_){} }
   }
-  const DASAR = dasarAudio();
-
-  function cariVoz() {
-    const sintesis = window.speechSynthesis;
-    if (!sintesis || typeof sintesis.getVoices !== "function") return null;
-    const daftar = sintesis.getVoices() || [];
-    for (let index = 0; index < daftar.length; index += 1) {
-      const bahasa = String(daftar[index].lang || "").toLowerCase();
-      if (bahasa.indexOf("id") === 0) return daftar[index];
+  function finish(s,reason,stop=false){
+    if(!current(s))return;
+    // Invalidate before pause/load/cancel, which can synchronously dispatch errors.
+    active=null;if(stop)stopTransport(s);else clearTimeout(s.timer);
+    if(pengaturDuck)pengaturDuck(false);
+    if(s.hooks.onFinish)s.hooks.onFinish(reason);
+  }
+  function cancel(){if(active)finish(active,'cancelled',true);}
+  function started(s,g){
+    if(!current(s,g))return;
+    clearTimeout(s.timer);
+    // A missing end/error event must not lock the entire performance indefinitely.
+    const seconds=s.audio&&Number.isFinite(s.audio.duration)?s.audio.duration:Math.max(5,s.text.length/9);
+    s.timer=timer(()=>finish(s,'timeout',true),Math.min(60000,Math.max(15000,(seconds*2+5)*1000)));
+    if(!s.started){s.started=true;if(pengaturDuck)pengaturDuck(true);if(s.hooks.onStart)s.hooks.onStart();}
+  }
+  function tts(s){
+    const synth=window.speechSynthesis, Utterance=window.SpeechSynthesisUtterance;
+    if(!synth||typeof synth.speak!=='function'||!Utterance){finish(s,'unavailable');return false;}
+    const g=++s.generation, u=new Utterance(s.text),profile=PROFIL[s.key]||PROFIL.klasik;
+    s.utterance=u;u.lang='id-ID';u.volume=volume;u.rate=profile.rate;u.pitch=profile.pitch;
+    const voices=typeof synth.getVoices==='function'?synth.getVoices()||[]:[];
+    const voice=voices.find(v=>String(v.lang||'').toLowerCase().startsWith('id'));if(voice)u.voice=voice;
+    u.onstart=()=>started(s,g);
+    u.onend=()=>{if(current(s,g))finish(s,'ended');};
+    u.onerror=()=>{if(current(s,g))finish(s,'error',true);};
+    s.timer=timer(()=>finish(s,'timeout',true),5000);
+    try{synth.speak(u);return true;}catch(_){finish(s,'error',true);return false;}
+  }
+  function clip(s,path){
+    let el;try{el=new window.Audio();}catch(_){return tts(s);}
+    s.audio=el;const g=++s.generation;
+    function fallback(){
+      if(!current(s,g))return;
+      badFiles.add(path);stopTransport(s);tts(s);
     }
-    return null;
-  }
-
-  function selesai() {
-    bicara = false;
-    utterance = null;
-    if (pengaturDuck) pengaturDuck(false);
-  }
-
-  function petaBerkas() {
-    if (typeof window === "undefined") return null;
-    return window.DialogAudio || null;
-  }
-
-  function cariBerkas(kunci, kalimat) {
-    const peta = petaBerkas();
-    if (!peta || !peta[kunci]) return null;
-    if (typeof window.Audio !== "function") return null;
-    const rel = peta[kunci][kalimat];
-    if (!rel || berkasBusuk[rel]) return null;
-    return rel;
-  }
-
-  function preloadKarakter(kunci) {
-    if (sudahPreload[kunci]) return;
-    sudahPreload[kunci] = true;
-    const peta = petaBerkas();
-    if (!peta || !peta[kunci] || typeof window.Audio !== "function") return;
-    try {
-      Object.keys(peta[kunci]).forEach(function (teks) {
-        const el = new window.Audio();
-        el.preload = "auto";
-        el.src = DASAR + peta[kunci][teks];
-      });
-    } catch (error) { /* preload cuma pemanasan, boleh gagal diam-diam */ }
-  }
-
-  function ucapBerkas(kunci, kalimat, rel) {
-    const request = ++requestId;
-    let el;
-    try {
-      el = new window.Audio();
-    } catch (error) {
-      return false;
-    }
-    pemain = el;
-    bicara = true;
-    let jatuh = false;
-    function gagal() {
-      if (request !== requestId) return;
-      berkasBusuk[rel] = true;
-      if (pemain === el) pemain = null;
-      if (jatuh) return;
-      jatuh = true;
-      bicara = false;
-      if (!ucapTTS(kunci, kalimat)) selesai();
-    }
-    el.preload = "auto";
-    el.volume = volume;
-    el.src = DASAR + rel;
-    el.addEventListener("playing", function () {
-      if (request !== requestId) return;
-      if (pengaturDuck) pengaturDuck(true);
-    });
-    el.addEventListener("ended", function () {
-      if (request !== requestId) return;
-      if (pemain === el) pemain = null;
-      selesai();
-    });
-    el.addEventListener("error", gagal);
-    try {
-      const janji = el.play();
-      if (janji && typeof janji.catch === "function") janji.catch(gagal);
-    } catch (error) {
-      gagal();
-      return true; /* sudah ditangani lewat jalur cadangan */
-    }
-    preloadKarakter(kunci);
+    el.preload='auto';el.volume=volume;el.src=base+path;
+    el.addEventListener('playing',()=>started(s,g));
+    el.addEventListener('ended',()=>{if(current(s,g))finish(s,'ended');});
+    el.addEventListener('error',fallback);
+    s.timer=timer(fallback,4000);
+    try{const promise=el.play();if(promise&&promise.catch)promise.catch(fallback);}catch(_){fallback();}
     return true;
   }
-
-  function ucapTTS(kunci, kalimat) {
-    const sintesis = window.speechSynthesis;
-    const Utterance = window.SpeechSynthesisUtterance;
-    if (!sintesis || typeof sintesis.speak !== "function" || !Utterance) return false;
-    const request = ++requestId;
-
-    const profil = PROFIL[kunci] || PROFIL.klasik;
-    const bunyi = new Utterance(kalimat);
-    bunyi.lang = "id-ID";
-    bunyi.volume = volume;
-    utterance = bunyi;
-    bunyi.rate = profil.rate;
-    bunyi.pitch = profil.pitch;
-    const voz = cariVoz();
-    if (voz) bunyi.voice = voz;
-    bunyi.onstart = function () {
-      if (request !== requestId) return;
-      bicara = true;
-      if (pengaturDuck) pengaturDuck(true);
-    };
-    bunyi.onend = function () { if (request === requestId) selesai(); };
-    bunyi.onerror = function () { if (request === requestId) selesai(); };
-
-    bicara = true;
-    sintesis.speak(bunyi);
-    return true;
+  function ucap(key,text,hooks={}){
+    text=typeof text==='string'?text.trim():'';
+    if(!enabled||volume===0||!text||active)return false;
+    const s={id:++nextId,key,text,hooks,generation:0,started:false};active=s;
+    const path=window.DialogAudio&&window.DialogAudio[key]&&window.DialogAudio[key][text];
+    try{return path&&!badFiles.has(path)&&typeof window.Audio==='function'?clip(s,path):tts(s);}
+    catch(_){finish(s,'error',true);return false;}
   }
-
-  function ucap(kunci, teks) {
-    const kalimat = typeof teks === "string" ? teks.trim() : "";
-    if (!enabled || volume === 0 || !kalimat || bicara) return false;
-    const rel = cariBerkas(kunci, kalimat);
-    if (rel) return ucapBerkas(kunci, kalimat, rel);
-    return ucapTTS(kunci, kalimat);
+  function setEnabled(on){enabled=!!on;if(!enabled)cancel();}
+  function setVolume(value){
+    value=Number(value);if(!Number.isFinite(value))return;
+    const next=Math.max(0,Math.min(1,value));if(next===volume)return;volume=next;
+    if(active&&active.audio)active.audio.volume=volume;
+    if(active&&(active.utterance||volume===0))cancel();
   }
-
-  function setEnabled(on) {
-    enabled = Boolean(on);
-    if (!enabled) requestId += 1;
-    if (enabled || !bicara) return;
-    if (pemain) {
-      try {
-        pemain.pause();
-        pemain.removeAttribute("src");
-        pemain.load();
-      } catch (error) { /* pemain sudah lepas */ }
-      pemain = null;
-    }
-    const sintesis = window.speechSynthesis;
-    if (sintesis && typeof sintesis.cancel === "function") {
-      try { sintesis.cancel(); } catch (error) { /* suara sudah lepas */ }
-    }
-    selesai();
-  }
-
-  function setVolume(value) {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric)) return;
-    const next = Math.max(0, Math.min(1, numeric));
-    if (next === volume) return;
-    volume = next;
-    if (pemain) pemain.volume = volume;
-    // Browser TTS does not reliably change volume in flight. Stop the current
-    // phrase when its volume changes; the next phrase uses the new level.
-    if (bicara && (utterance || volume === 0)) { const wasEnabled = enabled; setEnabled(false); enabled = wasEnabled; }
-  }
-
-  window.SuaraDialog = {
-    ucap: ucap,
-    setEnabled: setEnabled,
-    setVolume: setVolume,
-    volume: function () { return volume; },
-    enabled: function () { return enabled; },
-    isBicara: function () { return bicara; },
-    setPengaturDuck: function (fn) { pengaturDuck = typeof fn === "function" ? fn : null; },
-  };
+  window.SuaraDialog={ucap,cancel,setEnabled,setVolume,volume:()=>volume,enabled:()=>enabled,isBicara:()=>!!active,
+    setPengaturDuck:fn=>{pengaturDuck=typeof fn==='function'?fn:null;}};
 })();

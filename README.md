@@ -2,14 +2,14 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.9.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.9.1 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
 - Aksen SFX mengikuti persiapan, puncak dan pulihnya gerak tiap tokoh. Langkah hanya berbunyi saat wayang berpindah. P2 punya aksen sendiri, termasuk ketika membalas gestur yang sama.
 - Bunyi yang terlalu berdekatan dibatasi; maksimum enam sumber SFX aktif dan kompresor SFX mengurangi lonjakan. Jeda, keluar lakon, ganti tokoh serta mute membatalkan bunyi aktif. Musik tetap memakai kanal independen.
 
-- Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis sekitar 35 detik, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
+- Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis dengan tempo mengikuti penyelesaian dialog, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
 - Lakon menjaga jarak antartokoh dan menggunakan langkah yang lebih pelan. Mode bebas tetap dapat saling melintas. Saat keluar, jumlah pemain, sumber input, pemain latihan, posisi dan arah sebelumnya dipulihkan; pose kembali netral. Pilihan tokoh tidak diganti.
 - Pergantian frase menyambung dari sudut sendi terakhir selama 240 ms; badan tetap kaku. Lakon dan gerak berhenti ketika tab disembunyikan atau panel modal dibuka. Menutup panel tidak membatalkan jeda manual.
 
@@ -215,6 +215,16 @@ Rangkaian aksen adalah interpretasi digital. BGM tetap mengalun bebas dan belum 
 - Masuk/keluar, ulang dan ambil alih tidak memaksa sumber kamera menjadi latihan. Slot tangan untuk P1 terpandu berdiri sendiri dari duet bebas dan direset ketika sesi/sumber berubah.
 - Bubble P1/P2 memiliki teks serta timer masing-masing. Bubble tetap tampil saat suara tokoh lain berjalan; ucapan terbaru menggantikan ucapan lama tanpa antrean terlambat. Dialog mati menyembunyikan keduanya.
 - Bubble lebih kecil dengan label tokoh dan ekor penunjuk, mengikuti posisi kepala, langkah, bungkuk dan arah cermin rig. Tata letak menjaga bubble di dalam panggung dan memisahkan dua bubble yang berdekatan.
-- Contoh otomatis dipadatkan dari 72 ke sekitar 35 detik. Ada 18 aksi utama/balasan serta 15 aksen tambahan khusus menonton. Mode main tetap menunggu pengguna; aksen otomatis tambahan tidak mengambil alih P1.
+- Pada v0.9.0, contoh otomatis sempat dipadatkan ke sekitar 35 detik; penjadwalan tetap ini digantikan pada v0.9.1 karena dapat mendahului suara. Ada 18 aksi utama/balasan serta 15 aksen tambahan khusus menonton. Mode main tetap menunggu pengguna; aksen otomatis tambahan tidak mengambil alih P1.
 
 [Verifikasi perbaikan v0.9.0](docs/verification/2026-11-18-lakon-dialog-v09.md). Jalur kamera diuji lewat handler asli, integrasi pengendali lakon dan transport simulasi di browser. Uji webcam fisik tetap perlu dilakukan pada komputer pengguna.
+
+
+## Sinkronisasi ucapan v0.9.1
+
+- Lakon menunggu akhir rekaman/TTS dan waktu baca minimum sebelum memberi giliran ke tokoh berikutnya. Durasi mengikuti suara perangkat; tidak lagi dikunci 35 detik. Gerak dan aksen senyap tetap berjalan saat dialog berlangsung.
+- Bubble langsung mengikuti dialog terbaru dan tetap terlihat sampai suara selesai. Dalam panggung bebas, suara menunggu 280 ms agar gestur stabil; maksud terbaru menggantikan ucapan lama tanpa antrean tertunda.
+- Satu pemilik ucapan mengelola rekaman dan TTS, callback usang diabaikan, kegagalan rekaman menghentikan transport lama sebelum memakai TTS, dan batas waktu mencegah lakon macet jika browser tidak mengirim event.
+- Jeda menghentikan ucapan. Lanjut mengulang kalimat yang terpotong tanpa mengulang gerak; lewati/ulangi/keluar membuang dialog sesi sebelumnya. Mode main menggunakan kalimat lakon dan karakter pemain yang benar.
+
+[Riset teknis](docs/research/2026-11-18-dialogue-synchronization.md) · [Verifikasi v0.9.1](docs/verification/2026-11-18-dialogue-sync-v091.md).
