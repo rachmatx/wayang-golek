@@ -169,3 +169,37 @@ html:fullscreen .stage-column:has(#dummy:not([hidden])) .panggung, body.stage-fo
 .start-guide { padding: 18px; border: 1px solid var(--line); border-radius: 7px; width: 100%; background: #bc955d05; }.start-guide summary { min-height: 44px; cursor: pointer; font-size: 13px; color: var(--cream); }.start-guide summary span { color: var(--muted); font-size: 10px; margin-left: 7px; }
 .start-guide ol { padding-left: 20px; margin: 8px 0 15px; }.start-guide li { padding-left: 3px; margin: 12px 0; font-size: 11px; color: var(--gold-soft); }.start-guide li strong { font-weight: 500; }.start-guide li p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.75; }
 .start-guide-actions { display: flex; flex-wrap: wrap; gap: 7px; }.start-guide-actions button { flex: 1 1 110px; min-height: 44px; padding: 9px; color: var(--gold-soft); background: transparent; border: 1px solid var(--line-strong); border-radius: 4px; font: 11px var(--font-ui); }.start-guide-actions button:disabled { opacity: .4; }.start-guide .text-button { min-height: 44px; margin-top: 5px; font-size: 11px; }
+
+/* Optional mini-story: instructions belong to the controls, never dialog bubbles. */
+.performance-panel { margin:14px 0; padding:18px 20px; border:1px solid var(--line); border-radius:12px; background:#1b1915; }
+.performance-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.performance-heading h2 { font-family:var(--font-display,serif); font-size:24px; font-weight:400; margin:5px 0; color:var(--gold-soft); }
+.performance-tag { font-size:10px; color:var(--text-muted,#bcb2a1); border:1px solid var(--line); border-radius:20px; padding:6px 9px; white-space:nowrap; }
+.performance-panel p { font-size:12px; line-height:1.65; color:var(--text-muted,#bcb2a1); margin:8px 0 12px; }
+.performance-launch,.performance-actions { display:flex; gap:8px 14px; align-items:center; flex-wrap:wrap; }
+.performance-panel button { min-height:44px; }
+.performance-progress { height:3px; background:#373128; margin:14px 0 18px; overflow:hidden; border-radius:3px; }
+.performance-progress span { display:block; height:100%; background:var(--gold); transition:width .15s linear; }
+.performance-step { display:flex; gap:15px; align-items:center; }
+.performance-step > span { flex:0 0 46px; color:var(--gold-soft); }
+.performance-step svg { width:46px; height:58px; }
+.performance-step h3 { font-size:18px; font-weight:500; margin:5px 0 0; }
+.performance-step p { margin:5px 0; }
+.performance-panel .performance-status { color:var(--gold-soft); font-size:12px; min-height:20px; }
+.performance-panel .performance-note { font-size:10px; margin:12px 0 0; }
+.performance-locked { opacity:.45; }
+@media(max-width:680px) {
+  .performance-panel { padding:15px; }
+  .performance-heading { align-items:flex-start; }
+  .performance-heading h2 { font-size:22px; }
+  .performance-tag { font-size:8px; white-space:normal; max-width:85px; text-align:center; }
+  .performance-actions { gap:6px 13px; }
+  .performance-step h3 { font-size:16px; }
+}
+@media(prefers-reduced-motion:reduce) { .performance-progress span {transition:none;} }
+.performance-panel[data-mode="watch"] #performance-intro,
+.performance-panel[data-mode="play"] #performance-intro { display:none; }
+.performance-panel:is([data-mode="watch"],[data-mode="play"]) .performance-heading > div > .eyebrow { display:none; }
+.performance-panel:is([data-mode="watch"],[data-mode="play"]) .performance-progress { margin:9px 0 12px; }
+.stage-column:has(#performance[data-mode="watch"]) #dummy { display:none; }
+#dummy[inert] { opacity:.45; }

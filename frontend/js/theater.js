@@ -150,7 +150,7 @@
       syncAmbient();
     });
     document.addEventListener("wayang:nohand", function () {
-      if (!core || reading) return;
+      if (!core || reading || (window.Lakon && Lakon.isActive())) return;
       run(core.noHand(performance.now()));
       syncAmbient();
     });

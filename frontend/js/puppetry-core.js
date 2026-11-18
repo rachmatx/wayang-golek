@@ -73,7 +73,13 @@
     const angles = values.slice(0, 4).map(value => value * profile.arms);
     return { angles, body: values[4], lift: opts.reduced ? 0 : values[5], strideLength: profile.stride };
   }
-  const api = { sample, profiles };
+  function blendFrom(target, origin, elapsed, duration) {
+    if(elapsed>=duration)return target;
+    const u=Math.max(0,Math.min(1,elapsed/duration)), weight=u*u*(3-2*u);
+    const mix=(a,b)=>a+(b-a)*weight;
+    return {...target,angles:target.angles.map((v,i)=>mix(origin.angles[i],v)),body:mix(origin.body,target.body),lift:mix(origin.lift,target.lift)};
+  }
+  const api = { sample, profiles, blendFrom };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.WayangPuppetry = api;
 })(typeof window === 'undefined' ? globalThis : window);

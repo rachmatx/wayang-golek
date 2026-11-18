@@ -2,9 +2,13 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.6.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.7.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
+
+- Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis sekitar 72 detik, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
+- Lakon menjaga jarak antartokoh dan menggunakan langkah yang lebih pelan. Mode bebas tetap dapat saling melintas. Saat keluar, jumlah pemain, sumber input, pemain latihan, posisi dan arah sebelumnya dipulihkan; pose kembali netral. Pilihan tokoh tidak diganti.
+- Pergantian frase menyambung dari sudut sendi terakhir selama 240 ms; badan tetap kaku. Lakon dan gerak berhenti ketika tab disembunyikan atau panel modal dibuka. Menutup panel tidak membatalkan jeda manual.
 
 - Dua latar ilustratif: Pendopo Senja dan Rimba Malam, dengan bingkai kayu, kelir bercahaya, dan lanskap berlapis. Pilihan suasana tersimpan di perangkat.
 - Transisi pose berbasis spring yang konsisten terhadap frame rate; bahu, siku, dan badan bergerak berlapis, dengan ayunan susulan ketika berpindah.
@@ -185,3 +189,14 @@ Tombol dan keyboard latihan dapat mengulang gestur yang sama. Frame kamera yang 
 Aset JS/CSS memiliki penanda versi rilis untuk mencegah campuran kode lama dan baru setelah update. Hal ini tidak mengganti aturan cache kamera/health atau menambahkan filter klasifikasi. MLP, normalisasi 63 fitur dan kontrak `hands[]` tetap sama.
 
 [Verifikasi v0.6.0](docs/verification/2026-11-18-controls-v06.json). Validasi input sintetik dan antarmuka sudah dilakukan; pengukuran latensi kamera ujung ke ujung, salah baca dan silang tangan pada webcam fisik belum dilakukan. Tahap berikutnya adalah audit gerak dan mode lakon mini/duet dari dokumen rencana.
+
+## Memainkan lakon mini
+
+1. Pilih tokoh dalam mode bebas, lalu tekan **Tonton contoh** atau **Mainkan lakon** di bawah panggung. Panggung otomatis menjadi duet. Kedua mode mulai dengan tombol latihan agar tetap dapat dicoba tanpa webcam.
+2. Saat menonton, **Ambil alih P1** beralih ke mode main pada langkah yang sama. Saat bermain, ikuti instruksi satu per satu memakai tombol/angka 1–6; tombol **Latihan** atau D beralih kembali ke input webcam Python. Kamera HP belum didukung.
+3. P2 membalas sekitar 1,6 detik setelah aksi diterima. Langkah berikutnya muncul setelah delapan detik; dalam mode main, langkah baru menunggu gestur yang sesuai tanpa batas waktu. **Lewati langkah** tersedia jika diperlukan.
+4. **Keluar lakon** memulihkan konteks bermain sebelumnya. Jika aset masih dimuat, perintah keluar dicatat dan pemulihan dilakukan segera setelah pemuatan selesai. Tidak ada balasan otomatis yang dibawa ke mode bebas.
+
+Instruksi adalah bagian kendali dan tetap muncul ketika Dialog mati; bubble dan suara dialog mengikuti toggle Dialog. Musik dan SFX tetap memakai pengaturan masing-masing. Lakon adalah cerita latihan orisinal dan interpretasi digital, bukan reproduksi pakem atau sabet yang sudah divalidasi dalang.
+
+Catatan verifikasi: [rilis pertunjukan v0.7.0](docs/verification/2026-11-18-performance-v07.md). Sinkronisasi cue dengan fase gerak, audit lisensi iringan lanjutan, dan uji webcam fisik masih menjadi tahap berikutnya.

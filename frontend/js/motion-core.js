@@ -15,7 +15,16 @@
     const available=delta<0?centre-.03:.97-centre;
     const value=clamp(delta/Math.min(span,available),-1,1);
     const normalized=Math.abs(value)<.035?0:Math.sign(value)*(Math.abs(value)-.035)/.965;
-    return normalized<0?-normalized*range.min:normalized*range.max;
+    const neutral=clamp(0,range.min,range.max);
+    return neutral+(normalized<0?-normalized*(range.min-neutral):normalized*(range.max-neutral));
+  }
+  function laneBounds(range, width, centre, envelope, side, gap) {
+    if (side!==0&&side!==1) return {...range};
+    const edge=width/2+(side===0?-1:1)*(gap||16)/2;
+    const min=side===1?Math.max(range.min,edge+envelope-centre):range.min;
+    const max=side===0?Math.min(range.max,edge-envelope-centre):range.max;
+    // On very small stages, hold at the safest available edge rather than invert the range.
+    return min<=max?{min,max}:{min:side===0?range.min:range.max,max:side===0?range.min:range.max};
   }
   function spring(state, target, dt, frequency) {
     const offset = state.x - target;
@@ -25,7 +34,7 @@
     state.v = (state.v - frequency * coefficient * dt) * decay;
     return state;
   }
-  const api = { clamp, bounds, follow, spring };
+  const api = { clamp, bounds, laneBounds, follow, spring };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.WayangMotion = api;
 })(typeof window === "undefined" ? globalThis : window);

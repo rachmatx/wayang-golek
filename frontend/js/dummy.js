@@ -161,6 +161,7 @@
   }
 
   function emit(gesture, index) {
+    if(window.Lakon && !Lakon.allowInput(Number.isFinite(index)?index:pemain,"dummy"))return;
     if (!active) {
       setActive(true);
     }
@@ -216,6 +217,7 @@
     }
 
     if (key === "p" || key === "P") {
+      if(window.Lakon && Lakon.isActive())return;
       if (jumlah < 2) return;
       event.preventDefault();
       setPemain(pemain === 0 ? 1 : 0);
@@ -247,6 +249,7 @@
     rebuild: rebuild,
     toggle: toggle,
     setActive: setActive,
+    stopMotion: function() {stopTick(0);stopTick(1);},
     setJumlah: setJumlah,
     setPemain: setPemain,
     player: function () { return pemain; },

@@ -123,7 +123,7 @@
     buildMiniGuide();
     Dummy.rebuild();
     setFacingLabel(0, app.players[0].wayang ? app.players[0].wayang.facing() : 1);
-    document.dispatchEvent(new CustomEvent('wayang:ready'));
+    document.dispatchEvent(new CustomEvent('wayang:ready', {detail:{stage:performanceStage()}}));
   }
 
   async function loadCharacters() {
@@ -276,6 +276,43 @@
     if (pemain.index === 0) emitWrist(0.5);
   }
 
+
+  /* Narrow staging adapter: story choreography never owns the free-input model. */
+  function performanceStage() {
+    const cancel = function() {
+      Dummy.stopMotion();
+      app.players.forEach(function(p) {cancelAuto(p);cancelNeutral(p);p.lastGesture=null;});
+    };
+    return {
+      snapshot: function() {return {jumlah:app.jumlah,practice:Dummy.isActive(),player:Dummy.player(),players:app.players.map(p=>({x:p.loaded&&p.index<app.jumlah?p.wayang.position():null,facing:p.loaded?p.wayang.facing():(p.index?-1:1)}))};},
+      prepare: async function() {
+        if(app.characterLoading) throw new Error('Tunggu tokoh selesai dimuat.');
+        await setJumlah(2,document.querySelector('[data-jumlah="2"]'));
+        if(!app.players.every(p=>p.loaded)) throw new Error('Tokoh kedua gagal dimuat. Coba lagi.');
+        cancel();Dummy.setPemain(0);Dummy.setActive(true);
+        app.players.forEach(function(p,i) {p.wayang.setLane(i);p.wayang.setFacing(i?-1:1);p.wayang.setStageTarget(i?.78:.22);});
+        Teater.open();Teater.stopVoice();
+      },
+      perform: function(cue) {
+        const p=app.players[cue.player];cancelAuto(p);cancelNeutral(p);
+        if(cue.face) p.wayang.setFacing(cue.face);
+        if(Number.isFinite(cue.target)) p.wayang.setStageTarget(cue.target);
+        if(!cue.manual) activateGesture(p,cue.gesture,.5,'story',1);
+        // Scripted bows return through their authored phrase, without wall-clock auto timers.
+      },
+      cancel: cancel,
+      freeze: function() {app.players.forEach(p=>{p.wayang.setStageTarget(null);p.wayang.applyPose('kepalan',true);p.gesture='kepalan';});},
+      neutral: function() {cancel();app.players.forEach(p=>p.wayang.applyPose('netral',true));},
+      restore: async function(saved) {
+        cancel();
+        app.players.forEach(p=>{p.wayang.setLane(null);p.wayang.setStageTarget(null);});
+        await setJumlah(saved.jumlah,document.querySelector('[data-jumlah="'+saved.jumlah+'"]'));
+        app.players.forEach(function(p,i) {resetPemain(p,i>=saved.jumlah);p.wayang.setFacing(saved.players[i].facing,false);p.wayang.restorePosition(saved.players[i].x);});
+        Dummy.setActive(saved.practice);Dummy.setPemain(saved.player);
+      },
+    };
+  }
+
   /* ---------- koneksi ---------- */
   function connectWS() {
     const protocol = location.protocol === "https:" ? "wss" : "ws";
@@ -354,7 +391,7 @@
     });
     input.hands = Array.from({length: app.jumlah}, (_, index) => perSlot.get(index) || null);
     const presenceEvent = stagePresence.update(perSlot.size);
-    if (presenceEvent) document.dispatchEvent(new CustomEvent(presenceEvent, {detail: {count: perSlot.size}}));
+    if (presenceEvent && !(window.Lakon && Lakon.isActive())) document.dispatchEvent(new CustomEvent(presenceEvent, {detail: {count: perSlot.size}}));
     syncInputStatus();
 
     Panel.setLandmarks(hands.map(function (hand, i) {
@@ -373,6 +410,7 @@
   function prosesTangan(pemain, hand, message) {
     if (window.Teater && Teater.isReading && Teater.isReading()) return;
     const index = pemain.index;
+    if (window.Lakon && (!Lakon.allowInput(index,'live') || (!hand && Lakon.isActive()))) return;
 
     if (!hand) {
       pemain.handPresent = false;
@@ -437,9 +475,10 @@
   /* ---------- gestur -> pose ---------- */
   function activateGesture(pemain, gesture, wrist, source, confidence) {
     if (window.Teater && Teater.isReading && Teater.isReading()) return;
-    cancelAuto(pemain);
     const index = pemain.index;
     const from = source || app.source;
+    if (window.Lakon && !Lakon.allowInput(index,from)) return;
+    cancelAuto(pemain);
 
     if (gesture === "netral") {
       pemain.gesture = "netral";
@@ -454,16 +493,16 @@
     const pose = Wayang.poseFor(gesture);
     if (pose.mode === "toggle") {
       pemain.wayang.toggleFacing();
-      pemain.wayang.applyPose(gesture, from === 'dummy');
+      pemain.wayang.applyPose(gesture, (from === 'dummy' || from === 'story'));
     } else {
-      pemain.wayang.applyPose(gesture, from === 'dummy' && gesture !== 'telunjuk');
+      pemain.wayang.applyPose(gesture, (from === 'dummy' || from === 'story') && gesture !== 'telunjuk');
     }
 
     const nilaiWrist = gesture === "telunjuk" ? wrist : 0.5;
     pemain.wayang.setWrist(nilaiWrist);
     if (index === 0) emitWrist(nilaiWrist);
 
-    if (pose.mode === "auto") {
+    if (pose.mode === "auto" && from !== "story" && !(window.Lakon && Lakon.isActive())) {
       pemain.autoTimer = setTimeout(function () {
         pemain.autoTimer = null;
         if (pemain.gesture === gesture) {
@@ -531,6 +570,7 @@
     const gesture = payload.gesture;
     const pemain = app.players[payload.player] || app.players[0];
     if (!gesture || !pemain.wayang || !pemain.loaded) return;
+    if (window.Lakon && !Lakon.allowInput(pemain.index,"dummy")) return;
 
     Panel.setLandmarks([]);
     Panel.setFocus(pemain.index);

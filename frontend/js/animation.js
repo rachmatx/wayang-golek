@@ -91,6 +91,8 @@
     let stageX = 0;
     let wrist = 0.5;
     let bounds = { min: 0, max: 0 };
+    let stageWidth=1, baseCentre=0, stageTarget=null, lane=null;
+    let transitionOrigin=null;
     let previousTime = 0;
     let poseTime = 0;
     let stridePhase = 0;
@@ -162,23 +164,25 @@
         if (destroyed) { rafId = null; return; }
         const dt = previousTime ? Math.min((now - previousTime) / 1000, 0.05) : 1 / 60;
         previousTime = now;
-        const paused = document.hidden || (window.Teater && Teater.isReading());
+        const paused = document.hidden || (window.Teater && Teater.isReading()) || (window.Lakon && Lakon.isPaused());
         if (!paused) {
           poseTime += dt;
-          const target = currentPose === "telunjuk" ? Motion.follow(wrist, bounds, window.Kendali ? Kendali.settings(nomor) : null) : Motion.clamp(anchor, bounds.min, bounds.max);
+          const desired = stageTarget!==null ? stageTarget*stageWidth-baseCentre : currentPose === "telunjuk" ? Motion.follow(wrist, bounds, window.Kendali ? Kendali.settings(nomor) : null) : anchor;
+          const target=Motion.clamp(desired,bounds.min,bounds.max);
           const oldX = travel.x;
           if (reduced.matches) { travel.x = target; travel.v = 0; }
-          else Motion.spring(travel, target, dt, 15);
+          else Motion.spring(travel, target, dt, stageTarget!==null && currentPose==='telunjuk' ? 5 : 15);
           // Clamp the rendered position too: a rapid reversal must never overshoot the stage.
           travel.x = Motion.clamp(travel.x, bounds.min, bounds.max);
           stageX = travel.x;
           container.style.transform = "translateX(" + stageX.toFixed(2) + "px)";
           const profile = WayangPuppetry.profiles[character] || WayangPuppetry.profiles.gatotkaca;
           stridePhase += Math.abs(travel.x - oldX) / Math.max(18, svgScale * profile.stride) * Math.PI * 2;
-          const phrase = WayangPuppetry.sample(currentPose, poseTime, {
+          let phrase = WayangPuppetry.sample(currentPose, poseTime, {
             character, speed: travel.v / Math.max(.3, svgScale), stride: stridePhase,
             facing, reduced: reduced.matches,
           });
+          if (transitionOrigin && !reduced.matches) phrase=WayangPuppetry.blendFrom(phrase,transitionOrigin,poseTime,.24);
           LAYERS.forEach(function (id, i) {
             const element = nodes[id];
             if (!element) return;
@@ -208,6 +212,7 @@
       if (!response.ok) throw new Error("SVG wayang tidak bisa dimuat (HTTP " + response.status + ")");
 
       stopLoop();
+      stageTarget=lane=transitionOrigin=null;
       stageX = 0;
       anchor = poseTime = stridePhase = 0;
       wrist = 0.5;
@@ -297,7 +302,8 @@
         svgScale = scale || 1;
         const envelope = Math.min(width * scale * 0.54, sr.width * 0.42);
         const centre = cr.left + cr.width / 2 - stageX;
-        bounds = Motion.bounds(sr.width, centre - sr.left, envelope, 20);
+        stageWidth=sr.width; baseCentre=centre-sr.left;
+        bounds = Motion.laneBounds(Motion.bounds(sr.width, baseCentre, envelope, 20),sr.width,baseCentre,envelope,lane,16);
       };
       resize.observe(svg);
       measureTravel();
@@ -317,6 +323,7 @@
         anchor = travel.x;
         travel.v = 0;
       }
+      transitionOrigin={angles:LAYERS.slice(1).map(id=>joints[id].x),body:joints.group.x,lift:joints.lift.x};
       currentPose = name;
       poseTime = 0;
       if (name !== "telunjuk" && window.Kendali) Kendali.clear(nomor);
@@ -375,6 +382,10 @@
       toggleFacing: toggleFacing,
       facing: function () { return facing; },
       onFacingChange: onFacingChange,
+      setLane: function(side) {lane=side;measureTravel();},
+      setStageTarget: function(value) {stageTarget=Number.isFinite(value)?Motion.clamp(value,0,1):null;anchor=travel.x;},
+      position: function() {measureTravel();return (baseCentre+travel.x)/stageWidth;},
+      restorePosition: function(value) {measureTravel();stageTarget=null;travel.x=Number.isFinite(value)?Motion.clamp(value*stageWidth-baseCentre,bounds.min,bounds.max):0;travel.v=0;anchor=stageX=travel.x;container.style.transform='translateX('+stageX+'px)';},
       destroy: destroy,
     };
   }

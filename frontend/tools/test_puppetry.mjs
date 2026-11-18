@@ -61,3 +61,10 @@ test('all phrases remain finite and bounded through long holds and unknown chara
     }
   }
 });
+test('interrupted phrases begin at the current rig and blend into the next action',()=>{
+ const origin={angles:[60,-120,-40,90],body:3,lift:5};
+ const target=P.sample('dua_jari',.24,{character:'semar'});
+ const initial=P.blendFrom(target,origin,0,.24);assert.deepEqual(initial.angles,origin.angles);assert.equal(initial.body,3);assert.equal(initial.lift,5);
+ assert.deepEqual(P.blendFrom(target,origin,.24,.24),target);
+ const mid=P.blendFrom(target,origin,.12,.24);assert.ok(mid.angles.every((v,i)=>v>=Math.min(origin.angles[i],target.angles[i])&&v<=Math.max(origin.angles[i],target.angles[i])));
+});

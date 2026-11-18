@@ -23,7 +23,7 @@ function setup(count=2){
   wayang:{applyPose:(...a)=>poses[index].push(a),setWrist:x=>wrist[index].push(x),toggleFacing(){}}}));
  api.onSocketStatus('connected');
  const packet=hands=>api.handlePrediction({type:'prediction',hands,camera:true,model_loaded:true,model:'mlp',fps:30});
- return {api,core,events,poses,wrist,views,timers,ribbon,packet,at:t=>{now=t;},tick:t=>{now=t;core.tick(t);}};
+ return {api,core,events,poses,wrist,views,timers,ribbon,packet,setLakon:guard=>{window.Lakon=guard;context.Lakon=guard;},at:t=>{now=t;},tick:t=>{now=t;core.tick(t);}};
 }
 const hand=(id,x,gesture='telapak_terbuka',state='ok')=>({id,wrist_x:x,gesture,state,confidence:.95});
 test('P2 leaving does not pause P1 or emit a global no-hand event',()=>{
@@ -61,4 +61,21 @@ test('a backend disconnect does not interrupt practice or leave its warning ribb
  assert.equal(s.ribbon.hidden,true);assert.equal(s.views.at(-1).state,'practice');
  assert.equal(s.events.some(e=>e.type==='wayang:connection'),false);
  s.api.onDummyToggle(false);assert.equal(s.ribbon.hidden,false);assert.equal(s.views.at(-1).state,'disconnected');
+});
+test('watch mode gates camera wrist updates, missing-hand timers and practice input',()=>{
+ const s=setup();s.api.onDummyToggle(true);
+ // Inject only the public mode guard, then exercise production handlers as usual.
+ s.api.app.players.forEach(p=>p.lastGesture='telunjuk');
+ s.setLakon({isActive:()=>true,allowInput:()=>false});
+ s.packet([hand(1,.2,'telunjuk')]);s.packet([]);s.api.onDummyGesture({player:0,gesture:'jempol',wrist:.5});
+ assert.equal(s.poses[0].length,0);assert.equal(s.wrist[0].length,0);assert.equal(s.timers.size,0);
+ assert.equal(s.events.some(e=>e.type==='wayang:nohand'),false);
+});
+
+test('guided play accepts P1 but never lets live or practice P2 override the reply',()=>{
+ const s=setup();s.setLakon({isActive:()=>true,allowInput:(player,source)=>source==='story'||player===0});
+ s.packet([hand(1,.2,'dua_jari'),hand(2,.8,'ok')]);
+ assert.equal(s.poses[0].length,1);assert.equal(s.poses[1].length,0);
+ s.api.onDummyGesture({player:1,gesture:'jempol',wrist:.5});assert.equal(s.poses[1].length,0);
+ s.api.onDummyGesture({player:0,gesture:'jempol',wrist:.5});assert.equal(s.timers.size,0);
 });
