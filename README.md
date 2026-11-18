@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.5.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.5.1 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -49,10 +49,10 @@ Di Windows, aktivasi manual menggunakan `.venv\Scripts\activate`. Internet diper
 
 | Gestur | Tombol latihan | Perilaku |
 | --- | --- | --- |
-| Telapak terbuka | `1` | Mengangkat kedua lengan |
-| Kepalan | `2` | Kembali diam |
-| Telunjuk | `3` | Bergeser mengikuti posisi tangan |
-| Dua jari | `4` | Mengangkat lengan bawah |
+| Telapak terbuka | `1` | Menyapa dengan rangkaian lengan |
+| Kepalan | `2` | Berhenti di posisi terakhir |
+| Telunjuk | `3` | Berjalan mengikuti posisi tangan |
+| Dua jari | `4` | Dua aksen siku dan lengan |
 | Jempol | `5` | Membungkuk lalu kembali |
 | OK | `6` | Berbalik arah |
 | Netral | `0` | Kembali netral |
@@ -73,7 +73,7 @@ Ilustrasi dibuat baru sebagai interpretasi digital, dengan badan dan empat bagia
 - [Kredit audio](frontend/assets/audio/AUDIO_CREDITS.md)
 - [Sumber fakta](frontend/data/culture.json)
 
-Dialog Semar dan Bagong adalah naskah baru aplikasi. Suara memakai TTS perangkat; kualitas dan ketersediaan Bahasa Indonesia bergantung pada browser. Musik lama berasal dari beberapa tradisi dan default mati; keterangannya tersedia pada Pengaturan. Efek gerak dan cue audio adalah interpretasi interaksi digital.
+Dialog Semar dan Bagong adalah naskah baru aplikasi. Suara memakai TTS perangkat; kualitas dan ketersediaan Bahasa Indonesia bergantung pada browser. Musik yang tersedia berasal dari beberapa tradisi; pengunjung baru mendengar BGM pelan setelah membuka panggung. Pilihan musik mati dari sesi sebelumnya tetap dihormati; kreditnya tersedia pada panel Audio. Efek gerak dan cue audio adalah interpretasi interaksi digital.
 
 ## Struktur
 
@@ -156,10 +156,17 @@ Kalibrasi juga dapat dicoba tanpa kamera: aktifkan **Latihan**, pilih pemain, la
 
 Toggle **Dialog wayang** kini mengatur ucapan sekaligus bubble teks. Ketika dimatikan, bubble yang sedang tampil langsung disembunyikan dan dialog tertunda dibatalkan. Menyalakannya kembali hanya menampilkan dialog baru. Musik dan SFX tetap mengikuti pengaturan masing-masing. Slider volume dialog hanya mengatur kerasnya ucapan; **Bisukan semua** tetap menjadi kontrol suara keseluruhan.
 
-Animasi memakai rangkaian persiapan, aksen, tahan dan pulih, dengan tubuh wayang tetap kaku. Telapak menyapa, dua jari memainkan dua aksen lengan, jempol memberi hormat lalu pulih, dan OK membalik arah dengan angkatan singkat. Pada telunjuk, ayunan lengan serta angkatan mengikuti jarak dan kecepatan perpindahan. Kepalan/netral menghentikan wayang di posisi terakhir, tanpa kembali meluncur ke tengah. Klik tombol gestur latihan lagi untuk mengulang rangkaiannya.
+Animasi memakai rangkaian persiapan, aksen, tahan dan pulih, dengan tubuh wayang tetap kaku. Telapak menyapa, dua jari memainkan dua aksen lengan, jempol memberi hormat lalu pulih, dan OK membalik arah dengan angkatan singkat. Pada telunjuk, ayunan lengan serta angkatan mengikuti jarak dan kecepatan perpindahan. Kepalan/netral menghentikan wayang di posisi terakhir, tanpa kembali meluncur ke tengah.
 
 Gatotkaca memakai tempo lebih tegas, Semar lebih lambat dan kecil, Bagong lebih cepat dan lebar. Preferensi reduced motion mempertahankan pose terbaca tanpa gerak langkah dan aksen berulang. Transisi CSS pada sendi tidak lagi menunda animasi pegas.
 
 [Cuplikan dari browser](docs/images/jatim-v05-motion-preview.mp4) · [Rujukan dan batas interpretasi gerak](docs/research/2026-11-18-motion-v05.md) · [Verifikasi](docs/verification/2026-11-18-motion-dialog-v05.json)
 
 Cuplikan disusun dari tangkapan browser dengan laju pengambilan terbatas dan tanpa audio; bukan pengukuran FPS aplikasi. Gerak ini belum ditinjau dalang dan tidak diklaim sebagai rekonstruksi motif sabet tradisional tertentu.
+
+
+## Hotfix v0.5.1 — panggung tetap terbuka ketika jeda
+
+Tirai tidak lagi menutup sebagian setelah 45 detik tanpa tangan. Indikator kecil **Menunggu gerakan tangan** menjelaskan jeda tanpa menutupi sisi panggung, termasuk ketika Dialog dimatikan. Tangan yang kembali terdeteksi membuka tirai penuh. Mengaktifkan Latihan melalui toolbar, tombol atau pintasan D membuka/melanjutkan panggung, termasuk dari istirahat. Penutupan penuh tetap berlaku pada pembukaan dan istirahat 90 detik.
+
+[Rencana peningkatan berikutnya](docs/superpowers/plans/2026-11-18-roadmap-v06.md) memuat prioritas kendali, pertunjukan duet, iringan, pembelajaran, performa dan dukungan perangkat. Fitur lanjutan dalam dokumen tersebut belum diimplementasikan.

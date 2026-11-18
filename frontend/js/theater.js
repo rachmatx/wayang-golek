@@ -687,9 +687,12 @@
 
   /* Data teknis mundur kalau panggung lagi menunggu atau tidur. */
   function syncKaki() {
-    if (!els.kaki || !core) return;
+    if (!core) return;
     const act = core.state();
-    els.kaki.classList.toggle("redup", act !== "live");
+    if (els.kaki) els.kaki.classList.toggle("redup", act !== "live");
+    if (els.root) els.root.dataset.act = act;
+    const status = $('stage-idle-status');
+    if (status) status.hidden = act !== 'jeda' || document.body.dataset.source === 'dummy';
   }
 
   function execute(effect) {
@@ -712,10 +715,6 @@
 
   function setCurtain(effect) {
     if (!els.root) return;
-    if (effect.half) {
-      els.root.dataset.tirai = "setengah";
-      return;
-    }
     els.root.dataset.tirai = effect.open ? "terbuka" : "tutup";
     if (effect.open) {
       hideOpeningCard();

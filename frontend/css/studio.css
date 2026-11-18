@@ -160,3 +160,5 @@ html:fullscreen .stage-column:has(#dummy:not([hidden])) .panggung, body.stage-fo
 .wayang-svg .lengan-bawah-kanan { transition: none; }
 /* A planted shadow puppet rests on its gapit; it does not breathe like a torso. */
 .wayang-svg .grup-hidup.idle { animation: none; }
+.stage-idle-status { position: absolute; z-index: 5; bottom: 46px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 28px); padding: 7px 12px; border: 1px solid var(--line-strong); border-radius: 5px; background: #171b18ee; color: var(--cream); font: 11px var(--font-ui); text-align: center; pointer-events: none; }
+.stage-idle-status[hidden] { display: none; }

@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>QA jeda panggung</title><style>
+body{margin:0;background:#292720;color:#f4eadb;font:13px system-ui}header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px}button{padding:10px;border:1px solid #bc955d;background:#38342e;color:inherit;border-radius:4px}iframe{display:block;width:100%;height:900px;border:0}span{color:#d7c4a6}
+</style></head><body><header><strong>QA input sintetik — bukan webcam</strong><button id="hand-in">Simulasi tangan masuk</button><button id="hand-out">Simulasi tangan keluar</button><span id="qa-status">Buka panggung di bawah, lalu kirim input.</span></header><iframe title="Panggung uji" src="/"></iframe><script>
+function send(type){const w=document.querySelector('iframe').contentWindow;w.document.dispatchEvent(new w.CustomEvent(type,{detail:{player:0}}));document.getElementById('qa-status').textContent=type==='wayang:hand'?'Tangan masuk dikirim.':'Tangan keluar dikirim — menunggu jeda.';}
+document.getElementById('hand-in').addEventListener('click',()=>send('wayang:hand'));
+document.getElementById('hand-out').addEventListener('click',()=>send('wayang:nohand'));
+</script></body></html>

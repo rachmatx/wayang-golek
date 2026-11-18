@@ -1,7 +1,7 @@
 {
   "name": "wayang-kulit-jawa-timuran",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "scripts": {
     "dev": "python -m backend.tools.serve_preview",
     "test": "node --test frontend/tools/test_*.mjs"

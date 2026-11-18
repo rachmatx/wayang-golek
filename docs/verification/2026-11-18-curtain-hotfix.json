@@ -1,0 +1,35 @@
+{
+  "version": "0.5.1",
+  "date": "2026-11-18",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Hotfix tirai dan dokumen rencana peningkatan; fitur lanjutan belum diimplementasikan",
+  "tests": {
+    "frontend_passed": 124,
+    "failed": 0
+  },
+  "browser": {
+    "method": "Managed preview + CUA, QA controls emitting synthetic hand events through the app event interface",
+    "after_more_than_45_seconds": {
+      "act": "jeda",
+      "curtain": "terbuka",
+      "waiting_indicator_visible": true
+    },
+    "hand_returns": {
+      "act": "live",
+      "curtain": "terbuka",
+      "waiting_indicator_visible": false
+    },
+    "practice_shortcut_from_idle": {
+      "act": "live",
+      "source": "dummy",
+      "curtain": "terbuka",
+      "waiting_indicator_visible": false
+    },
+    "screenshot": "docs/images/jatim-v051-idle.jpg"
+  },
+  "limitations": [
+    "Hand presence events were synthetic; a physical webcam was not exercised.",
+    "Rest/wake at 90 seconds and the pending no-hand timer were covered by deterministic unit tests."
+  ],
+  "roadmap": "docs/superpowers/plans/2026-11-18-roadmap-v06.md"
+}

@@ -13,13 +13,14 @@ function stage(savedDialog='nyala') {
       setAttribute(k,v){this[k]=v;},querySelectorAll:()=>[],
       addEventListener(type,cb){this[type]=cb;}};
   }
-  const root=node('panggung'),bubble=node('balon'),toggle=node('kontrol-dialog');
+  const root=node('panggung'),bubble=node('balon'),toggle=node('kontrol-dialog'),idle=node('stage-idle-status');
   root.dataset.karakter='gatotkaca';
   const log={voice:[],music:[],sfx:[]};
-  const document={getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],hidden:false,
+  const document={body:{dataset:{source:'live'}},getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],hidden:false,
     addEventListener(type,cb){(listeners[type]||=[]).push(cb);}};
   let effect=null;
-  const core={init:()=>({effects:[]}),gesture:()=>({effects:[effect]}),state:()=> 'live',snapshot:()=>({connected:true})};
+  let act='live';
+  const core={init:()=>({effects:[]}),gesture:()=>({effects:[effect]}),state:()=>act,snapshot:()=>({connected:true})};
   const window={localStorage:{getItem:k=>k==='wayang-dialog'?savedDialog:null,setItem(){}},
     matchMedia:()=>({matches:true}),Dialog:{},TeaterCore:{create:()=>core},
     SuaraDialog:{setEnabled:on=>log.voice.push(on),setPengaturDuck(){},isBicara:()=>false,ucap(){}},
@@ -32,7 +33,8 @@ function stage(savedDialog='nyala') {
   window.SuaraDialog.setVolume=()=>{};
   Object.assign(context,{Suara:window.Suara,SuaraDialog:window.SuaraDialog});
   vm.runInContext(source,context);window.Teater.init();
-  return {bubble,toggle,log,
+  return {bubble,toggle,log,idle,
+    rest(){act='jeda';},
     gesture(text,delay=0){effect={type:'bubble',text,delay};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
     flush(){const pending=[...timers.values()];timers.clear();pending.forEach(cb=>cb());},
     muteMaster(){window.Teater.setSound(false);}};
@@ -56,4 +58,8 @@ test('a saved disabled dialogue preference suppresses bubbles from the first eve
 test('master sound mute keeps captions available while the dialogue setting stays on',()=>{
   const s=stage();s.muteMaster();s.gesture('Masih boleh dibaca');
   assert.equal(s.bubble.hidden,false);assert.equal(s.toggle['aria-pressed'],'true');
+});
+test('the waiting indicator stays available with dialogue disabled',()=>{
+  const s=stage('mati');s.rest();s.gesture('Tidak tampil');
+  assert.equal(s.idle.hidden,false);assert.equal(s.bubble.hidden,true);
 });

@@ -19,7 +19,6 @@
     idleMax: 14000,
     ambientMin: 20000,
     ambientMax: 40000,
-    half: 45000,
     sleep: 90000,
     bubbleMin: 3500,
     bubbleMax: 4500,
@@ -54,7 +53,6 @@
       stateSince: 0,
       noHandAt: null,
       jedaAt: null,
-      halfDone: false,
       welcomeAt: null,
       idleAt: null,
       ambientAt: null,
@@ -118,7 +116,6 @@
       s.welcomeAt = s.now + TIMING.welcome;
       s.noHandAt = null;
       s.jedaAt = null;
-      s.halfDone = false;
       s.idleAt = null;
       s.ambientAt = null;
       s.wakeAt = null;
@@ -141,8 +138,15 @@
 
     function open(source, now) {
       const at = clock(now);
-      if (s.busy || s.act !== "pembuka" || s.wakeAt !== null) {
+      if (s.busy || s.wakeAt !== null) {
         return result([]);
+      }
+      // Opening practice also resumes a resting stage. An already live stage
+      // only needs its curtains restored, without replaying the welcome cue.
+      if (s.act === "live") {
+        s.hand = true;
+        s.jedaAt = s.noHandAt = null;
+        return result([{ type: "curtain", open: true }]);
       }
 
       s.act = "live";
@@ -152,7 +156,6 @@
       s.wakeAt = null;
       s.jedaAt = null;
       s.noHandAt = null;
-      s.halfDone = false;
       s.idleAt = null;
       s.justWoke = false;
       s.hand = true;
@@ -257,9 +260,9 @@
         s.jedaAt = null;
         s.idleAt = null;
         s.noHandAt = null;
-        s.halfDone = false;
         s.justWoke = true;
         effects.push({ type: "idle", on: false });
+        effects.push({ type: "curtain", open: true });
         effects.push({ type: "light", level: "full" });
         const bubble = bubbleFor("suasana", "bangun", 0);
         if (bubble) effects.push(bubble);
@@ -272,7 +275,6 @@
         s.idleAt = null;
         s.noHandAt = null;
         s.jedaAt = null;
-        s.halfDone = false;
         s.welcomeAt = null;
         effects.push({ type: "idle", on: false });
         effects.push({ type: "curtain", open: true });
@@ -321,18 +323,10 @@
       }
 
       if (s.act === "jeda") {
-        if (!s.halfDone && s.noHandAt !== null && at >= s.noHandAt + TIMING.half) {
-          s.halfDone = true;
-          effects.push({ type: "curtain", open: true, half: true });
-          const bubble = bubbleFor("suasana", "half", 0);
-          if (bubble) effects.push(bubble);
-        }
-
         if (s.noHandAt !== null && at >= s.noHandAt + TIMING.sleep) {
           s.act = "tidur";
           s.idleAt = null;
           s.jedaAt = null;
-          s.halfDone = true;
           s.lightRevertAt = null;
           effects.push({ type: "idle", on: false });
           effects.push({ type: "curtain", open: false });
@@ -452,7 +446,6 @@
         stateSince: s.stateSince,
         noHandAt: s.noHandAt,
         jedaAt: s.jedaAt,
-        halfDone: s.halfDone,
         idleAt: s.idleAt,
         ambientAt: s.ambientAt,
         wakeAt: s.wakeAt,

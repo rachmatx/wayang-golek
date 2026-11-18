@@ -533,6 +533,7 @@
     if (tombol) tombol.textContent = active ? "Keluar mode latihan" : "Mode latihan (D)";
 
     if (active) {
+      if (window.Teater) Teater.open();
       /* Jangan biarkan timer "tangan hilang" dari mode live mereset pose
        * dummy yang baru dipilih. */
       app.players.forEach(function (pemain) {

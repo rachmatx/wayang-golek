@@ -156,17 +156,48 @@ test("gestur saat jeda membangunkan dengan balon bangun lalu cue", function () {
   assert.equal(bubbles[1].delay, 900);
 });
 
-test("tirai setengah dan balon 45 detik muncul sekali", function () {
+test("jeda 45 detik tetap menampilkan seluruh panggung tanpa tirai setengah", function () {
   const core = open(make());
   core.noHand(2000);
   core.tick(4000);
   const result = core.tick(47000);
-  const curtain = find(result, "curtain");
-  assert.equal(curtain.half, true);
-  assert.equal(find(result, "bubble").text, "HALF");
+  assert.equal(core.state(), 'jeda');
+  assert.equal(find(result, "curtain"), undefined);
+  assert.equal(all(result, 'bubble').some(e => e.text === 'HALF'), false);
   const again = core.tick(48000);
   assert.equal(find(again, "curtain"), undefined);
   assert.equal(all(again, "bubble").some(function (e) { return e.text === "HALF"; }), false);
+});
+
+test('tangan kembali saat jeda selalu membuka penuh tirai', function () {
+  const core = open(make()); core.noHand(2000); core.tick(47000);
+  const result = core.hand(48000);
+  assert.equal(core.state(), 'live');
+  assert.equal(find(result, 'curtain').open, true);
+  assert.equal(find(result, 'curtain').half, undefined);
+});
+
+test('membuka latihan melanjutkan panggung jeda atau tidur seketika', function () {
+  for (const at of [47000, 92000]) {
+    const core = open(make()); core.noHand(2000); core.tick(at);
+    const result = core.open('button', at + 100);
+    assert.equal(core.state(), 'live');
+    assert.equal(find(result, 'curtain').open, true);
+    assert.equal(core.snapshot().jedaAt, null);
+  }
+});
+
+test('membuka panggung aktif memulihkan tirai tanpa mengulang sambutan', function () {
+  const core = open(make()); const result = core.open('button', 2000);
+  assert.deepEqual(result.effects, [{type:'curtain',open:true}]);
+});
+
+test('aktivasi latihan sebelum jeda membatalkan timer tangan hilang yang tertunda', function () {
+  const core = open(make()); core.noHand(2000);
+  core.open('button', 2500); core.tick(100000);
+  assert.equal(core.state(), 'live');
+  assert.equal(core.snapshot().jedaAt, null);
+  assert.equal(core.snapshot().noHandAt, null);
 });
 
 test("90 detik tanpa gestur memindahkan babak ke tidur", function () {
