@@ -18,6 +18,9 @@ function stage(savedDialog='nyala') {
   const log={voice:[],music:[],sfx:[]};
   const document={body:{dataset:{source:'live'}},getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],hidden:false,
     addEventListener(type,cb){(listeners[type]||=[]).push(cb);}};
+  let modal=false;
+  document.querySelector=selector=>selector==='.app[inert]'&&modal?{}:null;
+  document.dispatchEvent=()=>{};
   let effect=null;
   let act='live';
   const core={init:()=>({effects:[]}),gesture:()=>({effects:[effect]}),state:()=>act,snapshot:()=>({connected:true})};
@@ -25,7 +28,10 @@ function stage(savedDialog='nyala') {
     matchMedia:()=>({matches:true}),Dialog:{},TeaterCore:{create:()=>core},
     SuaraDialog:{setEnabled:on=>log.voice.push(on),setPengaturDuck(){},isBicara:()=>false,ucap(){}},
     Suara:{musik:(...args)=>log.music.push(args),play:cue=>log.sfx.push(cue)}};
-  const context=vm.createContext({window,document,performance:{now:()=>0},console,
+  window.WayangMotionCues={};
+  window.Suara.playMotion=cue=>{log.sfx.push(cue.sound);return true;};
+  window.Suara.unlock=()=>{};window.Suara.setVolume=()=>{};
+  const context=vm.createContext({window,document,CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},performance:{now:()=>0},console,
     AudioPrefs:{read:()=>({dialog:.85,musik:.28,sfx:.7})},
     setInterval:()=>0,clearInterval(){},setTimeout:cb=>{timers.set(++timerId,cb);return timerId;},clearTimeout:id=>timers.delete(id)});
   // init applies channel levels through the global aliases used in the app.
@@ -34,6 +40,10 @@ function stage(savedDialog='nyala') {
   Object.assign(context,{Suara:window.Suara,SuaraDialog:window.SuaraDialog});
   vm.runInContext(source,context);window.Teater.init();
   return {bubble,toggle,log,idle,
+    unlock(){listeners.click.forEach(cb=>cb());},
+    motion(){listeners['wayang:motion-cue'].forEach(cb=>cb({detail:{sound:'saron',gain:.5,player:0,phase:'accent'}}));},
+    sound(cue){effect={type:'sound',cue};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
+    modal(value){modal=value;},hidden(value){document.hidden=value;},
     rest(){act='jeda';},
     gesture(text,delay=0){effect={type:'bubble',text,delay};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
     flush(){const pending=[...timers.values()];timers.clear();pending.forEach(cb=>cb());},
@@ -62,4 +72,15 @@ test('master sound mute keeps captions available while the dialogue setting stay
 test('the waiting indicator stays available with dialogue disabled',()=>{
   const s=stage('mati');s.rest();s.gesture('Tidak tampil');
   assert.equal(s.idle.hidden,false);assert.equal(s.bubble.hidden,true);
+});
+
+test('real theater routes phase accents even when Dialog is disabled',()=>{
+ const s=stage('mati');s.unlock();s.motion();assert.deepEqual(s.log.sfx,['saron']);assert.equal(s.bubble.hidden,true);
+});
+test('theater suppresses duplicate immediate gesture sounds but retains scene cues',()=>{
+ const s=stage();s.unlock();s.sound('telapak_terbuka');s.sound('jempol');assert.equal(s.log.sfx.length,0);
+ s.motion();s.sound('buka');assert.deepEqual(s.log.sfx,['saron','buka']);
+});
+test('hidden tabs, modal panels and master mute suppress phase playback',()=>{
+ const s=stage();s.unlock();s.hidden(true);s.motion();s.hidden(false);s.modal(true);s.motion();s.modal(false);s.muteMaster();s.motion();assert.equal(s.log.sfx.length,0);
 });

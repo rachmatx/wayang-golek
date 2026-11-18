@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-11-18",
+  "scope": "Existing local non-dialogue audio; hashes identify local files only, not source provenance.",
+  "files": [
+    {
+      "file": "sfx/kacapi-hormat.ogg",
+      "bytes": 151954,
+      "seconds": 17.033,
+      "sha256": "b2e7480bdc3dc4175c2e3100007e2fa8e020540afbc1123aa8aecfc9dc68feb9"
+    },
+    {
+      "file": "sfx/ketuk-kayu-keprak.wav",
+      "bytes": 7134,
+      "seconds": 0.08,
+      "sha256": "c5330a1af7cd0c2d5b2fd8308a36ba393e594b83a20017207feab62ccf55dd50"
+    },
+    {
+      "file": "sfx/pukulan-bonang.wav",
+      "bytes": 123558,
+      "seconds": 1.4,
+      "sha256": "40a27b1b7c9639541a18158ee16b993af11c149dcbc35a8325af8df0c4d8ad46"
+    },
+    {
+      "file": "sfx/pukulan-gong-ageng.wav",
+      "bytes": 617478,
+      "seconds": 3.5,
+      "sha256": "0da00336fa08583fed132d29559c3e1fde8f1f1ddaad0c4cad4e9681da0ce9ef"
+    },
+    {
+      "file": "sfx/pukulan-kendang.wav",
+      "bytes": 123572,
+      "seconds": 0.7,
+      "sha256": "6f9aa4951b27b8ebaf505e117ccd3c5343cf25c901af27c8decd9c980115be22"
+    },
+    {
+      "file": "sfx/pukulan-peking.wav",
+      "bytes": 211772,
+      "seconds": 1.2,
+      "sha256": "d156365b34da5741ca4572262c4127bbd029ab1f04e3882fbada3af8b5c21864"
+    },
+    {
+      "file": "sfx/pukulan-saron.wav",
+      "bytes": 211772,
+      "seconds": 1.2,
+      "sha256": "89339ac20d3bb962ae2921379cb38125f7474c10f6426edf7a86511e21c4d37a"
+    },
+    {
+      "file": "sfx/whoosh-tirai.wav",
+      "bytes": 79458,
+      "seconds": 0.9,
+      "sha256": "09984640339c5d8cc6af13d459e9828bfdbf5fccc5a51f831349995323de99b3"
+    },
+    {
+      "file": "musik/latar-jeda.ogg",
+      "bytes": 743105,
+      "seconds": 76.0,
+      "sha256": "a5fbf33ecb10418b0bcac32b50d96cb327cbe9a2a6c6849949a2d6bea6587d7d"
+    },
+    {
+      "file": "musik/latar-panggung.ogg",
+      "bytes": 1188567,
+      "seconds": 84.0,
+      "sha256": "4618c07d57802cd9f9fe528c0bea2be6deab59690e9b22f7f45662f811c0b865"
+    },
+    {
+      "file": "ambien/suasana-malam.wav",
+      "bytes": 529244,
+      "seconds": 6.0,
+      "sha256": "9841779eb4910fdc0c10faa0ad0b5de76862dfba6dc8cca53ef8aab4fe70cee0"
+    }
+  ]
+}

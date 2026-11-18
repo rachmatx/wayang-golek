@@ -52,7 +52,7 @@ class Simpul {
   }
   disconnect() { this.outs.length = 0; }
   start(at) { this.mulai = at === undefined ? this.ctx.currentTime : at; this.ctx.tabuh.push(this); }
-  stop() { this.berhenti = true; return this; }
+  stop(at) { this.berhenti = true; this.stopAt=at; return this; }
 }
 
 function ctxPalsu() {
@@ -69,6 +69,10 @@ function ctxPalsu() {
   ctx.destination = new Simpul(ctx, "keluar");
   ctx.createGain = function () { return new Simpul(ctx, "gain"); };
   ctx.createOscillator = function () { return new Simpul(ctx, "osc"); };
+  ctx.createDynamicsCompressor = function () {
+    const node=new Simpul(ctx,'compressor');
+    ['threshold','knee','ratio','attack','release'].forEach(k=>node[k]=new Param(0));return node;
+  };
   ctx.createBufferSource = function () { return new Simpul(ctx, "src"); };
   ctx.decodeAudioData = function (data) {
     return Promise.resolve({ url: data.__url, duration: 90 });
@@ -251,14 +255,15 @@ test('mute SFX silences ringing effects while BGM keeps playing', async () => {
   a.Suara.musik(true); a.Suara.play('telunjuk');
   const music = cariSumber(a, 'latar-panggung.ogg')[0];
   const effect = cariSumber(a, 'pukulan-bonang.wav')[0];
+  const fxBus=a.bus(effect);
   a.Suara.setChannelEnabled('sfx', false);
-  assert.equal(a.bus(effect).gain.value, 0);
+  assert.equal(fxBus.gain.value, 0);assert.equal(effect.berhenti,true);
   assert.equal(music.berhenti, false);
   assert.equal(a.Suara.isMusik(), true);
   const count = a.sumber().length;
   a.Suara.play('telapak'); assert.equal(a.sumber().length, count);
   a.Suara.setChannelEnabled('sfx', true);
-  assert.equal(a.bus(effect).gain.value, .9);
+  assert.equal(fxBus.gain.value, .9);assert.equal(effect.berhenti,true);
 });
 
 test('music mute stops both BGM and night ambience, preserving SFX', async () => {
@@ -292,13 +297,14 @@ test('master mute silences already-playing effects and restores chosen levels', 
   const a = await hidupkan(muat());
   a.Suara.play('telunjuk');
   const master = a.keLuarga()[0];
+  const effect=cariSumber(a, 'pukulan-bonang.wav')[0],fxBus=a.bus(effect);
   a.Suara.setVolume(.35); a.Suara.setChannelVolume('sfx', .6);
   a.Suara.setEnabled(false);
   assert.equal(master.gain.value, 0);
   a.Suara.setVolume(.25); assert.equal(master.gain.value, 0);
   a.Suara.setEnabled(true);
   assert.equal(master.gain.value, .25);
-  assert.equal(a.bus(cariSumber(a, 'pukulan-bonang.wav')[0]).gain.value, .6);
+  assert.equal(fxBus.gain.value, .6);assert.equal(effect.berhenti,true);
 });
 
 test('levels set before first interaction survive AudioContext creation', async () => {
@@ -309,4 +315,52 @@ test('levels set before first interaction survive AudioContext creation', async 
   assert.equal(a.keLuarga()[0].gain.value, .4);
   assert.equal(a.bus(cariSumber(a, 'latar-panggung.ogg')[0]).gain.value, .25);
   a.kosong(); a.Suara.play('telunjuk'); assert.equal(a.sumber().length, 0);
+});
+
+test('motion accents bypass the old theatre cooldown but share a 120ms onset budget',async()=>{
+ const a=await hidupkan(muat());const cue={sound:'saron',gain:.6,player:0,phase:'accent'};
+ assert.equal(a.Suara.playMotion(cue),true);assert.equal(a.Suara.playMotion({...cue,player:1}),false);
+ a.ctx.currentTime=.15;assert.equal(a.Suara.playMotion({...cue,player:1}),true);
+ assert.equal(a.sumber().length,2);assert.ok(a.sumber().every(s=>s.outs[0].gain.puncak<=.65));
+});
+test('motion effects are capped and cancelled without stopping music or replaying after mute',async()=>{
+ const a=await hidupkan(muat());a.Suara.musik(true);const music=cariSumber(a,'latar-panggung.ogg')[0];
+ for(let n=0;n<20;n++){a.ctx.currentTime=n*.2;a.Suara.playMotion({sound:'peking',gain:2});}
+ assert.equal(a.Suara.status().activeEffects,6);assert.equal(a.sumber().filter(s=>!s.loop&&!s.berhenti).length,6);
+ a.Suara.stopEffects();assert.equal(a.Suara.status().activeEffects,0);assert.equal(music.berhenti,false);
+ const count=a.sumber().length;a.Suara.setChannelEnabled('sfx',false);assert.equal(a.Suara.playMotion({sound:'saron',gain:.6}),false);
+ a.Suara.setChannelEnabled('sfx',true);assert.equal(a.sumber().length,count);assert.equal(a.Suara.isMusik(),true);
+});
+test('unavailable, suspended, muted and invalid motion cues are discarded without late playback',async()=>{
+ const a=muat();assert.equal(a.Suara.playMotion({sound:'saron',gain:.5}),false);await hidupkan(a);
+ a.ctx.state='suspended';assert.equal(a.Suara.playMotion({sound:'saron',gain:.5}),false);a.ctx.state='running';
+ assert.equal(a.Suara.playMotion({sound:'unknown',gain:.5}),false);assert.equal(a.Suara.playMotion({sound:'saron',gain:NaN}),false);
+ a.Suara.setEnabled(false);assert.equal(a.Suara.playMotion({sound:'saron',gain:.5}),false);a.Suara.setEnabled(true);
+ assert.equal(a.sumber().length,0);a.Suara.setVolume(0);assert.equal(a.Suara.playMotion({sound:'saron',gain:.5}),false);
+});
+test('sapaan uses the same real sample for the legacy and full gesture names',async()=>{
+ const a=await hidupkan(muat());a.Suara.play('telapak_terbuka');assert.equal(cariSumber(a,'pukulan-saron.wav').length,1);
+});
+test('ended effects release the voice budget; future-dated scene hits are cancelled too',async()=>{
+ const a=await hidupkan(muat());a.Suara.play('buka');assert.equal(a.Suara.status().activeEffects,3);
+ const gong=cariSumber(a,'pukulan-gong-ageng.wav')[0];gong.onended();assert.equal(a.Suara.status().activeEffects,2);
+ const pending=a.sumber().filter(s=>s.mulai>0);a.Suara.stopEffects();assert.ok(pending.every(s=>s.berhenti));
+ assert.equal(a.Suara.status().activeEffects,0);
+});
+
+test('SFX has a peak compressor while BGM and voice retain their independent routes',async()=>{
+ const a=await hidupkan(muat());a.Suara.musik(true);a.Suara.playMotion({sound:'saron',gain:.6});
+ const fx=a.bus(cariSumber(a,'pukulan-saron.wav')[0]),music=a.bus(cariSumber(a,'latar-panggung.ogg')[0]);
+ assert.equal(fx.outs[0].kelas,'compressor');assert.equal(music.outs[0].kelas,'gain');
+ assert.ok(fx.outs[0].ratio.value>=10);assert.ok(fx.outs[0].attack.value<.01);
+});
+test('zero SFX volume discards ringing tails without disturbing the music bus',async()=>{
+ const a=await hidupkan(muat());a.Suara.musik(true);a.Suara.playMotion({sound:'saron',gain:.6});
+ const fx=cariSumber(a,'pukulan-saron.wav')[0];a.Suara.setChannelVolume('sfx',0);assert.equal(fx.berhenti,true);
+ a.Suara.setChannelVolume('sfx',.7);assert.equal(a.Suara.status().activeEffects,0);assert.equal(a.Suara.isMusik(),true);
+});
+
+test('effect cancellation uses a brief release and stops delayed hits before their start',async()=>{
+ const a=await hidupkan(muat());a.Suara.play('buka');const pending=a.sumber().filter(s=>s.mulai>.1);
+ a.Suara.stopEffects();assert.ok(pending.every(s=>s.stopAt===.015&&s.stopAt<s.mulai));
 });

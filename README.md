@@ -2,9 +2,12 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.7.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.8.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
+
+- Aksen SFX mengikuti persiapan, puncak dan pulihnya gerak tiap tokoh. Langkah hanya berbunyi saat wayang berpindah. P2 punya aksen sendiri, termasuk ketika membalas gestur yang sama.
+- Bunyi yang terlalu berdekatan dibatasi; maksimum enam sumber SFX aktif dan kompresor SFX mengurangi lonjakan. Jeda, keluar lakon, ganti tokoh serta mute membatalkan bunyi aktif. Musik tetap memakai kanal independen.
 
 - Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis sekitar 72 detik, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
 - Lakon menjaga jarak antartokoh dan menggunakan langkah yang lebih pelan. Mode bebas tetap dapat saling melintas. Saat keluar, jumlah pemain, sumber input, pemain latihan, posisi dan arah sebelumnya dipulihkan; pose kembali netral. Pilihan tokoh tidak diganti.
@@ -199,4 +202,10 @@ Aset JS/CSS memiliki penanda versi rilis untuk mencegah campuran kode lama dan b
 
 Instruksi adalah bagian kendali dan tetap muncul ketika Dialog mati; bubble dan suara dialog mengikuti toggle Dialog. Musik dan SFX tetap memakai pengaturan masing-masing. Lakon adalah cerita latihan orisinal dan interpretasi digital, bukan reproduksi pakem atau sabet yang sudah divalidasi dalang.
 
-Catatan verifikasi: [rilis pertunjukan v0.7.0](docs/verification/2026-11-18-performance-v07.md). Sinkronisasi cue dengan fase gerak, audit lisensi iringan lanjutan, dan uji webcam fisik masih menjadi tahap berikutnya.
+Catatan verifikasi: [rilis pertunjukan v0.7.0](docs/verification/2026-11-18-performance-v07.md). Aksen fase gerak ditambahkan pada v0.8.0; audit asal potongan/lisensi lanjutan dan uji webcam fisik masih terbuka.
+
+## Iringan v0.8.0
+
+Rangkaian aksen adalah interpretasi digital. BGM tetap mengalun bebas dan belum diklaim mengikuti ketukan karawitan. Menahan pose tidak mengulang rekaman pada setiap frame kamera. Reduced motion memakai satu aksen lembut untuk satu aksi; berjalan di tempat tidak menimbulkan ritme langkah.
+
+[Verifikasi v0.8.0](docs/verification/2026-11-18-motion-audio-v08.md) · [Audit kredit audio](frontend/assets/audio/AUDIO_CREDITS.md). Halaman sumber dan pembuat telah ditelusuri, tetapi pencocokan potongan serta hak beberapa aset lama masih terbuka. Tidak ada audio baru dalam batch ini.

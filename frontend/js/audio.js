@@ -1,7 +1,8 @@
 /* audio.js — suara panggung dari berkas rekaman asli (assets/audio/).
  *
  * Dulu halaman ini mensintesis gamelan sendiri lewat osilator WebAudio.
- * Sekarang semua bunyi adalah rekaman gamelan sungguhan yang dimuat sebagai
+ * Instrumen gamelan memakai rekaman; kayu/whoosh/ambien memakai aset
+ * prosedural. Semuanya dimuat sebagai
  * AudioBuffer lalu diputar lewat graf yang sama: semua sumber masuk bus
  * (sfx / musik / vokal) lalu satu master, jadi volume seragam dan musik
  * bisa dikecilkan (ducking) saat wayang bicara.
@@ -35,7 +36,6 @@
     "peking": "sfx/pukulan-peking.wav",
     "saron": "sfx/pukulan-saron.wav",
     "kendang": "sfx/pukulan-kendang.wav",
-    "kacapi": "sfx/kacapi-hormat.ogg",
     "whoosh": "sfx/whoosh-tirai.wav",
     "keprak": "sfx/ketuk-kayu-keprak.wav",
     "malam": "ambien/suasana-malam.wav",
@@ -80,6 +80,9 @@
   const janjiMuat = {};
   const gagalMuat = new Set();
   let musikAktif = null; /* { kunci, src, gain } */
+  const activeEffects=new Set();
+  let lastMotionAt=-Infinity;
+  let motionVariant=0;
   let malamDiminta = false;
   let malamAktif = null; /* { src, gain } */
 
@@ -95,7 +98,12 @@
       musik: buatkanGain(channelEnabled.musik ? channelLevels.musik * (duck ? MUSIK_DUCK / VOL_MUSIK : 1) : 0),
       vokal: buatkanGain(VOL_VOKAL),
     };
-    bus.sfx.connect(bus.master);
+    if(typeof ctx.createDynamicsCompressor==='function') {
+      const limiter=ctx.createDynamicsCompressor();
+      limiter.threshold.value=-12;limiter.knee.value=6;limiter.ratio.value=12;
+      limiter.attack.value=.003;limiter.release.value=.18;
+      bus.sfx.connect(limiter);limiter.connect(bus.master);
+    } else bus.sfx.connect(bus.master);
     bus.musik.connect(bus.master);
     bus.vokal.connect(bus.master);
     bus.master.connect(ctx.destination);
@@ -166,10 +174,43 @@
     }
     src.start(at);
     const pegangan = { kunci: kunci, src: src, gain: gain };
+    if(!o.loop&&(o.bus||'sfx')==='sfx') {
+      activeEffects.add(pegangan);
+      while(activeEffects.size>6)stopEffect(activeEffects.values().next().value);
+    }
     src.onended = function () {
+      activeEffects.delete(pegangan);
       try { src.disconnect(); gain.disconnect(); } catch (error) { /* sudah lepas */ }
     };
     return pegangan;
+  }
+
+  function stopEffect(handle) {
+    activeEffects.delete(handle);
+    try {
+      const at=ctx.currentTime;
+      handle.gain.gain.cancelScheduledValues(at);
+      handle.gain.gain.setValueAtTime(Math.max(.0001,handle.gain.gain.value),at);
+      handle.gain.gain.linearRampToValueAtTime(.0001,at+.012);
+      handle.src.stop(at+.015); // Short release avoids clicks; onended releases graph nodes.
+    }catch(error){
+      try{handle.src.stop();handle.src.disconnect();handle.gain.disconnect();}catch(ended){/* already ended */}
+    }
+  }
+  function stopEffects() {
+    Array.from(activeEffects).forEach(stopEffect);
+    lastMotionAt=-Infinity;
+  }
+  function playMotion(cue) {
+    if(!cue||!enabled||!unlocked||!ctx||ctx.state!=='running'||!channelEnabled.sfx||channelLevels.sfx===0||levelMaster===0)return false;
+    if(!['saron','peking','bonang','kendang','keprak','whoosh'].includes(cue.sound)||!Number.isFinite(cue.gain)||cue.gain<=0)return false;
+    // A shared onset budget keeps simultaneous P1/P2 accents from piling up.
+    if(ctx.currentTime-lastMotionAt<.12)return false;
+    const gain=Math.min(.65,cue.gain)*(motionVariant%2?.94:1);
+    const handle=putar(cue.sound,{bus:'sfx',gain});
+    if(!handle)return false; // Never queue late hits while a recording loads.
+    lastMotionAt=ctx.currentTime;motionVariant+=1;
+    return true;
   }
 
   function pudarkanBerhenti(pegangan, detik) {
@@ -215,7 +256,7 @@
     }
     /* Gestur apa pun berarti wayang bangun: ambien malam selesai. */
     hentikanMalam();
-    const daftar = CUE[cue];
+    const daftar = CUE[cue === "telapak_terbuka" ? "telapak" : cue];
     if (!daftar) return;
     daftar.forEach(function (item) {
       putar(item[0], { bus: "sfx", gain: item[1], tunda: item[2] });
@@ -279,6 +320,7 @@
   function setVolume(v) {
     const nilai = Math.min(1, Math.max(0, Number(v)));
     levelMaster = Number.isFinite(nilai) ? nilai : VOL_MASTER;
+    if(levelMaster===0)stopEffects();
     if (!bus) return;
     try {
       bus.master.gain.cancelScheduledValues(ctx.currentTime);
@@ -306,7 +348,7 @@
   function setEnabled(on) {
     enabled = Boolean(on);
     setVolume(levelMaster);
-    if (!enabled) hentikanMalam();
+    if (!enabled) {hentikanMalam();stopEffects();}
     terapMusik();
   }
 
@@ -316,6 +358,7 @@
       available: Boolean(window.AudioContext || window.webkitAudioContext),
       musicPlaying: Boolean(musikAktif && musikJalan && ctx && ctx.state === "running"),
       musicFailed: gagalMuat.has(kunciMusik()),
+      activeEffects: activeEffects.size,
     };
   }
   function notifyStatus() {
@@ -329,6 +372,7 @@
     const numeric = Number(value);
     if (!Number.isFinite(numeric)) return;
     channelLevels[channel] = Math.max(0, Math.min(1, numeric));
+    if(channel==='sfx'&&channelLevels.sfx===0)stopEffects();
     if (channel === "musik") { ducking(duck); return; }
     if (bus) bus.sfx.gain.setTargetAtTime(channelEnabled.sfx ? channelLevels.sfx : 0, ctx.currentTime, 0.03);
   }
@@ -336,6 +380,7 @@
   function setChannelEnabled(channel, on) {
     if (!(channel in channelEnabled)) return;
     channelEnabled[channel] = Boolean(on);
+    if(channel==='sfx'&&!on)stopEffects();
     setChannelVolume(channel, channelLevels[channel]);
     if (channel === "musik") {
       if (!on) hentikanMalam();
@@ -350,6 +395,8 @@
     enabled: function () { return enabled; },
     isUnlocked: function () { return unlocked; },
     play: play,
+    playMotion: playMotion,
+    stopEffects: stopEffects,
     musik: musik,
     setVolume: setVolume,
     setChannelVolume: setChannelVolume,

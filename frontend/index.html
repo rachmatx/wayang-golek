@@ -8,10 +8,10 @@
   <meta name="theme-color" content="#151310" />
   <link rel="icon" href="assets/brand.svg" type="image/svg+xml" />
   <link rel="preload" href="assets/fonts/noto-serif-display.woff" as="font" type="font/woff" crossorigin />
-  <link rel="stylesheet" href="css/style.css?v=0.7.0-r3" />
-  <link rel="stylesheet" href="css/teater.css?v=0.7.0-r3" />
-  <link rel="stylesheet" href="css/jawatimuran.css?v=0.7.0-r3" />
-  <link rel="stylesheet" href="css/studio.css?v=0.7.0-r3" />
+  <link rel="stylesheet" href="css/style.css?v=0.8.0-r3" />
+  <link rel="stylesheet" href="css/teater.css?v=0.8.0-r3" />
+  <link rel="stylesheet" href="css/jawatimuran.css?v=0.8.0-r3" />
+  <link rel="stylesheet" href="css/studio.css?v=0.8.0-r3" />
 </head>
 <body data-source="live">
   <a class="skip-link" href="#studio">Langsung ke panggung</a>
@@ -328,7 +328,7 @@
         <div class="audio-channel-volume"><label class="sr-only" for="volume-musik">Volume musik latar</label><input id="volume-musik" type="range" min="0" max="1" step="0.01" value="0.28" /><output id="volume-musik-nilai" for="volume-musik">28%</output></div>
       </div>
       <div class="audio-channel">
-        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9v6M7 5v14M12 8v8M17 3v18M21 9v6"/></svg></span><div><h3>Efek suara</h3><p>Ketukan gestur dan bunyi panggung.</p></div><button type="button" id="kontrol-sfx" class="audio-toggle" aria-label="Efek suara" aria-pressed="true">Nyala</button></div>
+        <div class="audio-channel-top"><span class="audio-channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9v6M7 5v14M12 8v8M17 3v18M21 9v6"/></svg></span><div><h3>Efek suara</h3><p>Aksen mengikuti gerakan dan langkah wayang.</p></div><button type="button" id="kontrol-sfx" class="audio-toggle" aria-label="Efek suara" aria-pressed="true">Nyala</button></div>
         <div class="audio-channel-volume"><label class="sr-only" for="volume-sfx">Volume efek suara</label><input id="volume-sfx" type="range" min="0" max="1" step="0.01" value="0.70" /><output id="volume-sfx-nilai" for="volume-sfx">70%</output></div>
       </div>
     </div>
@@ -338,33 +338,34 @@
     <p class="audio-footnote">Musik mulai setelah panggung dibuka. Pilihanmu tersimpan di perangkat ini.</p>
     <details class="audio-credits"><summary>Tentang rekaman</summary><p>Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Lihat asal dan kredit audio</a>.</p></details>
   </section>
-  <script src="js/ws_client.js?v=0.7.0-r3"></script>
-  <script src="js/control-core.js?v=0.7.0-r3"></script>
-  <script src="js/input-core.js?v=0.7.0-r3"></script>
-  <script src="js/motion-core.js?v=0.7.0-r3"></script>
-  <script src="js/puppetry-core.js?v=0.7.0-r3"></script>
-  <script src="js/animation.js?v=0.7.0-r3"></script>
-  <script src="js/slots.js?v=0.7.0-r3"></script>
-  <script src="js/glyphs.js?v=0.7.0-r3"></script>
-  <script src="js/panel.js?v=0.7.0-r3"></script>
-  <script src="js/dummy.js?v=0.7.0-r3"></script>
-  <script src="js/dialog.js?v=0.7.0-r3"></script>
-  <script src="js/audio.js?v=0.7.0-r3"></script>
-  <script src="js/dialog_audio.js?v=0.7.0-r3"></script>
-  <script src="js/voice.js?v=0.7.0-r3"></script>
-  <script src="js/theater-core.js?v=0.7.0-r3"></script>
-  <script src="js/audio-prefs.js?v=0.7.0-r3"></script>
-  <script src="js/theater.js?v=0.7.0-r3"></script>
-  <script src="js/culture-core.js?v=0.7.0-r3"></script>
-  <script src="js/fact-timer.js?v=0.7.0-r3"></script>
-  <script src="js/culture.js?v=0.7.0-r3"></script>
-  <script src="js/performance-core.js?v=0.7.0-r3"></script>
-  <script src="js/performance.js?v=0.7.0-r3"></script>
-  <script src="js/app.js?v=0.7.0-r3"></script>
-  <script src="js/stage.js?v=0.7.0-r3"></script>
-  <script src="js/audio-controls.js?v=0.7.0-r3"></script>
-  <script src="js/studio.js?v=0.7.0-r3"></script>
-  <script src="js/control-ui.js?v=0.7.0-r3"></script>
-  <script src="js/start-guide.js?v=0.7.0-r3"></script>
+  <script src="js/ws_client.js?v=0.8.0-r3"></script>
+  <script src="js/control-core.js?v=0.8.0-r3"></script>
+  <script src="js/input-core.js?v=0.8.0-r3"></script>
+  <script src="js/motion-core.js?v=0.8.0-r3"></script>
+  <script src="js/puppetry-core.js?v=0.8.0-r3"></script>
+  <script src="js/motion-cues.js?v=0.8.0-r3"></script>
+  <script src="js/animation.js?v=0.8.0-r3"></script>
+  <script src="js/slots.js?v=0.8.0-r3"></script>
+  <script src="js/glyphs.js?v=0.8.0-r3"></script>
+  <script src="js/panel.js?v=0.8.0-r3"></script>
+  <script src="js/dummy.js?v=0.8.0-r3"></script>
+  <script src="js/dialog.js?v=0.8.0-r3"></script>
+  <script src="js/audio.js?v=0.8.0-r3"></script>
+  <script src="js/dialog_audio.js?v=0.8.0-r3"></script>
+  <script src="js/voice.js?v=0.8.0-r3"></script>
+  <script src="js/theater-core.js?v=0.8.0-r3"></script>
+  <script src="js/audio-prefs.js?v=0.8.0-r3"></script>
+  <script src="js/theater.js?v=0.8.0-r3"></script>
+  <script src="js/culture-core.js?v=0.8.0-r3"></script>
+  <script src="js/fact-timer.js?v=0.8.0-r3"></script>
+  <script src="js/culture.js?v=0.8.0-r3"></script>
+  <script src="js/performance-core.js?v=0.8.0-r3"></script>
+  <script src="js/performance.js?v=0.8.0-r3"></script>
+  <script src="js/app.js?v=0.8.0-r3"></script>
+  <script src="js/stage.js?v=0.8.0-r3"></script>
+  <script src="js/audio-controls.js?v=0.8.0-r3"></script>
+  <script src="js/studio.js?v=0.8.0-r3"></script>
+  <script src="js/control-ui.js?v=0.8.0-r3"></script>
+  <script src="js/start-guide.js?v=0.8.0-r3"></script>
 </body>
 </html>

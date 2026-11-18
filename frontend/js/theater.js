@@ -144,6 +144,18 @@
   }
 
   function bindTheaterEvents() {
+    document.addEventListener('wayang:motion-cue',function(event) {
+      if(!event.detail||!soundOn||reading||!audioUnlocked||document.hidden||document.querySelector('.app[inert]')||(window.Lakon&&Lakon.isPaused()))return;
+      if(window.Suara&&Suara.playMotion) {
+        const played=Suara.playMotion(event.detail);
+        document.dispatchEvent(new CustomEvent('wayang:audio-cue',{detail:{...event.detail,played}}));
+      }
+    });
+    document.addEventListener('wayang:effects-stop',function(){if(window.Suara&&Suara.stopEffects)Suara.stopEffects();});
+    const app=document.querySelector('.app');
+    if(app)new MutationObserver(function() {
+      if(app.inert&&window.Suara&&Suara.stopEffects)Suara.stopEffects();
+    }).observe(app,{attributes:true,attributeFilter:['inert']});
     document.addEventListener("wayang:gesture", function (event) {
       if (!core || reading) return;
       run(core.gesture(event.detail, performance.now()));
@@ -621,6 +633,7 @@
 
   function onVisibility() {
     if (document.hidden) {
+      if(window.Suara&&Suara.stopEffects)Suara.stopEffects();
       hiddenAt = performance.now();
       stopLoop();
       syncAmbient();
@@ -812,6 +825,8 @@
   }
 
   function playSound(cue) {
+    // Puppet-clock accents replace immediate gesture cues; scene cues remain here.
+    if(window.WayangMotionCues && ['telapak_terbuka','telapak','kepalan','telunjuk','dua_jari','jempol','ok'].includes(cue))return;
     if (!cue || !soundOn || reading) return;
     if (!audioUnlocked) {
       if (cue === "buka") pendingGong = true;
@@ -872,6 +887,7 @@
     reading = Boolean(on);
     const now = performance.now();
     if (reading) {
+      if(window.Suara&&Suara.stopEffects)Suara.stopEffects();
       readingAt = now;
       pendingGong = false;
       hideBubble();

@@ -1,0 +1,8 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>QA aksen gerak dan audio</title><style>
+body{margin:0;background:#23201b;color:#f4eadb;font:12px system-ui}header{display:flex;gap:15px;align-items:center;padding:12px}main{display:grid;grid-template-columns:minmax(0,1fr) 290px}iframe{width:100%;height:870px;border:0}aside{padding:12px;overflow:auto;max-height:846px}ol{padding-left:20px}li{margin:8px 0}button{padding:10px;background:#38342e;color:inherit;border:1px solid #bc955d}pre{white-space:pre-wrap}h2{font-size:14px}</style></head><body><header><strong>QA audio — aplikasi asli, tanpa input kamera sintetik</strong><button id="clear">Bersihkan catatan</button></header><main><iframe title="Panggung uji audio" src="/"></iframe><aside><h2>Status mesin audio</h2><pre id="status">Memuat…</pre><h2>Aksen terbaru</h2><ol id="events"></ol></aside></main><script>
+const frame=document.querySelector('iframe'),list=document.querySelector('#events');let count=0;
+frame.addEventListener('load',()=>{const w=frame.contentWindow;
+ w.document.addEventListener('wayang:audio-cue',event=>{const d=event.detail,li=document.createElement('li');li.textContent=(++count)+'. P'+(d.player+1)+' '+d.gesture+' · '+d.phase+' · '+d.sound+' · '+(d.played?'DIPUTAR':'DILEWATI');list.prepend(li);while(list.children.length>35)list.lastElementChild.remove();});
+ setInterval(()=>{const audio=w.Suara?w.Suara.status():{};document.querySelector('#status').textContent=JSON.stringify(audio,null,2);},200);
+});document.querySelector('#clear').addEventListener('click',()=>{list.textContent='';count=0;});
+</script></body></html>

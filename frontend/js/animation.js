@@ -99,6 +99,7 @@
     let anchor = 0;
     let svgScale = 1;
     let character = 'gatotkaca';
+    const motionCues=window.WayangMotionCues?WayangMotionCues.create():null;
     const travel = { x: 0, v: 0 };
     const joints = Object.fromEntries(LAYERS.concat("group", "lift").map(id => [id, { x: 0, v: 0 }]));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -197,6 +198,9 @@
           else Motion.spring(joints.group, bodyTarget, dt, 24);
           if (reduced.matches) { joints.lift.x = 0; joints.lift.v = 0; }
           else Motion.spring(joints.lift, phrase.lift, dt, 25);
+          if (motionCues) motionCues.sample(poseTime,{tempo:profile.tempo,stride:stridePhase,speed:travel.v,reduced:reduced.matches}).forEach(function(cue) {
+            document.dispatchEvent(new CustomEvent('wayang:motion-cue',{detail:{...cue,player:nomor,character,gesture:currentPose}}));
+          });
           if (nodes.wayang) nodes.wayang.style.transform = "translateY(" + (-joints.lift.x).toFixed(2) + "px) rotate(" + joints.group.x.toFixed(3) + "deg)";
         }
         rafId = requestAnimationFrame(step);
@@ -208,6 +212,7 @@
     async function load(svgUrl, options) {
       const start = options || {};
       character = start.character || 'gatotkaca';
+      if(motionCues)motionCues.reset('netral');
       const response = await fetch(svgUrl, { cache: "no-store" });
       if (!response.ok) throw new Error("SVG wayang tidak bisa dimuat (HTTP " + response.status + ")");
 
@@ -324,6 +329,7 @@
         travel.v = 0;
       }
       transitionOrigin={angles:LAYERS.slice(1).map(id=>joints[id].x),body:joints.group.x,lift:joints.lift.x};
+      if(motionCues)motionCues.reset(name);
       currentPose = name;
       poseTime = 0;
       if (name !== "telunjuk" && window.Kendali) Kendali.clear(nomor);
@@ -386,6 +392,7 @@
       setStageTarget: function(value) {stageTarget=Number.isFinite(value)?Motion.clamp(value,0,1):null;anchor=travel.x;},
       position: function() {measureTravel();return (baseCentre+travel.x)/stageWidth;},
       restorePosition: function(value) {measureTravel();stageTarget=null;travel.x=Number.isFinite(value)?Motion.clamp(value*stageWidth-baseCentre,bounds.min,bounds.max):0;travel.v=0;anchor=stageX=travel.x;container.style.transform='translateX('+stageX+'px)';},
+      cancelCues: function(){if(motionCues)motionCues.reset('netral');},
       destroy: destroy,
     };
   }

@@ -281,6 +281,7 @@
   function performanceStage() {
     const cancel = function() {
       Dummy.stopMotion();
+      document.dispatchEvent(new CustomEvent('wayang:effects-stop'));
       app.players.forEach(function(p) {cancelAuto(p);cancelNeutral(p);p.lastGesture=null;});
     };
     return {
@@ -301,7 +302,7 @@
         // Scripted bows return through their authored phrase, without wall-clock auto timers.
       },
       cancel: cancel,
-      freeze: function() {app.players.forEach(p=>{p.wayang.setStageTarget(null);p.wayang.applyPose('kepalan',true);p.gesture='kepalan';});},
+      freeze: function() {app.players.forEach(p=>{p.wayang.setStageTarget(null);p.wayang.applyPose('kepalan',true);if(p.wayang.cancelCues)p.wayang.cancelCues();p.gesture='kepalan';});},
       neutral: function() {cancel();app.players.forEach(p=>p.wayang.applyPose('netral',true));},
       restore: async function(saved) {
         cancel();
@@ -717,6 +718,8 @@
     if (!karakter || !pemain || key === pemain.karakter || app.characterLoading) return;
     if (window.Teater && Teater.isBusy && Teater.isBusy()) return;
 
+    if(pemain.wayang.cancelCues)pemain.wayang.cancelCues();
+    document.dispatchEvent(new CustomEvent('wayang:effects-stop'));
     app.characterLoading = true;
     const castButtons = document.querySelectorAll(".kontrol-wayang button");
     castButtons.forEach(function (item) { item.disabled = true; });
