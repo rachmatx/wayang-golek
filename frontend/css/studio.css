@@ -203,3 +203,19 @@ html:fullscreen .stage-column:has(#dummy:not([hidden])) .panggung, body.stage-fo
 .performance-panel:is([data-mode="watch"],[data-mode="play"]) .performance-progress { margin:9px 0 12px; }
 .stage-column:has(#performance[data-mode="watch"]) #dummy { display:none; }
 #dummy[inert] { opacity:.45; }
+
+/* Captions travel with each actor. Explicit stage coordinates replace old side rules. */
+#panggung .balon, #panggung[data-arah="kiri"] .balon, #panggung .balon[data-sisi] {
+  top:27px;left:12px;right:auto;bottom:auto;width:max-content;box-sizing:border-box;
+  max-width:min(230px,calc((100% - 40px) / 2));min-width:70px;
+  padding:9px 12px 11px;border:1px solid #b9945c;border-radius:13px;
+  background:#fff7e8;color:#463321;box-shadow:0 5px 18px #16100824;
+  font-size:clamp(11px,1.05vw,14px);line-height:1.4;overflow-wrap:anywhere;
+  opacity:1;transform:none;transition:opacity .15s ease;--bubble-tail:22px;
+}
+#panggung .balon::before {content:attr(data-speaker);display:block;margin-bottom:3px;font:600 9px/1.3 var(--font-ui,sans-serif);letter-spacing:.05em;color:#8b6738;}
+#panggung .balon::after, #panggung[data-arah="kiri"] .balon::after, #panggung .balon[data-sisi]::after {
+  left:var(--bubble-tail);right:auto;bottom:-5px;width:8px;height:8px;background:#fff7e8;
+  border-color:#b9945c;transform:translateX(-50%) rotate(45deg);
+}
+@media(max-width:480px){#panggung .balon,#panggung .balon[data-sisi]{padding:7px 9px 9px;font-size:11px;}#panggung .balon::before{font-size:8px;}}

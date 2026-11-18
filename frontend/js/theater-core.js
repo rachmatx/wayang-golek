@@ -61,6 +61,9 @@
       lastVariant: {},
     };
 
+    const lastByPlayer=new Map();
+    function resetGestures() {lastByPlayer.clear();s.lastGesture=null;}
+
     function clock(now) {
       const value = Number(now);
       return Number.isFinite(value) ? value : s.now;
@@ -119,7 +122,7 @@
       s.idleAt = null;
       s.ambientAt = null;
       s.wakeAt = null;
-      s.lastGesture = null;
+      resetGestures();
       s.lastCueAt = -Infinity;
       s.lightRevertAt = null;
       s.justWoke = false;
@@ -179,7 +182,9 @@
       const name = payload && payload.gesture;
       if (!name || s.busy) return result([]);
 
+      const player=payload&&payload.player===1?1:0;
       if (name === "netral") {
+        lastByPlayer.delete(player);
         s.lastGesture = null;
         return result([]);
       }
@@ -201,13 +206,13 @@
         effects = wake.effects.slice();
       }
 
-      if (!s.connected) {
+      if (!s.connected && !(payload && ["dummy","story"].includes(payload.source))) {
         s.lastGesture = name;
         return result(effects);
       }
 
-      if (name === s.lastGesture) return result(effects);
-      s.lastGesture = name;
+      if (name === lastByPlayer.get(player) && !(payload&&['dummy','story'].includes(payload.source))) return result(effects);
+      lastByPlayer.set(player,name);s.lastGesture = name;
 
       const delay = s.justWoke ? 900 : 0;
       s.justWoke = false;
@@ -216,7 +221,11 @@
        * bergerak harus bicara dengan teks dan suaranya sendiri. Dialog
        * suasana tetap milik karakter panggung (pemain 1). */
       const charKey = payload && typeof payload.character === "string" ? payload.character : null;
-      const bubble = bubbleFor("gestur", name, delay, charKey);
+      let bubble = bubbleFor("gestur", name, delay, charKey);
+      if(payload&&payload.source==='story') {
+        if(payload.silent)bubble=null;
+        else if(typeof payload.dialog==='string'&&payload.dialog.trim())bubble={type:'bubble',text:payload.dialog.slice(0,90),char:charKey,ms:2400};
+      }
       if (bubble && payload && typeof payload.player === "number") bubble.player = payload.player;
       if (bubble) effects.push(bubble);
 
@@ -454,6 +463,7 @@
 
     return {
       init: init,
+      resetGestures: resetGestures,
       open: open,
       gesture: gesture,
       noHand: noHand,

@@ -2,14 +2,14 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.8.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.9.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
 - Aksen SFX mengikuti persiapan, puncak dan pulihnya gerak tiap tokoh. Langkah hanya berbunyi saat wayang berpindah. P2 punya aksen sendiri, termasuk ketika membalas gestur yang sama.
 - Bunyi yang terlalu berdekatan dibatasi; maksimum enam sumber SFX aktif dan kompresor SFX mengurangi lonjakan. Jeda, keluar lakon, ganti tokoh serta mute membatalkan bunyi aktif. Musik tetap memakai kanal independen.
 
-- Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis sekitar 72 detik, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
+- Lakon mini orisinal **Perkenalan di Kelir**: contoh otomatis sekitar 35 detik, tiga adegan, sembilan langkah. **Mainkan lakon** menunggu gestur P1; P2 memberi balasan bergantian. Jeda, ambil alih, lewati langkah, ulangi dan keluar tersedia di panel bawah panggung.
 - Lakon menjaga jarak antartokoh dan menggunakan langkah yang lebih pelan. Mode bebas tetap dapat saling melintas. Saat keluar, jumlah pemain, sumber input, pemain latihan, posisi dan arah sebelumnya dipulihkan; pose kembali netral. Pilihan tokoh tidak diganti.
 - Pergantian frase menyambung dari sudut sendi terakhir selama 240 ms; badan tetap kaku. Lakon dan gerak berhenti ketika tab disembunyikan atau panel modal dibuka. Menutup panel tidak membatalkan jeda manual.
 
@@ -195,9 +195,9 @@ Aset JS/CSS memiliki penanda versi rilis untuk mencegah campuran kode lama dan b
 
 ## Memainkan lakon mini
 
-1. Pilih tokoh dalam mode bebas, lalu tekan **Tonton contoh** atau **Mainkan lakon** di bawah panggung. Panggung otomatis menjadi duet. Kedua mode mulai dengan tombol latihan agar tetap dapat dicoba tanpa webcam.
-2. Saat menonton, **Ambil alih P1** beralih ke mode main pada langkah yang sama. Saat bermain, ikuti instruksi satu per satu memakai tombol/angka 1–6; tombol **Latihan** atau D beralih kembali ke input webcam Python. Kamera HP belum didukung.
-3. P2 membalas sekitar 1,6 detik setelah aksi diterima. Langkah berikutnya muncul setelah delapan detik; dalam mode main, langkah baru menunggu gestur yang sesuai tanpa batas waktu. **Lewati langkah** tersedia jika diperlukan.
+1. Pilih tokoh dalam mode bebas, lalu tekan **Tonton contoh** atau **Mainkan lakon** di bawah panggung. Panggung otomatis menjadi duet. Sumber input tetap mengikuti pilihanmu: kamera tetap kamera, latihan tetap latihan. Lakon tidak mematikan kamera atau memaksa mode tombol.
+2. Saat menonton, **Ambil alih P1** beralih ke mode main pada langkah yang sama. Saat bermain memakai kamera, satu tangan di sisi kiri maupun kanan frame mengendalikan P1; P2 otomatis. Tekan **Latihan** atau D untuk memilih alternatif tombol/angka 1–6 atau kembali ke webcam Python. Kamera HP belum didukung.
+3. P2 membalas sekitar 0,65–1,1 detik setelah aksi diterima. Durasi langkah 2,8–4,8 detik; dalam mode main, langkah baru menunggu gestur yang sesuai tanpa batas waktu. **Lewati langkah** tersedia jika diperlukan.
 4. **Keluar lakon** memulihkan konteks bermain sebelumnya. Jika aset masih dimuat, perintah keluar dicatat dan pemulihan dilakukan segera setelah pemuatan selesai. Tidak ada balasan otomatis yang dibawa ke mode bebas.
 
 Instruksi adalah bagian kendali dan tetap muncul ketika Dialog mati; bubble dan suara dialog mengikuti toggle Dialog. Musik dan SFX tetap memakai pengaturan masing-masing. Lakon adalah cerita latihan orisinal dan interpretasi digital, bukan reproduksi pakem atau sabet yang sudah divalidasi dalang.
@@ -209,3 +209,12 @@ Catatan verifikasi: [rilis pertunjukan v0.7.0](docs/verification/2026-11-18-perf
 Rangkaian aksen adalah interpretasi digital. BGM tetap mengalun bebas dan belum diklaim mengikuti ketukan karawitan. Menahan pose tidak mengulang rekaman pada setiap frame kamera. Reduced motion memakai satu aksen lembut untuk satu aksi; berjalan di tempat tidak menimbulkan ritme langkah.
 
 [Verifikasi v0.8.0](docs/verification/2026-11-18-motion-audio-v08.md) · [Audit kredit audio](frontend/assets/audio/AUDIO_CREDITS.md). Halaman sumber dan pembuat telah ditelusuri, tetapi pencocokan potongan serta hak beberapa aset lama masih terbuka. Tidak ada audio baru dalam batch ini.
+
+## Perbaikan lakon dan dialog v0.9.0
+
+- Masuk/keluar, ulang dan ambil alih tidak memaksa sumber kamera menjadi latihan. Slot tangan untuk P1 terpandu berdiri sendiri dari duet bebas dan direset ketika sesi/sumber berubah.
+- Bubble P1/P2 memiliki teks serta timer masing-masing. Bubble tetap tampil saat suara tokoh lain berjalan; ucapan terbaru menggantikan ucapan lama tanpa antrean terlambat. Dialog mati menyembunyikan keduanya.
+- Bubble lebih kecil dengan label tokoh dan ekor penunjuk, mengikuti posisi kepala, langkah, bungkuk dan arah cermin rig. Tata letak menjaga bubble di dalam panggung dan memisahkan dua bubble yang berdekatan.
+- Contoh otomatis dipadatkan dari 72 ke sekitar 35 detik. Ada 18 aksi utama/balasan serta 15 aksen tambahan khusus menonton. Mode main tetap menunggu pengguna; aksen otomatis tambahan tidak mengambil alih P1.
+
+[Verifikasi perbaikan v0.9.0](docs/verification/2026-11-18-lakon-dialog-v09.md). Jalur kamera diuji lewat handler asli, integrasi pengendali lakon dan transport simulasi di browser. Uji webcam fisik tetap perlu dilakukan pada komputer pengguna.

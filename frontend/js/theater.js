@@ -25,8 +25,7 @@
   let core = null;
   let loopTimer = null;
   let hiddenAt = 0;
-  let bubbleTimer = null;
-  let bubblePending = null;
+  const bubbleTimers=[null,null],bubblePending=[null,null];
   let bowTimer = null;
   let enterTimer = null;
   let pendingGong = false;
@@ -58,6 +57,7 @@
     els.lampu = $("lampu");
     els.debu = $("debu");
     els.balon = $("balon");
+    els.bubbles=[$("balon"),$("balon-1")];
     els.pita = $("pita-terputus");
     els.pembuka = $("pembuka-kartu");
     els.pembukaJudul = $("pembuka-judul");
@@ -592,7 +592,7 @@
   function syncAmbient() {
     if (!window.Suara) return;
     const act = core ? core.state() : "pembuka";
-    const connected = (core ? core.snapshot().connected : true) || (window.Dummy && window.Dummy.isActive());
+    const connected = (core ? core.snapshot().connected : true) || (window.Dummy && window.Dummy.isActive()) || (window.Lakon&&Lakon.isActive());
     const on = musicOn && soundOn && audioUnlocked && !document.hidden && !reading && connected
       && (act === "live" || act === "jeda");
     window.Suara.musik(on, act === "jeda" ? "jeda" : "panggung");
@@ -766,53 +766,44 @@
   }
 
   function showBubble(effect) {
-    if (!els.balon || !effect.text || reading || !dialogOn) return;
-    const delay = Number(effect.delay) || 0;
-    clearTimeout(bubblePending);
-    if (delay > 0) {
-      bubblePending = setTimeout(function () { paintBubble(effect); }, delay);
-    } else {
-      paintBubble(effect);
-    }
+    const player=effect.player===1?1:0;
+    if (!els.bubbles[player] || !effect.text || reading || !dialogOn) return;
+    clearTimeout(bubblePending[player]);
+    const delay=Number(effect.delay)||0;
+    if(delay>0)bubblePending[player]=setTimeout(function(){bubblePending[player]=null;paintBubble(effect);},delay);
+    else paintBubble(effect);
   }
 
   function paintBubble(effect) {
-    if (!els.balon || reading || !dialogOn) return;
+    const player=effect.player===1?1:0,node=els.bubbles[player];
+    if (!node || reading || !dialogOn) return;
     if (core && (core.state() === "pembuka" || core.state() === "tidur")) return;
-    /* Sinkron teks-suara: selama ucapan sebelumnya masih jalan, balon baru
-     * tidak ditampilkan. voice.js memang menolak ucapan yang menumpuk, jadi
-     * balon yang tetap berganti cuma bikin teks dan suara beda kalimat. */
-    if (window.SuaraDialog && typeof window.SuaraDialog.isBicara === "function"
-      && window.SuaraDialog.isBicara()) return;
-    clearTimeout(bubbleTimer);
-    /* Balon pindah ke sisi wayang yang bicara (efek gestur membawa nomor
-     * pemainnya); balon suasana kembali ke posisi bawaan panggung. */
-    if (typeof effect.player === "number") {
-      els.balon.dataset.sisi = effect.player === 0 ? "kiri" : "kanan";
-    } else {
-      delete els.balon.dataset.sisi;
+    clearTimeout(bubbleTimers[player]);
+    node.dataset.player=String(player);
+    node.dataset.sisi=player===0?'kiri':'kanan';
+    const character=effect.char||(els.root&&els.root.dataset.karakter);
+    const label=(window.Dialog&&window.Dialog.label&&window.Dialog.label[character])||character||'Wayang';
+    node.dataset.speaker='P'+(player+1)+' · '+label;
+    node.textContent=effect.text;
+    node.setAttribute('aria-label',label+': '+effect.text);
+    node.hidden=false;node.classList.add('tampil');
+    if(typeof document.dispatchEvent==='function'&&typeof CustomEvent==='function')document.dispatchEvent(new CustomEvent('wayang:bubble',{detail:{player}}));
+    // Captions belong to each actor. The newest spoken line replaces any old voice;
+    // a busy P1 voice must never suppress P2's caption or create a delayed queue.
+    if(window.SuaraDialog&&SuaraDialog.isBicara&&SuaraDialog.isBicara()) {
+      SuaraDialog.setEnabled(false);terapkanDialog();
     }
-    els.balon.textContent = effect.text;
-    els.balon.hidden = false;
-    els.balon.classList.remove("tampil");
-    void els.balon.offsetWidth;
-    els.balon.classList.add("tampil");
-    ucapkanBalon(effect.text, effect.char);
-    const duration = Number(effect.ms) || 3800;
-    bubbleTimer = setTimeout(function () {
-      els.balon.classList.remove("tampil");
-      bubbleTimer = setTimeout(function () { els.balon.hidden = true; }, 320);
-    }, duration);
+    ucapkanBalon(effect.text,effect.char);
+    bubbleTimers[player]=setTimeout(function(){node.hidden=true;node.classList.remove('tampil');},Number(effect.ms)||2800);
   }
 
   function hideBubble() {
-    clearTimeout(bubblePending);
-    clearTimeout(bubbleTimer);
-    bubblePending = bubbleTimer = null;
-    if (!els.balon) return;
-    els.balon.hidden = true;
-    els.balon.classList.remove('tampil');
-    els.balon.textContent = '';
+    for(let player=0;player<2;player++) {
+      clearTimeout(bubblePending[player]);clearTimeout(bubbleTimers[player]);
+      bubblePending[player]=bubbleTimers[player]=null;
+      const node=els.bubbles&&els.bubbles[player];
+      if(node){node.hidden=true;node.classList.remove('tampil');node.textContent='';}
+    }
   }
 
   /* Balon diucapkan dengan suara pemilik dialognya: efek gestur membawa
@@ -958,6 +949,7 @@
     init: init,
     state: function () { return core ? core.state() : "pembuka"; },
     isBusy: function () { return core ? core.snapshot().busy : false; },
+    resetInput: function(){if(core&&core.resetGestures)core.resetGestures();},
     isReading: function () { return reading; },
     open: function () { openStage("button"); },
     toggleFullscreen: toggleFullscreen,

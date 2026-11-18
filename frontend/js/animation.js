@@ -231,6 +231,8 @@
       const svg = container.querySelector("svg");
       if (!svg) throw new Error("Berkas wayang.svg tidak berisi elemen <svg>");
       svg.classList.add("wayang-svg");
+      const heads={gatotkaca:[286,112],semar:[278,200],bagong:[291,184]};
+      const head=heads[character]||[270,140];svg.dataset.bubbleX=String(head[0]);svg.dataset.bubbleY=String(head[1]);
       prefixIds(svg);
 
       const wayang = container.querySelector(".grup-wayang");

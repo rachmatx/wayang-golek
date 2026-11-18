@@ -332,3 +332,14 @@ test("naskah dialog lengkap untuk empat karakter", function () {
     });
   });
 });
+
+test('identical P2 replies are independent from P1 and practice works without backend connection',()=>{
+ const c=TeaterCore.create({dialog:fixture(),random:()=>0});c.init({now:0});c.open('button',0);
+ const a=c.gesture({gesture:'telapak_terbuka',character:'gatotkaca',player:0,source:'live'},3000);
+ const b=c.gesture({gesture:'telapak_terbuka',character:'gatotkaca',player:1,source:'live'},4000);
+ assert.equal(a.effects.filter(e=>e.type==='bubble').length,1);assert.equal(b.effects.find(e=>e.type==='bubble').player,1);
+ assert.equal(c.gesture({gesture:'telapak_terbuka',player:1},5000).effects.length,0);
+ c.connection('disconnected',6000);const reply=c.gesture({gesture:'dua_jari',player:1,source:'story',dialog:'Balasan pendek.'},6100);
+ assert.equal(reply.effects.find(e=>e.type==='bubble').text,'Balasan pendek.');
+ c.resetGestures();c.connection('connected',7000);assert.equal(c.gesture({gesture:'telapak_terbuka',player:1},8000).effects.filter(e=>e.type==='bubble').length,1);
+});

@@ -56,6 +56,7 @@
     characterLoading: false,
     threshold: 0.6,
     slots: null,
+    storySlots: null,
     players: [],
   };
 
@@ -92,6 +93,7 @@
     document.addEventListener('wayang:stage-open', () => stagePresence.reset());
     Panel.setThreshold(app.threshold);
     app.slots = window.createSlots({ jumlah: 1 });
+    app.storySlots = window.createSlots({ jumlah: 1 });
     app.players = [];
     for (let i = 0; i < MAX_PEMAIN; i += 1) app.players.push(buatPemain(i));
     document.addEventListener("wayang:reading", function () {
@@ -282,6 +284,7 @@
     const cancel = function() {
       Dummy.stopMotion();
       document.dispatchEvent(new CustomEvent('wayang:effects-stop'));
+      if(window.Teater&&Teater.resetInput)Teater.resetInput();
       app.players.forEach(function(p) {cancelAuto(p);cancelNeutral(p);p.lastGesture=null;});
     };
     return {
@@ -290,7 +293,8 @@
         if(app.characterLoading) throw new Error('Tunggu tokoh selesai dimuat.');
         await setJumlah(2,document.querySelector('[data-jumlah="2"]'));
         if(!app.players.every(p=>p.loaded)) throw new Error('Tokoh kedua gagal dimuat. Coba lagi.');
-        cancel();Dummy.setPemain(0);Dummy.setActive(true);
+        cancel();app.storySlots.reset();app.slots.reset();Dummy.setPemain(0);
+        if(Teater.resetInput)Teater.resetInput();
         app.players.forEach(function(p,i) {p.wayang.setLane(i);p.wayang.setFacing(i?-1:1);p.wayang.setStageTarget(i?.78:.22);});
         Teater.open();Teater.stopVoice();
       },
@@ -298,10 +302,11 @@
         const p=app.players[cue.player];cancelAuto(p);cancelNeutral(p);
         if(cue.face) p.wayang.setFacing(cue.face);
         if(Number.isFinite(cue.target)) p.wayang.setStageTarget(cue.target);
-        if(!cue.manual) activateGesture(p,cue.gesture,.5,'story',1);
+        if(!cue.manual) activateGesture(p,cue.gesture,.5,'story',1,{dialog:cue.text,silent:cue.silent});
         // Scripted bows return through their authored phrase, without wall-clock auto timers.
       },
       cancel: cancel,
+      syncSource: function(){onSocketStatus(input.connection);},
       freeze: function() {app.players.forEach(p=>{p.wayang.setStageTarget(null);p.wayang.applyPose('kepalan',true);if(p.wayang.cancelCues)p.wayang.cancelCues();p.gesture='kepalan';});},
       neutral: function() {cancel();app.players.forEach(p=>p.wayang.applyPose('netral',true));},
       restore: async function(saved) {
@@ -309,7 +314,9 @@
         app.players.forEach(p=>{p.wayang.setLane(null);p.wayang.setStageTarget(null);});
         await setJumlah(saved.jumlah,document.querySelector('[data-jumlah="'+saved.jumlah+'"]'));
         app.players.forEach(function(p,i) {resetPemain(p,i>=saved.jumlah);p.wayang.setFacing(saved.players[i].facing,false);p.wayang.restorePosition(saved.players[i].x);});
+        app.slots.reset();app.storySlots.reset();stagePresence.reset();app.focus=0;
         Dummy.setActive(saved.practice);Dummy.setPemain(saved.player);
+        if(Teater.resetInput)Teater.resetInput();
       },
     };
   }
@@ -335,7 +342,7 @@
     syncInputStatus();
     Panel.setConnection(status);
     const ribbon = $("pita-terputus");
-    if (app.source === 'dummy') {
+    if (app.source === 'dummy' || (window.Lakon&&Lakon.isActive()&&!Lakon.isPlaying())) {
       if (ribbon) ribbon.hidden = true;
       return;
     }
@@ -384,7 +391,8 @@
     Panel.setCamera(message.camera, app.kameraAktif);
     Panel.setMeta(message.model, message.camera === true ? message.fps : 0, message.model_loaded);
 
-    const penugasan = app.slots.assign(hands);
+    const guided=window.Lakon&&Lakon.isPlaying&&Lakon.isPlaying();
+    const penugasan = (guided?app.storySlots:app.slots).assign(hands);
     const perSlot = new Map();
     hands.forEach(function (hand, i) {
       const slot = penugasan[i];
@@ -474,7 +482,7 @@
   }
 
   /* ---------- gestur -> pose ---------- */
-  function activateGesture(pemain, gesture, wrist, source, confidence) {
+  function activateGesture(pemain, gesture, wrist, source, confidence, narrative) {
     if (window.Teater && Teater.isReading && Teater.isReading()) return;
     const index = pemain.index;
     const from = source || app.source;
@@ -487,7 +495,7 @@
       pemain.wayang.setWrist(0.5);
       if (index === 0) emitWrist(0.5);
       setStrip(index, { gesture: "netral", confidence: confidence });
-      emitGesture(gesture, from, confidence, index, pemain.karakter);
+      emitGesture(gesture, from, confidence, index, pemain.karakter, narrative);
       return;
     }
 
@@ -520,12 +528,14 @@
     pemain.gesture = gesture;
     setStrip(index, { gesture: gesture, confidence: confidence });
     if (index === app.focus) Panel.setGestureLabel(gesture);
-    emitGesture(gesture, from, confidence, index, pemain.karakter);
+    emitGesture(gesture, from, confidence, index, pemain.karakter, narrative);
   }
 
-  function emitGesture(gesture, source, confidence, player, character) {
+  function emitGesture(gesture, source, confidence, player, character, narrative) {
     document.dispatchEvent(new CustomEvent("wayang:gesture", {
       detail: {
+        dialog: narrative&&narrative.dialog,
+        silent: narrative&&narrative.silent,
         gesture: gesture,
         source: source || app.source,
         confidence: Number(confidence) || 0,
@@ -591,6 +601,8 @@
     input.source = app.source;
     input.hands = [];
     input.lastPredictionAt = null;
+    if(app.slots)app.slots.reset();
+    if(app.storySlots)app.storySlots.reset();
     stagePresence.reset();
     syncInputStatus();
     app.players.forEach(function (pemain) { pemain.lastGesture = null; });
@@ -618,7 +630,11 @@
 
   function syncInputStatus() {
     input.intent = app.kameraAktif;
-    if (Panel.setInputStatus) Panel.setInputStatus(InputCore.status(input, performance.now()));
+    if (Panel.setInputStatus) {
+      const feedback=InputCore.status(input, performance.now());
+      if(window.Lakon&&Lakon.isPlaying&&Lakon.isPlaying()&&feedback.state==='accepted')feedback.hint='P1: '+Wayang.labelFor((input.hands[0]||{}).gesture)+' · P2 membalas otomatis.';
+      Panel.setInputStatus(feedback);
+    }
   }
 
   /* ---------- UI ---------- */

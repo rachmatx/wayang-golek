@@ -35,14 +35,15 @@
     $('exit').disabled=cancelRequested;
     $('takeover').hidden=s.mode!=='watch';
     $('pause').textContent=manualPause?'Lanjutkan lakon':'Jeda lakon';
-    $('fill').style.width=(s.done?100:(s.index+(s.accepted?s.elapsed/8:0))/9*100)+'%';
-    const key=[busy,s.mode,s.index,s.accepted,manualPause,paused()].join(':');
+    $('fill').style.width=(s.done?100:(s.index+(s.accepted?s.elapsed/s.duration:0))/WayangPerformance.beats.length*100)+'%';
+    const practice=!!(document.body&&document.body.dataset.source==='dummy');
+    const key=[busy,s.mode,s.index,s.accepted,manualPause,paused(),practice].join(':');
     if(key===lastView)return;lastView=key;
-    $('act').textContent=busy?'MENYIAPKAN PANGGUNG':s.done?'SELESAI':beat.act+' · '+(s.index+1)+'/9';
+    $('act').textContent=busy?'MENYIAPKAN PANGGUNG':s.done?'SELESAI':beat.act+' · '+(s.index+1)+'/'+WayangPerformance.beats.length;
     $('step-title').textContent=busy?'Menyiapkan teman sepanggung…':s.done?'Sampai jumpa di lakon berikutnya.':beat.title;
     $('instruction').textContent=s.done?'Ulangi sebagai penonton atau pemain, atau kembali ke panggung bebas.':beat.text;
     $('icon').innerHTML=window.Glif?Glif.tangan(beat.gesture):'';
-    $('status').textContent=cancelRequested?'Membatalkan lakon dan memulihkan panggung…':busy?'Tunggu sebentar.':s.done?'Pertemuan selesai.':paused()?'Lakon dijeda.':s.mode==='watch'?'Tonton gerak berbalas. Kamu bisa mengambil alih P1 kapan saja.':s.accepted?'Gestur diterima — beri waktu P2 untuk membalas.':'Giliran P1: '+Wayang.labelFor(beat.gesture)+'. Gunakan kamera atau tombol Latihan.';
+    $('status').textContent=cancelRequested?'Membatalkan lakon dan memulihkan panggung…':busy?'Tunggu sebentar.':s.done?'Pertemuan selesai.':paused()?'Lakon dijeda.':s.mode==='watch'?'Tonton gerak berbalas. Kamu bisa mengambil alih P1 kapan saja.':s.accepted?'Gestur diterima — beri waktu P2 untuk membalas.':'Giliran P1: '+Wayang.labelFor(beat.gesture)+(practice?'. Mode tombol aktif; tutup Latihan untuk memakai kamera.':'. Tunjukkan satu tangan di sisi mana pun dalam kamera.');
   }
   async function start(mode) {
     if(!stage||busy)return;
@@ -50,9 +51,9 @@
     if(!saved)saved=stage.snapshot();
     lock(true);render();
     try {
-      await stage.prepare();
+      await stage.prepare(mode);
       busy=false;if(cancelRequested){await exit();return;}
-      last=performance.now();cues(engine.start(mode));
+      last=performance.now();cues(engine.start(mode));if(stage.syncSource)stage.syncSource();
       $('pause').focus({preventScroll:true});document.querySelector('.stage-toolbar').scrollIntoView({block:'start'});
     } catch(error) {
       busy=false;await exit();
@@ -64,7 +65,7 @@
     if(busy) {cancelRequested=true;lastView='';render();return;}
     busy=true;stage.cancel();Teater.stopVoice();engine.stop();
     try {if(saved)await stage.restore(saved);}
-    finally {saved=null;session=false;busy=false;manualPause=false;wasPaused=false;cancelRequested=false;lock(false);lastView='';render();$('watch').focus();}
+    finally {saved=null;session=false;busy=false;manualPause=false;wasPaused=false;cancelRequested=false;if(stage.syncSource)stage.syncSource();lock(false);lastView='';render();$('watch').focus();}
   }
   function syncPause() {
     const value=paused();
@@ -74,6 +75,7 @@
   }
   window.Lakon={
     isActive:active,isPaused:paused,
+    isPlaying:()=>session&&!busy&&engine.state().mode==='play',
     allowInput:(player,source)=>!session||source==='story'||(!paused()&&engine.state().mode==='play'&&player===0),
   };
   document.addEventListener('wayang:ready',event=>{stage=event.detail.stage;render();});

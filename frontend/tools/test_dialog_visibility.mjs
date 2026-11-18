@@ -13,7 +13,7 @@ function stage(savedDialog='nyala') {
       setAttribute(k,v){this[k]=v;},querySelectorAll:()=>[],
       addEventListener(type,cb){this[type]=cb;}};
   }
-  const root=node('panggung'),bubble=node('balon'),toggle=node('kontrol-dialog'),idle=node('stage-idle-status');
+  const root=node('panggung'),bubble=node('balon'),right=node('balon-1'),toggle=node('kontrol-dialog'),idle=node('stage-idle-status');
   root.dataset.karakter='gatotkaca';
   const log={voice:[],music:[],sfx:[]};
   const document={body:{dataset:{source:'live'}},getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],hidden:false,
@@ -39,13 +39,14 @@ function stage(savedDialog='nyala') {
   window.SuaraDialog.setVolume=()=>{};
   Object.assign(context,{Suara:window.Suara,SuaraDialog:window.SuaraDialog});
   vm.runInContext(source,context);window.Teater.init();
-  return {bubble,toggle,log,idle,
+  return {bubble,right,toggle,log,idle,
+    speaking(value){window.SuaraDialog.isBicara=()=>value;},
     unlock(){listeners.click.forEach(cb=>cb());},
     motion(){listeners['wayang:motion-cue'].forEach(cb=>cb({detail:{sound:'saron',gain:.5,player:0,phase:'accent'}}));},
     sound(cue){effect={type:'sound',cue};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
     modal(value){modal=value;},hidden(value){document.hidden=value;},
     rest(){act='jeda';},
-    gesture(text,delay=0){effect={type:'bubble',text,delay};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
+    gesture(text,delay=0,player=0){effect={type:'bubble',text,delay,player};listeners['wayang:gesture'].forEach(cb=>cb({detail:{}}));},
     flush(){const pending=[...timers.values()];timers.clear();pending.forEach(cb=>cb());},
     muteMaster(){window.Teater.setSound(false);}};
 }
@@ -83,4 +84,13 @@ test('theater suppresses duplicate immediate gesture sounds but retains scene cu
 });
 test('hidden tabs, modal panels and master mute suppress phase playback',()=>{
  const s=stage();s.unlock();s.hidden(true);s.motion();s.hidden(false);s.modal(true);s.motion();s.modal(false);s.muteMaster();s.motion();assert.equal(s.log.sfx.length,0);
+});
+
+test('right captions remain visible when P1 voice is busy; each player owns its own lifetime',()=>{
+ const s=stage();s.gesture('Kiri',0,0);s.speaking(true);s.gesture('Kanan',0,1);
+ assert.equal(s.bubble.textContent,'Kiri');assert.equal(s.right.textContent,'Kanan');assert.equal(s.right.hidden,false);assert.equal(s.right.dataset.player,'1');
+ s.toggle.click();assert.equal(s.bubble.hidden,true);assert.equal(s.right.hidden,true);s.flush();assert.equal(s.right.hidden,true);
+});
+test('a delayed P2 caption cannot cancel or replace a P1 pending caption',()=>{
+ const s=stage();s.gesture('Kiri nanti',800,0);s.gesture('Kanan nanti',800,1);s.flush();assert.equal(s.bubble.textContent,'Kiri nanti');assert.equal(s.right.textContent,'Kanan nanti');
 });
