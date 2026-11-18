@@ -2,7 +2,8 @@
  *
  * Aturan main (Rancangan Bab 3.5):
  *  - gestur BARU          -> jalankan pose
- *  - gestur SAMA          -> jangan ulang animasi (kecuali telunjuk: ikuti wrist_x)
+ *  - gestur SAMA kamera   -> jangan ulang animasi (kecuali telunjuk: ikuti wrist_x)
+ *  - tombol latihan SAMA  -> ulang rangkaian dengan sengaja
  *  - state unknown        -> pose tidak diubah, panel minta tahan pose
  *  - tangan hilang        -> hitung mundur 1 detik, lalu wayang itu kembali netral
  *  - websocket putus      -> wayang diam di pose terakhir, sambung ulang otomatis
@@ -31,6 +32,8 @@
   };
 
   const NO_HAND_RESET_MS = 1000;
+  const stagePresence = InputCore.presence();
+  const input = {source: 'live', connection: 'connecting', intent: true, camera: null, tracker: null, modelLoaded: null, hands: [], lastPredictionAt: null, label: gesture => Wayang.labelFor(gesture)};
 
   let CHARACTERS = {
     gatotkaca: { file: "assets/jatim/wayang-gatotkaca.svg", label: "Gatotkaca", role: "Kesatria berjiwa teguh" },
@@ -84,11 +87,15 @@
     await loadCharacters();
     buildCharacters();
     Panel.init();
+    setInterval(() => { if (!document.hidden) syncInputStatus(); }, 500);
+    document.addEventListener('visibilitychange', syncInputStatus);
+    document.addEventListener('wayang:stage-open', () => stagePresence.reset());
     Panel.setThreshold(app.threshold);
     app.slots = window.createSlots({ jumlah: 1 });
     app.players = [];
     for (let i = 0; i < MAX_PEMAIN; i += 1) app.players.push(buatPemain(i));
     document.addEventListener("wayang:reading", function () {
+      stagePresence.reset();
       app.players.forEach(function (pemain) {
         cancelNeutral(pemain);
         cancelAuto(pemain);
@@ -116,6 +123,7 @@
     buildMiniGuide();
     Dummy.rebuild();
     setFacingLabel(0, app.players[0].wayang ? app.players[0].wayang.facing() : 1);
+    document.dispatchEvent(new CustomEvent('wayang:ready'));
   }
 
   async function loadCharacters() {
@@ -223,6 +231,9 @@
     }
 
     for (let i = 0; i < MAX_PEMAIN; i += 1) resetPemain(app.players[i], i >= jumlah);
+    stagePresence.reset();
+    input.hands = Array(jumlah).fill(null);
+    syncInputStatus();
   }
 
   function kontrolPemain(jumlah, button) {
@@ -278,8 +289,18 @@
   }
 
   function onSocketStatus(status) {
+    input.connection = status;
+    if (status !== 'connected') {
+      input.hands = []; input.lastPredictionAt = null;
+      stagePresence.reset();
+    }
+    syncInputStatus();
     Panel.setConnection(status);
     const ribbon = $("pita-terputus");
+    if (app.source === 'dummy') {
+      if (ribbon) ribbon.hidden = true;
+      return;
+    }
     if (status === "connected") {
       if (ribbon) ribbon.hidden = true;
       document.dispatchEvent(new CustomEvent("wayang:connection", { detail: { state: "connected" } }));
@@ -315,9 +336,14 @@
 
   /* ---------- pesan prediksi ---------- */
   function handlePrediction(message) {
+    if (message.type && message.type !== 'prediction') return;
+    if (window.Teater && Teater.isReading && Teater.isReading()) return;
     const hands = Array.isArray(message.hands) ? message.hands : [];
 
-    Panel.setCamera(message.camera);
+    input.camera = message.camera;
+    input.modelLoaded = message.model_loaded;
+    input.lastPredictionAt = performance.now();
+    Panel.setCamera(message.camera, app.kameraAktif);
     Panel.setMeta(message.model, message.camera === true ? message.fps : 0, message.model_loaded);
 
     const penugasan = app.slots.assign(hands);
@@ -326,6 +352,10 @@
       const slot = penugasan[i];
       if (slot >= 0 && slot < app.jumlah && !perSlot.has(slot)) perSlot.set(slot, hand);
     });
+    input.hands = Array.from({length: app.jumlah}, (_, index) => perSlot.get(index) || null);
+    const presenceEvent = stagePresence.update(perSlot.size);
+    if (presenceEvent) document.dispatchEvent(new CustomEvent(presenceEvent, {detail: {count: perSlot.size}}));
+    syncInputStatus();
 
     Panel.setLandmarks(hands.map(function (hand, i) {
       const slot = penugasan[i];
@@ -345,16 +375,14 @@
     const index = pemain.index;
 
     if (!hand) {
-      if (pemain.handPresent) {
-        pemain.handPresent = false;
-        document.dispatchEvent(new CustomEvent("wayang:nohand", { detail: { player: index } }));
-      }
+      pemain.handPresent = false;
       setStrip(index, { gesture: null, confidence: 0 });
       scheduleNeutral(pemain);
       return;
     }
 
     cancelNeutral(pemain);
+    pemain.handPresent = true;
     setStrip(index, { confidence: hand.confidence });
 
     if (hand.state !== "ok" || !hand.gesture) {
@@ -366,11 +394,6 @@
         Panel.setHint("pemain " + (index + 1) + " ragu — tahan pose tangan sebentar");
       }
       return;
-    }
-
-    if (!pemain.handPresent) {
-      pemain.handPresent = true;
-      document.dispatchEvent(new CustomEvent("wayang:hand", { detail: { player: index } }));
     }
 
     const sama = hand.gesture === pemain.lastGesture;
@@ -519,12 +542,16 @@
     Panel.setHint("mode latihan — gestur dari tombol, bukan kamera");
 
     app.focus = pemain.index;
-    if (gesture === pemain.gesture && gesture !== "telunjuk") return;
     activateGesture(pemain, gesture, payload.wrist, "dummy", confidence);
   }
 
   function onDummyToggle(active) {
     app.source = active ? "dummy" : "live";
+    input.source = app.source;
+    input.hands = [];
+    input.lastPredictionAt = null;
+    stagePresence.reset();
+    syncInputStatus();
     app.players.forEach(function (pemain) { pemain.lastGesture = null; });
     if (active) Panel.setMeta("dummy", 0, true);
     const badge = $("panggung-badge");
@@ -545,6 +572,12 @@
       app.players.forEach(cancelNeutral);
       Panel.setHint("menunggu data prediksi…");
     }
+    onSocketStatus(input.connection);
+  }
+
+  function syncInputStatus() {
+    input.intent = app.kameraAktif;
+    if (Panel.setInputStatus) Panel.setInputStatus(InputCore.status(input, performance.now()));
   }
 
   /* ---------- UI ---------- */
@@ -776,6 +809,13 @@
       const hidup = Boolean(message.on);
       if (window.Teater) Teater.setCamera(hidup);
       app.kameraAktif = hidup;
+      input.intent = hidup;
+      if (!hidup) input.camera = false;
+      else if (message.ok === false) input.camera = false;
+      else input.camera = null;
+      input.hands = []; input.lastPredictionAt = null;
+      stagePresence.reset(); syncInputStatus();
+      Panel.setCamera(input.camera, hidup);
       if (!hidup) Panel.setHint("kamera dimatikan — perangkat bebas dipakai aplikasi lain");
       else if (message.ok === false) Panel.setHint("kamera tidak bisa dibuka — coba sumber lain di Pengaturan");
       else Panel.setHint("kamera dinyalakan");
@@ -799,13 +839,17 @@
       applyHealth(data);
     } catch (error) {
       Panel.setCamera(null);
+      input.camera = null; syncInputStatus();
     }
     clearTimeout(app.healthTimer);
     app.healthTimer = setTimeout(pollHealth, 4000);
   }
 
   function applyHealth(data) {
-    Panel.setCamera(data.camera);
+    input.camera = data.camera;
+    input.modelLoaded = data.model_loaded;
+    input.tracker = data.components && data.components.mediapipe;
+    Panel.setCamera(data.camera, data.camera_aktif !== false);
     const img = $("video-feed");
     if (!img) return;
 
@@ -816,6 +860,7 @@
       app.kameraAktif = niat;
       if (window.Teater) Teater.setCamera(niat);
     }
+    syncInputStatus();
     const index = Number(data.camera_index);
     if (Number.isFinite(index) && index !== app.kameraIndex) {
       app.kameraIndex = index;

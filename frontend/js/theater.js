@@ -635,6 +635,7 @@
 
   /* ---------- pembuka / istirahat ---------- */
   function openStage(source) {
+    document.dispatchEvent(new CustomEvent('wayang:stage-open'));
     if (core) {
       run(core.open(source, performance.now()));
       syncAmbient();

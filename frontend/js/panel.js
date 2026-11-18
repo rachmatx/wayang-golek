@@ -26,6 +26,8 @@
   const el = {};
   let threshold = 0.6;
   let canvasObserver = null;
+  let announcementTimer = null;
+  let lastInputTitle = '';
 
   function $(id) { return document.getElementById(id); }
 
@@ -43,6 +45,10 @@
     el.statusLabel = el.status ? el.status.querySelector(".status-label") : null;
     el.cameraBadge = $("kamera-badge");
     el.img = $("video-feed");
+    el.input = $('input-feedback');
+    el.inputTitle = $('input-title');
+    el.inputHint = $('input-hint');
+    el.inputAnnouncement = $('input-announcement');
     el.hasilPemain = $("hasil-pemain");
     el.stripFps = $("strip-fps");
     el.stripModel = $("strip-model");
@@ -80,18 +86,34 @@
   }
 
   /* ---------- kamera ---------- */
-  function setCamera(camera) {
+  function setCamera(camera, intent) {
     if (!el.cameraBadge) return;
-    if (camera === true) {
+    if (intent === false) {
+      el.cameraBadge.dataset.state = 'off';
+      el.cameraBadge.textContent = 'dimatikan';
+    } else if (camera === true) {
       el.cameraBadge.dataset.state = "on";
       el.cameraBadge.textContent = "kamera aktif";
     } else if (camera === false) {
       el.cameraBadge.dataset.state = "off";
-      el.cameraBadge.textContent = "kamera mati";
+      el.cameraBadge.textContent = "tidak tersedia";
     } else {
       el.cameraBadge.dataset.state = "wait";
       el.cameraBadge.textContent = "menunggu";
     }
+  }
+
+  function setInputStatus(view) {
+    if (!el.input) return;
+    if (el.input.dataset.state !== view.state) el.input.dataset.state = view.state;
+    if (el.inputTitle.textContent !== view.title) el.inputTitle.textContent = view.title;
+    if (el.inputHint.textContent !== view.hint) el.inputHint.textContent = view.hint;
+    if (lastInputTitle === view.title) return;
+    lastInputTitle = view.title;
+    clearTimeout(announcementTimer);
+    announcementTimer = setTimeout(() => {
+      if (el.inputAnnouncement && el.inputAnnouncement.textContent !== view.title) el.inputAnnouncement.textContent = view.title;
+    }, 700);
   }
 
   /* ---------- strip per pemain ---------- */
@@ -268,6 +290,7 @@
     init: init,
     setConnection: setConnection,
     setCamera: setCamera,
+    setInputStatus: setInputStatus,
     setJumlah: setJumlah,
     setStrip: setStrip,
     setFocus: setFocus,

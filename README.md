@@ -2,7 +2,7 @@
 
 Panggung budaya interaktif berbasis webcam dan gestur tangan. Kenali tokoh, cengkok, musik, serta tradisi masyarakat Jawa Timuran, lalu mainkan wayang sendiri atau berduet.
 
-Pengembangan versi 0.5.1 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
+Pengembangan versi 0.6.0 berada di branch `feat/jatim-stage-motion-v03`. [Rencana](docs/superpowers/plans/2026-11-18-wayang-kulit-jatim.md) · [Riset](docs/research/2026-11-18-wayang-kulit-jawa-timuran.md).
 
 ## Fitur
 
@@ -57,7 +57,7 @@ Di Windows, aktivasi manual menggunakan `.venv\Scripts\activate`. Internet diper
 | OK | `6` | Berbalik arah |
 | Netral | `0` | Kembali netral |
 
-Gunakan pilihan **Pendopo Senja / Rimba Malam** di bawah panggung. Di mode latihan, geser slider **Geser wayang** untuk menguji telunjuk secara manual, atau tekan `3` untuk gerakan demo otomatis. Dalam duet, kedua tokoh berbagi panggung dan dapat saling melintas.
+Gunakan pilihan **Pendopo Senja / Rimba Malam** di bawah panggung. Di mode latihan, geser slider **Geser wayang** untuk menguji telunjuk secara manual, atau tekan `3` untuk gerakan demo otomatis. Dalam duet, kedua tokoh berbagi panggung dan dapat saling melintas. Selama id tangan dari backend masih terlihat, pemilik P1/P2 tetap sama meskipun tangan menyilang. Lepaskan tangan dari kamera untuk melepas kepemilikan slot.
 
 `D` membuka/menutup latihan, `P` memilih pemain latihan dalam mode Duet, `?` membuka panduan, `V` mengatur dialog, dan `K` mengatur kamera. Saat panel bacaan terbuka, pintasan gestur dinonaktifkan agar tidak mengganggu bacaan. Pilih **Coba tanpa kamera** untuk langsung membuka panggung dan latihan.
 
@@ -170,3 +170,18 @@ Cuplikan disusun dari tangkapan browser dengan laju pengambilan terbatas dan tan
 Tirai tidak lagi menutup sebagian setelah 45 detik tanpa tangan. Indikator kecil **Menunggu gerakan tangan** menjelaskan jeda tanpa menutupi sisi panggung, termasuk ketika Dialog dimatikan. Tangan yang kembali terdeteksi membuka tirai penuh. Mengaktifkan Latihan melalui toolbar, tombol atau pintasan D membuka/melanjutkan panggung, termasuk dari istirahat. Penutupan penuh tetap berlaku pada pembukaan dan istirahat 90 detik.
 
 [Rencana peningkatan berikutnya](docs/superpowers/plans/2026-11-18-roadmap-v06.md) memuat prioritas kendali, pertunjukan duet, iringan, pembelajaran, performa dan dukungan perangkat. Fitur lanjutan dalam dokumen tersebut belum diimplementasikan.
+
+
+## Rilis fondasi v0.6.0 — kendali dan panduan mulai
+
+Status dekat kamera membedakan kamera dimatikan, tidak tersedia, menunggu data, tangan belum terlihat, pose belum stabil, gestur diterima dan mode latihan. Kondisi model/pelacak yang belum siap juga mempunyai pesan tersendiri. Dalam duet, label per pemain menjelaskan tangan mana yang belum terlihat. Pembaca layar menerima status yang bertahan 700 ms, bukan pengumuman setiap frame; penundaan ini hanya untuk pengumuman, tidak menahan input wayang.
+
+Jeda panggung kini mengikuti seluruh pemain: P2 keluar tidak menjedakan P1 yang masih terlihat. Tangan yang terlihat tetapi pose belum dikenali tetap dihitung hadir. Tangan yang kehilangan slot kembali netral setelah jeda lama yang sudah ada; slot lain tetap berjalan. Id tangan yang masih terlihat tidak berpindah tokoh karena menyeberang layar. Ketepatan id tetap bergantung pada tracker backend.
+
+Tombol dan keyboard latihan dapat mengulang gestur yang sama. Frame kamera yang sama tetap tidak mengulang rangkaian; telunjuk terus menerima posisi tangan. Latihan juga tetap dimainkan tanpa pita peringatan koneksi ketika backend terputus; saat kembali ke kamera, status koneksi asli dipulihkan.
+
+**Panduan mulai** memberi tiga langkah singkat, pintasan latihan dan pengaturan titik tengah. Tekan **Saya sudah paham** untuk menyimpannya dalam keadaan tertutup; panduan tetap dapat dibuka lagi. Panduan mulai dan panduan enam gestur tidak dibuka bersamaan agar panel bantuan lebih ringkas.
+
+Aset JS/CSS memiliki penanda versi rilis untuk mencegah campuran kode lama dan baru setelah update. Hal ini tidak mengganti aturan cache kamera/health atau menambahkan filter klasifikasi. MLP, normalisasi 63 fitur dan kontrak `hands[]` tetap sama.
+
+[Verifikasi v0.6.0](docs/verification/2026-11-18-controls-v06.json). Validasi input sintetik dan antarmuka sudah dilakukan; pengukuran latensi kamera ujung ke ujung, salah baca dan silang tangan pada webcam fisik belum dilakukan. Tahap berikutnya adalah audit gerak dan mode lakon mini/duet dari dokumen rencana.

@@ -20,16 +20,21 @@ test("dua tangan di sisi berbeda langsung dapat dua slot", () => {
   assert.deepEqual(hasil, [0, 1]);
 });
 
-test("tangan yang lewat tengah belum pindah sampai bertahan 8 frame", () => {
+test("tangan yang lewat tengah tetap memiliki tokohnya selama id masih terlihat", () => {
   const slots = createSlots({ jumlah: 2 });
   slots.assign([tangan(0, 0.2)]);
-  // lewat garis tengah sedikit: belum cukup jauh untuk dianggap pindah sisi.
-  assert.deepEqual(slots.assign([tangan(0, 0.55)]), [0]);
-  // sudah di sisi seberang, tapi baru 7 frame -> masih slot lama.
-  for (let i = 0; i < 6; i += 1) slots.assign([tangan(0, 0.7)]);
-  assert.deepEqual(slots.assign([tangan(0, 0.7)]), [0]);
-  // frame ke-8 di sisi seberang -> pindah.
-  assert.deepEqual(slots.assign([tangan(0, 0.7)]), [1]);
+  for (let i = 0; i < 30; i++) assert.deepEqual(slots.assign([tangan(0, 0.9)]), [0]);
+});
+
+test('dua tangan bersilang dan urutan paket berubah tanpa bertukar tokoh',()=>{
+ const slots=createSlots({jumlah:2});slots.assign([tangan(1,.2),tangan(2,.8)]);
+ for(let i=0;i<30;i++)assert.deepEqual(slots.assign([tangan(2,.1),tangan(1,.9)]),[1,0]);
+});
+
+test('tangan ketiga yang sudah menunggu tidak merebut pemilik aktif',()=>{
+ const slots=createSlots({jumlah:2});slots.assign([tangan(1,.2),tangan(2,.8),tangan(3,.1)]);
+ assert.deepEqual(slots.assign([tangan(3,.1),tangan(1,.2),tangan(2,.8)]),[-1,0,1]);
+ assert.deepEqual(slots.assign([tangan(3,.1),tangan(2,.8)]),[0,1]);
 });
 
 test("tangan kedua di sisi yang sama menempati slot kosong", () => {

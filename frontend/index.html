@@ -8,10 +8,10 @@
   <meta name="theme-color" content="#151310" />
   <link rel="icon" href="assets/brand.svg" type="image/svg+xml" />
   <link rel="preload" href="assets/fonts/noto-serif-display.woff" as="font" type="font/woff" crossorigin />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/teater.css" />
-  <link rel="stylesheet" href="css/jawatimuran.css" />
-  <link rel="stylesheet" href="css/studio.css" />
+  <link rel="stylesheet" href="css/style.css?v=0.6.0-r2" />
+  <link rel="stylesheet" href="css/teater.css?v=0.6.0-r2" />
+  <link rel="stylesheet" href="css/jawatimuran.css?v=0.6.0-r2" />
+  <link rel="stylesheet" href="css/studio.css?v=0.6.0-r2" />
 </head>
 <body data-source="live">
   <a class="skip-link" href="#studio">Langsung ke panggung</a>
@@ -176,6 +176,8 @@
 
 
           <p class="camera-tip">Posisikan tangan di dalam kamera.<br /> Cahaya yang cukup membantu pembacaan.</p>
+          <section class="input-feedback" id="input-feedback" aria-labelledby="input-title" data-state="checking"><h3 id="input-title">Memeriksa kamera</h3><p id="input-hint">Menunggu layanan kamera.</p></section>
+          <span id="input-announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></span>
           <button type="button" class="camera-action" data-camera-toggle aria-pressed="true"><span class="camera-action-dot" aria-hidden="true"></span><span data-camera-label>Matikan kamera</span><kbd>K</kbd></button>
           <details class="control-tuning" id="control-tuning"><summary>Sesuaikan gerak <span aria-hidden="true">+</span></summary>
             <p class="control-intro">Gunakan telunjuk, tahan tangan di posisi nyaman, lalu kalibrasi titik tengah.</p>
@@ -188,6 +190,12 @@
             <p id="control-status" class="control-status" role="status"></p>
           </details>
           </section>
+          <details class="start-guide" id="start-guide" open>
+            <summary>Panduan mulai <span>3 langkah</span></summary>
+            <ol><li><strong>Pilih cara bermain.</strong><p>Nyalakan kamera untuk gerak tangan, atau pilih latihan tanpa kamera.</p></li><li><strong>Coba satu gerakan.</strong><p>Tunjukkan telapak terbuka. Di latihan, tekan Telapak atau angka 1.</p></li><li><strong>Atur kenyamananmu.</strong><p>Kalibrasi telunjuk bila titik tengah kurang pas. Langkah ini opsional.</p></li></ol>
+            <div class="start-guide-actions"><button type="button" id="start-practice" disabled>Latihan tanpa kamera</button><button type="button" id="start-calibrate">Sesuaikan gerak</button></div>
+            <button type="button" id="start-dismiss" class="text-button">Saya sudah paham</button>
+          </details>
           <details class="gesture-disclosure" id="studio-gesture-guide" open>
             <summary><span>Panduan gestur<small>Enam gerak untuk menghidupkan cerita.</small></span><span class="disclosure-symbol" aria-hidden="true">+</span></summary>
           <div class="gesture-mini" id="gesture-mini" aria-label="Ringkasan enam gestur"></div>
@@ -318,29 +326,31 @@
     <p class="audio-footnote">Musik mulai setelah panggung dibuka. Pilihanmu tersimpan di perangkat ini.</p>
     <details class="audio-credits"><summary>Tentang rekaman</summary><p>Sampel musik lintas tradisi, bukan rekaman khusus Jekdong. <a href="assets/audio/AUDIO_CREDITS.md" target="_blank" rel="noopener noreferrer">Lihat asal dan kredit audio</a>.</p></details>
   </section>
-  <script src="js/ws_client.js"></script>
-  <script src="js/control-core.js"></script>
-  <script src="js/motion-core.js"></script>
-  <script src="js/puppetry-core.js"></script>
-  <script src="js/animation.js"></script>
-  <script src="js/slots.js"></script>
-  <script src="js/glyphs.js"></script>
-  <script src="js/panel.js"></script>
-  <script src="js/dummy.js"></script>
-  <script src="js/dialog.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/dialog_audio.js"></script>
-  <script src="js/voice.js"></script>
-  <script src="js/theater-core.js"></script>
-  <script src="js/audio-prefs.js"></script>
-  <script src="js/theater.js"></script>
-  <script src="js/culture-core.js"></script>
-  <script src="js/fact-timer.js"></script>
-  <script src="js/culture.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/stage.js"></script>
-  <script src="js/audio-controls.js"></script>
-  <script src="js/studio.js"></script>
-  <script src="js/control-ui.js"></script>
+  <script src="js/ws_client.js?v=0.6.0-r2"></script>
+  <script src="js/control-core.js?v=0.6.0-r2"></script>
+  <script src="js/input-core.js?v=0.6.0-r2"></script>
+  <script src="js/motion-core.js?v=0.6.0-r2"></script>
+  <script src="js/puppetry-core.js?v=0.6.0-r2"></script>
+  <script src="js/animation.js?v=0.6.0-r2"></script>
+  <script src="js/slots.js?v=0.6.0-r2"></script>
+  <script src="js/glyphs.js?v=0.6.0-r2"></script>
+  <script src="js/panel.js?v=0.6.0-r2"></script>
+  <script src="js/dummy.js?v=0.6.0-r2"></script>
+  <script src="js/dialog.js?v=0.6.0-r2"></script>
+  <script src="js/audio.js?v=0.6.0-r2"></script>
+  <script src="js/dialog_audio.js?v=0.6.0-r2"></script>
+  <script src="js/voice.js?v=0.6.0-r2"></script>
+  <script src="js/theater-core.js?v=0.6.0-r2"></script>
+  <script src="js/audio-prefs.js?v=0.6.0-r2"></script>
+  <script src="js/theater.js?v=0.6.0-r2"></script>
+  <script src="js/culture-core.js?v=0.6.0-r2"></script>
+  <script src="js/fact-timer.js?v=0.6.0-r2"></script>
+  <script src="js/culture.js?v=0.6.0-r2"></script>
+  <script src="js/app.js?v=0.6.0-r2"></script>
+  <script src="js/stage.js?v=0.6.0-r2"></script>
+  <script src="js/audio-controls.js?v=0.6.0-r2"></script>
+  <script src="js/studio.js?v=0.6.0-r2"></script>
+  <script src="js/control-ui.js?v=0.6.0-r2"></script>
+  <script src="js/start-guide.js?v=0.6.0-r2"></script>
 </body>
 </html>

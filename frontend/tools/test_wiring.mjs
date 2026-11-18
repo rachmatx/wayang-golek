@@ -19,7 +19,7 @@ const html = readFileSync(join(root, "index.html"), "utf8");
 const theater = readFileSync(join(root, "js", "theater.js"), "utf8");
 
 function urutan(nama) {
-  return html.indexOf('src="js/' + nama + '.js"');
+  return html.indexOf('src="js/' + nama + '.js');
 }
 
 test("voice.js dimuat, sebelum theater.js", function () {

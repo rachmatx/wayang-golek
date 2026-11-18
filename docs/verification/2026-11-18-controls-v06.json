@@ -1,0 +1,73 @@
+{
+  "version": "0.6.0",
+  "date": "2026-11-18",
+  "branch": "feat/jatim-stage-motion-v03",
+  "scope": "Batch fondasi: tahap 1 fungsional dan penanda versi aset dari tahap 5",
+  "checks": {
+    "frontend_tests": {
+      "passed": 140,
+      "failed": 0
+    },
+    "integration": [
+      "Real app input handlers with real slot allocator and theater core; DOM/puppet and transport mocked",
+      "P2 leaves while P1 stays active",
+      "Last hand leaves and either player resumes",
+      "Unknown visible pose keeps presence without restarting motion",
+      "Repeated camera label versus deliberate practice replay",
+      "Health and practice precedence",
+      "Backend disconnect ribbon suppressed only during practice",
+      "Stable slot ownership with crossing, reordered packets and waiting third hand"
+    ],
+    "browser": {
+      "method": "Managed preview + CUA UI and DOM readback",
+      "tested": [
+        "camera unavailable versus intentionally off",
+        "guide opens practice and stage",
+        "repeat greeting visibly restarts shoulder phase",
+        "guide calibration shortcut expands tuning",
+        "dismissed guide stays closed after reload",
+        "live announcement visually clipped to 1px",
+        "guide and gesture help are mutually collapsible"
+      ],
+      "repeat_shoulder_deg": {
+        "held": 62,
+        "after_repeat": -0.062
+      },
+      "phone_viewports": [
+        {
+          "viewport": [
+            320,
+            740
+          ],
+          "clientWidth": 305,
+          "scrollWidth": 305,
+          "guide_button_height": 50
+        },
+        {
+          "viewport": [
+            390,
+            844
+          ],
+          "clientWidth": 375,
+          "scrollWidth": 375
+        }
+      ],
+      "page_console_errors_observed": 0,
+      "screenshots": [
+        "docs/images/jatim-v06-controls-desktop.jpg",
+        "docs/images/jatim-v06-controls-mobile.jpg",
+        "docs/images/jatim-v06-controls-overview.jpg"
+      ]
+    },
+    "javascript_syntax": "passed",
+    "html_nesting_unique_ids_and_local_paths": "passed",
+    "git_diff_check": "passed"
+  },
+  "limitations": [
+    "No physical webcam: actual end-to-end camera latency, false gesture rate and occlusion/crossing behavior remain unmeasured.",
+    "Stable ownership relies on stable hand IDs from the existing backend tracker.",
+    "Mobile checks are iframe viewports, not physical phones; camera capture still belongs to the Python host.",
+    "Stale-input and backend-disconnect paths were tested deterministically, not by disabling a live service."
+  ],
+  "next": "Movement audit and optional mini-story/duet performance mode; not implemented in this batch"
+}
